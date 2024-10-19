@@ -1,0 +1,69 @@
+# ==============================================================================
+# File: "C:\Users\nicol\Documents\akM-dev\Max\akM-speakerConfig-cube3x3.txt"
+# Exported by: nicol
+# nicol@NDLABS-WINPC - Windows 11
+# 19-oct-2024 00:49:53
+# Origin: spat5.speaker.config [5.3.3] - Max [???] - x86_64
+# Origin patcher: "C:/Users/nicol/Documents/akM-dev/Max/akM-SPAT.maxpat"
+# Content: 60 OSC messages
+# ==============================================================================
+/speaker/number 12
+/speakers/correction/delay "off"
+/speakers/correction/gain "off"
+/speakers/aed -45.0 5.38598 2.13073 -45.0 35.2644 2.59808 -45.0 52.8519 3.51283 45.0 5.38598 2.13073 45.0 35.2644 2.59808 45.0 52.8519 3.51283 135.0 5.38598 2.13073 135.0 35.2644 2.59808 135.0 52.8519 3.51283 -135.0 5.38598 2.13073 -135.0 35.2644 2.59808 -135.0 52.8519 3.51283
+/speaker/1/delay 0.0
+/speaker/2/delay 0.0
+/speaker/3/delay 0.0
+/speaker/4/delay 0.0
+/speaker/5/delay 0.0
+/speaker/6/delay 0.0
+/speaker/7/delay 0.0
+/speaker/8/delay 0.0
+/speaker/9/delay 0.0
+/speaker/10/delay 0.0
+/speaker/11/delay 0.0
+/speaker/12/delay 0.0
+/speaker/1/gain/db 0.0
+/speaker/2/gain/db 0.0
+/speaker/3/gain/db 0.0
+/speaker/4/gain/db 0.0
+/speaker/5/gain/db 0.0
+/speaker/6/gain/db 0.0
+/speaker/7/gain/db 0.0
+/speaker/8/gain/db 0.0
+/speaker/9/gain/db 0.0
+/speaker/10/gain/db 0.0
+/speaker/11/gain/db 0.0
+/speaker/12/gain/db 0.0
+/speaker/1/name "1"
+/speaker/2/name "2"
+/speaker/3/name "3"
+/speaker/4/name "4"
+/speaker/5/name "5"
+/speaker/6/name "6"
+/speaker/7/name "7"
+/speaker/8/name "8"
+/speaker/9/name "9"
+/speaker/10/name "10"
+/speaker/11/name "11"
+/speaker/12/name "12"
+/usurp 0
+/window/title "Speaker Config"
+/window/visible 0
+/window/moveable 1
+/window/resizable 1
+/window/enable 1
+/window/bounds 504 148 1200 850
+/window/background/color 0.827451 0.827451 0.827451 1.0
+/window/opaque 1
+/window/titlebar 1
+/window/fullscreen 0
+/window/minimise 0
+/window/scale 175.0
+/window/rendering/engine ""
+/window/rendering/fps/visible 0
+/window/floating 1
+/window/hidesondeactivate 0
+/window/buttons/close 1
+/window/buttons/minimise 1
+/window/buttons/maximise 1

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- created by libisp v5.0.2 - 18-mar-2024 19:03:59 -->
+
+<?xml-stylesheet href="./_c74_ref.xsl" type="text/xsl"?>
+
+
+<c74object name="spat5.edc" module="spat5">
+  <digest>Schroeder estimation of reverberation time</digest>
+  <description><o>spat5.edc</o> computes Schroeder decay curve.<br/><br/></description>
+  <inletlist>
+  </inletlist>
+  <outletlist>
+  </outletlist>
+  <objarglist>
+  </objarglist>
+  <attributelist>
+    <attribute name="initwith" type="string" set="1" get="1" size="1">
+      <description>The <m> initwith </m> attribute can be used to specify the initial state of the object. You should provide a list of comma-separated OSC commands. The list of messages should be quoted (with double quote character &quot;). This is similar to sending the list of commands via <o>loadbang</o> or <o>loadmess</o>.<br/> Have a look at the <i>spat5.tuto-osc-3.maxpat</i> example for further details.<br/> Note that the <m> initwith </m> attribute cannot be set via message, <o>attrui</o> or inspector; it must be typed directly within the object box.</description>
+      <digest>initial state of the object</digest>
+    </attribute>
+  </attributelist>
+  <methodlist>
+    <method name="/load">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>load IR from audio file, and analyze the first channel.</description>
+      <digest>load IR from audio file, and analyze the first channel</digest>
+    </method>
+    <method name="/load">
+      <arglist>
+        <arg type="string][int"/>
+      </arglist>
+      <description>load IR from audio file, and analyze the i-th channel.</description>
+      <digest>load IR from audio file, and analyze the i-th channel</digest>
+    </method>
+    <method name="/toaremoval">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>ignore the samples before direct sound for the analysis.</description>
+      <digest>ignore the samples before direct sound for the analysis</digest>
+    </method>
+    <method name="/channel">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>analyze the i-th channel of the IR.</description>
+      <digest>analyze the i-th channel of the IR</digest>
+    </method>
+  </methodlist>
+  <seealsolist>
+    <seealso name="spat5.smk~"/>
+    <seealso name="spat5.edc"/>
+    <seealso name="spat5.ir.analysis"/>
+    <seealso name="spat5.ir.infos"/>
+    <seealso name="spat5.hybrid~"/>
+    <seealso name="spat5.overview"/>
+  </seealsolist>
+</c74object>

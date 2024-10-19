@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- created by libisp v5.0.0 - 10/12/2017 - 15h25m06s -->
+
+<?xml-stylesheet href="./_c74_ref.xsl" type="text/xsl"?>
+
+
+<c74object name="spat5.overview" module="spat5">
+  <digest>Overview patcher</digest>
+  <description>
+  </description>
+  <inletlist>
+  </inletlist>
+  <outletlist>
+  </outletlist>
+  <objarglist>
+  </objarglist>
+  <attributelist>
+  </attributelist>
+  <methodlist>
+  </methodlist>
+  <seealsolist>
+  </seealsolist>
+</c74object>

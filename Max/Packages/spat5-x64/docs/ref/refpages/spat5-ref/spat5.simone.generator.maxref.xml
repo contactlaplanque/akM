@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- created by libisp v5.0.2 - 18-mar-2024 19:03:59 -->
+
+<?xml-stylesheet href="./_c74_ref.xsl" type="text/xsl"?>
+
+
+<c74object name="spat5.simone.generator" module="spat5">
+  <digest>Vector field generator</digest>
+  <description><o>spat5.simone.generator</o> generates vector fields for use with <o>spat5.simone</o>.<br/><br/></description>
+  <inletlist>
+  </inletlist>
+  <outletlist>
+  </outletlist>
+  <objarglist>
+  </objarglist>
+  <attributelist>
+    <attribute name="cols" type="int" set="1" get="1" size="1">
+      <description>The <m> cols </m> attribute represents the number of columns. It can not be changed dynamically (via message or <o>attrui</o> or inspector).</description>
+      <digest>number of columns</digest>
+    </attribute>
+    <attribute name="initwith" type="string" set="1" get="1" size="1">
+      <description>The <m> initwith </m> attribute can be used to specify the initial state of the object. You should provide a list of comma-separated OSC commands. The list of messages should be quoted (with double quote character &quot;). This is similar to sending the list of commands via <o>loadbang</o> or <o>loadmess</o>.<br/> Have a look at the <i>spat5.tuto-osc-3.maxpat</i> example for further details.<br/> Note that the <m> initwith </m> attribute cannot be set via message, <o>attrui</o> or inspector; it must be typed directly within the object box.</description>
+      <digest>initial state of the object</digest>
+    </attribute>
+    <attribute name="rows" type="int" set="1" get="1" size="1">
+      <description>The <m> rows </m> attribute represents the number of rows. It can not be changed dynamically (via message or <o>attrui</o> or inspector).</description>
+      <digest>number of rows</digest>
+    </attribute>
+  </attributelist>
+  <methodlist>
+    <method name="/row/number">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set the number of rows.</description>
+      <digest>set the number of rows</digest>
+    </method>
+    <method name="/col/number">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set the number of columns.</description>
+      <digest>set the number of columns</digest>
+    </method>
+    <method name="/type">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set the type of field.</description>
+      <digest>set the type of field</digest>
+    </method>
+  </methodlist>
+  <seealsolist>
+    <seealso name="spat5.simone"/>
+    <seealso name="spat5.simone.embedded"/>
+    <seealso name="spat5.trajectories"/>
+    <seealso name="spat5.viewer"/>
+    <seealso name="spat5.oper"/>
+    <seealso name="spat5.boids"/>
+    <seealso name="spat5.overview"/>
+  </seealsolist>
+</c74object>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- created by libisp v5.0.0 - 10/12/2017 - 15h25m06s -->
+
+<?xml-stylesheet href="./_c74_ref.xsl" type="text/xsl"?>
+
+
+<c74object name="spat5.multi.connect" module="spat5">
+  <digest>Fast multi-patch-cords connections</digest>
+  <description>
+  To use <o>spat5.multi.connect</o>, select objects to connect and hit the [ ! ] button to connect all outlets to all inlets. 
+  <br/> Additional features include: [ \ ] to connect one outlet to multiple inlets, [ / ] to connect multiple outlets to one inlet, and [ | ] to match all selected objects to the top obect's x position and width values.
+  <br/><br/>
+  To make connections, <o>spat5.multi.connect</o> first needs to know how many inlets/outlets to try as an argument or as an int message.  note:  there will be ignorable error messages if your number of connections setting is larger than the number of inlets or outlets of the selected objects.
+  <br/><br/>
+  <o>spat5.multi.connect</o> has been developed by Rama Gottfried (2012); based on the maxtoolbox by Nathanaël Lécaudé.
+  <br/><br/>
+  </description>
+  <inletlist>
+  </inletlist>
+  <outletlist>
+  </outletlist>
+  <objarglist>
+  </objarglist>
+  <attributelist>
+  </attributelist>
+  <methodlist>
+  </methodlist>
+  <seealsolist>
+	  <seealso name="spat5.spat~"/>
+	  <seealso name="spat5.pan~"/>	  
+	  <seealso name="spat5.routing~"/>	  	  
+	  <seealso name="spat5.thru~"/>	  	  
+	  <seealso name="adc~"/>	  	  	  
+	  <seealso name="dac~"/>	  	  	  	  
+  </seealsolist>
+</c74object>

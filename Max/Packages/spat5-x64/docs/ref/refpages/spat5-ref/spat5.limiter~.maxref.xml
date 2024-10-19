@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- created by libisp v5.0.2 - 18-mar-2024 19:03:59 -->
+
+<?xml-stylesheet href="./_c74_ref.xsl" type="text/xsl"?>
+
+
+<c74object name="spat5.limiter~" module="spat5">
+  <digest>Peak limiter</digest>
+  <description><o>spat5.limiter~</o> is a multichannel peak limiter.<br/><br/></description>
+  <inletlist>
+  </inletlist>
+  <outletlist>
+  </outletlist>
+  <objarglist>
+  </objarglist>
+  <attributelist>
+    <attribute name="channels" type="int" set="1" get="1" size="1">
+      <description>The <m> channels </m> attribute represents the number of input and output channels of the object. This  attribute must be set in the object box, when the object is instantiated; it can not be later set with a message (or <o>attrui</o> or inspector), since  the number of signal inlets or outlets can not be changed dynamically.</description>
+      <digest>number of input and output channels</digest>
+    </attribute>
+    <attribute name="initwith" type="string" set="1" get="1" size="1">
+      <description>The <m> initwith </m> attribute can be used to specify the initial state of the object. You should provide a list of comma-separated OSC commands. The list of messages should be quoted (with double quote character &quot;). This is similar to sending the list of commands via <o>loadbang</o> or <o>loadmess</o>.<br/> Have a look at the <i>spat5.tuto-osc-3.maxpat</i> example for further details.<br/> Note that the <m> initwith </m> attribute cannot be set via message, <o>attrui</o> or inspector; it must be typed directly within the object box.</description>
+      <digest>initial state of the object</digest>
+    </attribute>
+    <attribute name="mc" type="int" set="1" get="1" size="1">
+      <description>The <m> mc </m> attribute enables multichannel patch-cord for this object (compatible with Max8 or higher). Note that the <m> mc </m> attribute cannot be set via message, <o>attrui</o> or inspector; it must be typed directly within the object box.</description>
+      <digest>multichannel patch-cord</digest>
+    </attribute>
+    <attribute name="parameter_enable" type="boolean" set="1" get="1" size="1">
+      <description>The <m> parameter_enable </m> attribute is used for compatibility with Max snapshots. It can also be used to store the initial state of the object (see 'Initial Enable' in the Max inspector).</description>
+      <digest>compatibility with snapshots</digest>
+    </attribute>
+  </attributelist>
+  <methodlist>
+    <method name="/channel/number">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set the number of channels.</description>
+      <digest>number of channels</digest>
+    </method>
+    <method name="/channel/[index]/attack">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set attack time (in msec) for the i-th channel.</description>
+      <digest>set attack time (in msec) for the i-th channel</digest>
+    </method>
+    <method name="/channel/[index]/release">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set release time (in msec) for the i-th channel.</description>
+      <digest>set release time (in msec) for the i-th channel</digest>
+    </method>
+    <method name="/channel/[index]/lookahead">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set lookahead time (in msec) for the i-th channel.</description>
+      <digest>set lookahead time (in msec) for the i-th channel</digest>
+    </method>
+    <method name="/channel/[index]/threshold">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set threshold (in dB) for the i-th channel.</description>
+      <digest>set threshold (in dB) for the i-th channel</digest>
+    </method>
+    <method name="/channel/[index]/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>mute the i-th channel.</description>
+      <digest>mute the i-th channel</digest>
+    </method>
+    <method name="/channel/[index]/bypass">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>bypass the i-th channel.</description>
+      <digest>bypass the i-th channel</digest>
+    </method>
+    <method name="/dsp/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>mute the DSP rendering. CPU resources are not used when the DSP is muted.  A smooth ramp is applied  (see /dsp/mute/ramptime).</description>
+      <digest>mute DSP</digest>
+    </method>
+    <method name="/dsp/mute">
+      <arglist>
+        <arg type="boolean][number"/>
+      </arglist>
+      <description>mute the DSP rendering. CPU resources are not used when the DSP is muted.  A smooth ramp is applied; the second argument specifies the length (in msec) of the ramp.</description>
+      <digest>mute DSP</digest>
+    </method>
+    <method name="/dsp/mute/ramptime">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set ramp time (in msec) for mute/unmute.</description>
+      <digest>mute ramp time</digest>
+    </method>
+    <method name="/dsp/bypass">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>bypass the DSP rendering. CPU resources are not used when the DSP is bypassed.  A smooth ramp of is applied (see /dsp/bypass/ramptime).</description>
+      <digest>bypass DSP</digest>
+    </method>
+    <method name="/dsp/bypass">
+      <arglist>
+        <arg type="boolean][number"/>
+      </arglist>
+      <description>mute the DSP rendering. CPU resources are not used when the DSP is muted.  A smooth ramp is applied; the second argument specifies the length (in msec) of the ramp.</description>
+      <digest>bypass DSP</digest>
+    </method>
+    <method name="/dsp/bypass/ramptime">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set ramp time (in msec) for bypass.</description>
+      <digest>bypass ramp time</digest>
+    </method>
+    <method name="/dsp/automute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable/disable the auto-mute (i.e. disable audio computation when incoming signals are 0).</description>
+      <digest>enable auto-mute</digest>
+    </method>
+    <method name="/dsp/automute/attack">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the duration (in seconds) before auto-muting.</description>
+      <digest>auto-mute attack time</digest>
+    </method>
+    <method name="/dsp/post">
+      <description>post various information to the Max console (audio should be turned on).</description>
+      <digest>post information</digest>
+    </method>
+    <method name="/dsp/clear">
+      <description>clear the internal state of the audio processor. In general, you don't have to send this message directly. This is done automatically whenever the Max audio settings change. Yet, you might want to use this message to clear the object's sample-memory in case of a blow-up.</description>
+      <digest>clear the internal state</digest>
+    </method>
+    <method name="/dump/dsp/latency">
+      <description>send the processor latency (in samples) through the dump outlet.</description>
+      <digest>dump latency</digest>
+    </method>
+    <method name="/verbose">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set verbosity i.e. change the way information is posted to the Max console.<br/>Possible values: silent, minimal, normal, detailed.</description>
+      <digest>set verbosity</digest>
+    </method>
+    <method name="/post/version">
+      <description>print the version in the Max Console.</description>
+      <digest>post version</digest>
+    </method>
+    <method name="/post/version">
+      <arglist>
+        <arg type="details"/>
+      </arglist>
+      <description>print detailed version in the Max Console.</description>
+      <digest>post version</digest>
+    </method>
+    <method name="/post/doc">
+      <description>print the help documentation in the Max Console.</description>
+      <digest>post documentation</digest>
+    </method>
+    <method name="/post/state">
+      <description>print the OSC status in the Max Console.</description>
+      <digest>post current state</digest>
+    </method>
+    <method name="/preset/load">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>load a preset from file. Supported file extensions : '.txt' for human-readable OSC text file, '.osc' for binary encoded OSC file, '.coll' for human-readable Max coll file (compatible with the <o>coll</o> object). '.txt' is the default file format. You can specify the fullpath of the file, or only its filename if the file is inside Max search path.</description>
+      <digest>load preset</digest>
+    </method>
+    <method name="/preset/load">
+      <description>open a user dialog to load a preset file. Supported file extensions : '.txt' for human-readable OSC text file, '.osc' for binary encoded OSC file, '.coll' for human-readable Max coll file (compatible with the <o>coll</o> object). '.txt' is the default file format.</description>
+      <digest>load preset</digest>
+    </method>
+    <method name="/preset/export">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>export a preset to file. Supported file extensions : '.txt' for human-readable OSC text file, '.osc' for binary encoded OSC file, '.coll' for human-readable Max coll file (compatible with the <o>coll</o> object). '.txt' is the default file format. If the file extension is not provided, '.txt' will be used by default.  If the destination folder is not provided, the file will be saved in your home folder (/Users/yourlogin).</description>
+      <digest>export preset</digest>
+    </method>
+    <method name="/preset/export">
+      <description>open a user dialog to export a preset to file. Supported file extensions : '.txt' for human-readable OSC text file, '.osc' for binary encoded OSC file, '.coll' for human-readable Max coll file (compatible with the <o>coll</o> object). '.txt' is the default file format.</description>
+      <digest>export preset</digest>
+    </method>
+    <method name="/status">
+      <description>open the status window and bring it to front.</description>
+      <digest>open status window</digest>
+    </method>
+    <method name="/status/open">
+      <description>open the status window and bring it to front.</description>
+      <digest>open status window</digest>
+    </method>
+    <method name="/status/close">
+      <description>close the status window.</description>
+      <digest>close status window</digest>
+    </method>
+    <method name="/status/openorclose">
+      <description>open the status window if it was closed; close it if it was opened.</description>
+      <digest>open status window</digest>
+    </method>
+    <method name="/status/font/size">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the font size of the status window.</description>
+      <digest>font size for status window</digest>
+    </method>
+    <method name="/status/floating">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>make the status window 'floating' (i.e. always on top of other windows).</description>
+      <digest>statuswindow floating</digest>
+    </method>
+    <method name="/help">
+      <description>open the help window and bring it to front.</description>
+      <digest>open help window</digest>
+    </method>
+    <method name="/help/open">
+      <description>open the help window and bring it to front.</description>
+      <digest>open help window</digest>
+    </method>
+    <method name="/help/close">
+      <description>close the help window.</description>
+      <digest>close help window</digest>
+    </method>
+    <method name="/help/openorclose">
+      <description>open the help window if it was closed; close it if it was opened.</description>
+      <digest>open help window</digest>
+    </method>
+    <method name="/help/font/size">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the font size of the help window.</description>
+      <digest>font size for help window</digest>
+    </method>
+    <method name="/help/floating">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>make the help window 'floating' (i.e. always on top of other windows).</description>
+      <digest>helpwindow floating</digest>
+    </method>
+    <method name="/snapshot">
+      <description>open the snapshot window and bring it to front.</description>
+      <digest>open snapshot window</digest>
+    </method>
+    <method name="/snapshot/open">
+      <description>open the snapshot window and bring it to front.</description>
+      <digest>open snapshot window</digest>
+    </method>
+    <method name="/snapshot/close">
+      <description>close the snapshot window.</description>
+      <digest>close snapshot window</digest>
+    </method>
+    <method name="/snapshot/openorclose">
+      <description>open the snapshot window if it was closed; close it if it was opened.</description>
+      <digest>open snapshot window</digest>
+    </method>
+    <method name="/snapshot/font/size">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the font size of the snapshot window.</description>
+      <digest>font size for snapshot window</digest>
+    </method>
+    <method name="/snapshot/floating">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>make the snapshot window 'floating' (i.e. always on top of other windows).</description>
+      <digest>snapshotwindow floating</digest>
+    </method>
+    <method name="/status/copytoclipboard">
+      <description>copy the status to (the OS) clipboard.</description>
+      <digest>copy status to clipboard</digest>
+    </method>
+    <method name="/status/copytoclipboard">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>copy the status to (the OS) clipboard, and specify the end-of-line character (e.g. ',').</description>
+      <digest>copy status to clipboard</digest>
+    </method>
+    <method name="/dump">
+      <description>dump the complete state of the object over the rightmost outlet (a.k.a. dump outlet).</description>
+      <digest>dump state</digest>
+    </method>
+    <method name="/dump">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>dump a subset of the state of the object over the rightmost outlet. See spat5.tuto-dump-1.maxpat for usage examples.</description>
+      <digest>dump state</digest>
+    </method>
+    <method name="/snapshot/deleteall">
+      <description>delete all the snapshots currently in memory.</description>
+      <digest>clear snapshots</digest>
+    </method>
+    <method name="/snapshot/add">
+      <description>create a new snapshot with the current state.</description>
+      <digest>add a new snapshot</digest>
+    </method>
+    <method name="/snapshot/add">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>create a new snapshot with the current state, and set its name.</description>
+      <digest>add a new snapshot</digest>
+    </method>
+    <method name="/snapshot/[index]/store">
+      <description>store the current state in the i-th snapshot (in memory).</description>
+      <digest>store snapshot</digest>
+    </method>
+    <method name="/snapshot/[index]/recall">
+      <description>recall the current state from the i-th snapshot.</description>
+      <digest>recall snapshot</digest>
+    </method>
+    <method name="/snapshot/[index]/jump">
+      <description>immediately recall the current state from the i-th snapshot (ignoring recall time).</description>
+      <digest>immediately recall snapshot</digest>
+    </method>
+    <method name="/snapshot/[index]/name">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set the name of the i-th snapshot.</description>
+      <digest>set snapshot name</digest>
+    </method>
+    <method name="/snapshot/interpolate">
+      <arglist>
+        <arg type="int][int][number"/>
+      </arglist>
+      <description>interpolate between the i-th and j-th snapshots.</description>
+      <digest>interpolate between two snapshots</digest>
+    </method>
+    <method name="/snapshot/interpolate">
+      <arglist>
+        <arg type="string][string][number"/>
+      </arglist>
+      <description>interpolate between two snapshots, given their names.</description>
+      <digest>interpolate between two snapshots</digest>
+    </method>
+    <method name="/snapshot/[index]/delete">
+      <description>delete the i-th snapshot.</description>
+      <digest>delete snapshot</digest>
+    </method>
+    <method name="/snapshot/[index]/copytoclipboard">
+      <description>copy the i-th snapshot to (the OS) clipboard.</description>
+      <digest>copy snapshot to clipboard</digest>
+    </method>
+    <method name="/snapshot/[index]/copytoclipboard">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>copy the i-th snapshot to (the OS) clipboard, and specify the end-of-line character (e.g. ',').</description>
+      <digest>copy snapshot to clipboard</digest>
+    </method>
+    <method name="/snapshot/[index]/export">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>export the i-th snapshot to file.</description>
+      <digest>export snapshot</digest>
+    </method>
+    <method name="/snapshot/[index]/export/content">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>export the content of the i-th snapshot to file.</description>
+      <digest>export snapshot content</digest>
+    </method>
+    <method name="/snapshot/export">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>export all snapshots to file.</description>
+      <digest>export snapshots</digest>
+    </method>
+    <method name="/snapshot/import">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>import all snapshots from file.</description>
+      <digest>export snapshots</digest>
+    </method>
+    <method name="/snapshot/recall/next">
+      <description>recall the next snapshot.</description>
+      <digest>recall next snapshot</digest>
+    </method>
+    <method name="/snapshot/recall/previous">
+      <description>recall the previous snapshot.</description>
+      <digest>recall previous snapshot</digest>
+    </method>
+    <method name="/snapshot/jump/next">
+      <description>immediately recall the next snapshot (ignoring recall time).</description>
+      <digest>immediately recall next snapshot</digest>
+    </method>
+    <method name="/snapshot/jump/previous">
+      <description>immediately recall the previous snapshot (ignoring recall time).</description>
+      <digest>immediately recall previous snapshot</digest>
+    </method>
+    <method name="/snapshot/recall">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>recall the i-th snapshot.</description>
+      <digest>recall i-th snapshot</digest>
+    </method>
+    <method name="/snapshot/jump">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>immediately recall the i-th snapshot (ignoring recall time).</description>
+      <digest>immediately recall i-th snapshot</digest>
+    </method>
+    <method name="/snapshot/recall/bytitle">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>recall a snapshot by title/name.</description>
+      <digest>recall snapshot by title</digest>
+    </method>
+    <method name="/snapshot/jump/bytitle">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>immediately recall a snapshot by title/name (ignoring recall time).</description>
+      <digest>immediately recall snapshot by title</digest>
+    </method>
+    <method name="/snapshot/lock">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>lock edition of the snapshots.</description>
+      <digest>lock snapshots</digest>
+    </method>
+    <method name="/snapshot/renumber">
+      <description>renumber the snapshots (their OSC pattern) based on their position.</description>
+      <digest>renumber snapshots</digest>
+    </method>
+    <method name="/snapshot/sort">
+      <description>sort the snapshots alphabetically (based on their titles).</description>
+      <digest>sort snapshots alphabetically</digest>
+    </method>
+  </methodlist>
+  <seealsolist>
+    <seealso name="spat5.compressor~"/>
+    <seealso name="spat5.noisegate~"/>
+    <seealso name="spat5.clip~"/>
+    <seealso name="spat5.softclipping~"/>
+    <seealso name="spat5.delta~"/>
+    <seealso name="spat5.deltaclip~"/>
+    <seealso name="spat5.tanh~"/>
+    <seealso name="spat5.fixnan~"/>
+    <seealso name="spat5.rms~"/>
+    <seealso name="spat5.ebur128~"/>
+    <seealso name="spat5.tanh~"/>
+    <seealso name="spat5.multi.connect"/>
+    <seealso name="spat5.overview"/>
+  </seealsolist>
+</c74object>

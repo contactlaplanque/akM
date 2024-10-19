@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- created by libisp v5.0.0 - 13/12/2017 - 17h55m20s -->
+
+<?xml-stylesheet href="./_c74_ref.xsl" type="text/xsl"?>
+
+
+<c74object name="spat5.osc.display" module="spat5">
+  <digest>Display OSC messages or bundles</digest>
+  <description><o>spat5.osc.display</o> displays the content of OSC messages or bundles.<br/><br/></description>
+  <methodlist>
+    <method name="clear">
+      <description>clear the internal buffer.</description>
+    </method>    
+    <method name="bang">
+      <description>output the current content.</description>
+    </method>    
+    <method name="int">
+      <description>query the i-th element of a bundle.</description>
+    </method>    
+    <method name="open">
+      <description>open the window.</description>
+    </method>    
+    <method name="wclose">
+      <description>close the window.</description>
+    </method>    
+  </methodlist>
+  <seealsolist>
+    <seealso name="spat5.osc.view"/>
+    <seealso name="spat5.osc.fromdict"/>
+    <seealso name="dict"/>
+    <seealso name="dict.view"/>
+    <seealso name="spat5.osc.collect"/>
+    <seealso name="spat5.osc.var"/>
+    <seealso name="spat5.osc.split"/>
+    <seealso name="spat5.osc.route"/>
+    <seealso name="spat5.osc.routepass"/>
+    <seealso name="spat5.osc.prepend"/>
+    <seealso name="spat5.osc.append"/>
+    <seealso name="spat5.osc.unslashify"/>
+    <seealso name="spat5.osc.flip"/>
+    <seealso name="route"/>
+    <seealso name="routepass"/>
+  </seealsolist>
+</c74object>
