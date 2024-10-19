@@ -1,0 +1,20 @@
+site_name: akM - Documentation
+site_url: https://sitename.example
+theme:
+  name: material
+  language: fr
+  font:
+    text: IBM Plex Sans
+    code: IBM Plex Mono
+  icon:
+    logo: fontawesome/solid/screwdriver-wrench
+  palette: 
+    scheme: default
+    primary: black
+    accent: amber
+
+markdown_extensions:
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  
