@@ -2,8 +2,8 @@
 
 Rapide to-do d'ici à Samedi 14h
 
-- [ ] Compléter la description du dépôt git avec les métadonnées adaptées
-- [ ] Inititialiser la doc en ligne avec MkDocs et GitHub pages
+- [x] Compléter la description du dépôt git avec les métadonnées adaptées
+- [x] Inititialiser la doc en ligne avec MkDocs et GitHub pages
 - [ ] Expliquer les deux phases de la docs
 - [ ] Expliquer l'architecture système du software
 - [ ] Lister toutes les features actuellement intégrées
