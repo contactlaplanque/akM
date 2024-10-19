@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- created by libisp v5.0.2 - 18/11/2019 - 13h21m41s -->
+
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink" width="180" height="180"
+     viewBox="0 0 180 180" overflow="visible" enable-background="new 0 0 180 180"
+     xml:space="preserve">
+  <g fill="none" stroke="#555555" stroke-width="5">
+    <ellipse cx="90" cy="90" rx="26" ry="80"/>
+    <ellipse cx="90" cy="90" rx="80" ry="26" transform="rotate(30,90,90)"/>
+    <ellipse cx="90" cy="90" rx="80" ry="26" transform="rotate(-30,90,90)"/>
+  </g>
+</svg>

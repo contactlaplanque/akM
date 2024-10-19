@@ -1,0 +1,2 @@
+max definecommand & patcher inserttextobj spat5.;
+max definecommandinstructions patcher & "spat5 objects";

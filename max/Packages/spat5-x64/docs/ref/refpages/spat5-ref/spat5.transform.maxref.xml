@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- created by libisp v5.0.2 - 18-mar-2024 19:03:59 -->
+
+<?xml-stylesheet href="./_c74_ref.xsl" type="text/xsl"?>
+
+
+<c74object name="spat5.transform" module="spat5">
+  <digest>Geometrical transformations</digest>
+  <description><o>spat5.transform</o> applies geometrical transformations (translation, rotation, scaling, etc.) to source, speaker or listener coordinate messages.<br/>The mathematical operations applied here are dependent on the order of transformations. This order can be specified with the <m>/sequence</m> message.<br/><o>spat5.scale</o>, <o>spat5.rotate</o> and <o>spat5.translate</o> are stateless objects i.e. they only react when incoming position messages are received.<br/>On the other hand, <o>spat5.transform</o> is statefull: it keeps track of the state of the spatial scene, and will deliver the transformed scene whenever the parameter (yaw, pitch, roll, offset, etc.) is changed.<br/><br/></description>
+  <inletlist>
+  </inletlist>
+  <outletlist>
+  </outletlist>
+  <objarglist>
+  </objarglist>
+  <attributelist>
+    <attribute name="initwith" type="string" set="1" get="1" size="1">
+      <description>The <m> initwith </m> attribute can be used to specify the initial state of the object. You should provide a list of comma-separated OSC commands. The list of messages should be quoted (with double quote character &quot;). This is similar to sending the list of commands via <o>loadbang</o> or <o>loadmess</o>.<br/> Have a look at the <i>spat5.tuto-osc-3.maxpat</i> example for further details.<br/> Note that the <m> initwith </m> attribute cannot be set via message, <o>attrui</o> or inspector; it must be typed directly within the object box.</description>
+      <digest>initial state of the object</digest>
+    </attribute>
+  </attributelist>
+  <methodlist>
+    <method name="/sequence">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set the sequence of operations.</description>
+      <digest>set the sequence of operations</digest>
+    </method>
+    <method name="/offset/x">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set translation offset along the x-axis (in meters).</description>
+      <digest>set translation offset along the x-axis (in meters)</digest>
+    </method>
+    <method name="/offset/y">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set translation offset along the x-axis (in meters).</description>
+      <digest>set translation offset along the x-axis (in meters)</digest>
+    </method>
+    <method name="/offset/z">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set translation offset along the x-axis (in meters).</description>
+      <digest>set translation offset along the x-axis (in meters)</digest>
+    </method>
+    <method name="/offset/xy">
+      <arglist>
+        <arg type="number][number"/>
+      </arglist>
+      <description>set translation offset along the x and y axis (in meters).</description>
+      <digest>set translation offset along the x and y axis (in meters)</digest>
+    </method>
+    <method name="/offset/xyz">
+      <arglist>
+        <arg type="number][number][number"/>
+      </arglist>
+      <description>set translation offset along the x, y, and z axis (in meters).</description>
+      <digest>set translation offset along the x, y, and z axis (in meters)</digest>
+    </method>
+    <method name="/scaling/x">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set scaling factor along the y-axis.</description>
+      <digest>set scaling factor along the y-axis</digest>
+    </method>
+    <method name="/scaling/y">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set scaling factor along the y-axis.</description>
+      <digest>set scaling factor along the y-axis</digest>
+    </method>
+    <method name="/scaling/z">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set scaling factor along the z-axis.</description>
+      <digest>set scaling factor along the z-axis</digest>
+    </method>
+    <method name="/scaling/azim">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set azimuthal scaling factor.</description>
+      <digest>set azimuthal scaling factor</digest>
+    </method>
+    <method name="/scaling/elev">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set elevation scaling factor.</description>
+      <digest>set elevation scaling factor</digest>
+    </method>
+    <method name="/scaling/dist">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set radial scaling factor.</description>
+      <digest>set radial scaling factor</digest>
+    </method>
+    <method name="/scaling/xy">
+      <arglist>
+        <arg type="number][number"/>
+      </arglist>
+      <description>set scaling factor along the x and y axis.</description>
+      <digest>set scaling factor along the x and y axis</digest>
+    </method>
+    <method name="/scaling/xyz">
+      <arglist>
+        <arg type="number][number][number"/>
+      </arglist>
+      <description>set scaling factor along the x, y, and z axis.</description>
+      <digest>set scaling factor along the x, y, and z axis</digest>
+    </method>
+    <method name="/scaling/aed">
+      <arglist>
+        <arg type="number][number][number"/>
+      </arglist>
+      <description>set scaling factor along the azimuth, elevation, and distance axis.</description>
+      <digest>set scaling factor along the azimuth, elevation, and distance axis</digest>
+    </method>
+    <method name="/yaw">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set yaw rotation angle (in deg), using Euler zyx convention.</description>
+      <digest>set yaw rotation angle (in deg), using Euler zyx convention</digest>
+    </method>
+    <method name="/pitch">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set pitch rotation angle (in deg), using Euler zyx convention.</description>
+      <digest>set pitch rotation angle (in deg), using Euler zyx convention</digest>
+    </method>
+    <method name="/roll">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set roll rotation angle (in deg), using Euler zyx convention.</description>
+      <digest>set roll rotation angle (in deg), using Euler zyx convention</digest>
+    </method>
+    <method name="/ypr">
+      <arglist>
+        <arg type="number][number][number"/>
+      </arglist>
+      <description>set yaw, pitch and roll rotation angles (in deg), using Euler zyx convention.</description>
+      <digest>set yaw, pitch and roll rotation angles (in deg), using Euler zyx convention</digest>
+    </method>
+    <method name="/orientation">
+      <arglist>
+        <arg type="number][number][number][number"/>
+      </arglist>
+      <description>set rotation angles from quaternion (xyzw).</description>
+      <digest>set rotation angles from quaternion (xyzw)</digest>
+    </method>
+    <method name="/reset">
+      <description>reset to default settings.</description>
+      <digest>reset to default settings</digest>
+    </method>
+    <method name="/clear">
+      <description>clear the state of the object.</description>
+      <digest>clear the state of the object</digest>
+    </method>
+  </methodlist>
+  <seealsolist>
+    <seealso name="spat5.scale"/>
+    <seealso name="spat5.rotate"/>
+    <seealso name="spat5.translate"/>
+    <seealso name="spat5.normalize"/>
+    <seealso name="spat5.mirror"/>
+    <seealso name="spat5.jitter"/>
+    <seealso name="spat5.viewer"/>
+    <seealso name="spat5.converter"/>
+    <seealso name="spat5.converter~"/>
+    <seealso name="spat5.abs2rel"/>
+    <seealso name="spat5.distance"/>
+    <seealso name="spat5.trajectories"/>
+    <seealso name="spat5.boids"/>
+    <seealso name="spat5.overview"/>
+  </seealsolist>
+</c74object>

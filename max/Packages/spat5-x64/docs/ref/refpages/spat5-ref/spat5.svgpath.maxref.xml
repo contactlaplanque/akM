@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- created by libisp v5.0.2 - 18-mar-2024 19:03:59 -->
+
+<?xml-stylesheet href="./_c74_ref.xsl" type="text/xsl"?>
+
+
+<c74object name="spat5.svgpath" module="spat5">
+  <digest>Convert SVG image file to trajectory</digest>
+  <description><o>spat5.svgpath</o> converts an SVG image file (containing the 'path' tag) to trajectory.<br/><br/></description>
+  <inletlist>
+  </inletlist>
+  <outletlist>
+  </outletlist>
+  <objarglist>
+  </objarglist>
+  <attributelist>
+    <attribute name="initwith" type="string" set="1" get="1" size="1">
+      <description>The <m> initwith </m> attribute can be used to specify the initial state of the object. You should provide a list of comma-separated OSC commands. The list of messages should be quoted (with double quote character &quot;). This is similar to sending the list of commands via <o>loadbang</o> or <o>loadmess</o>.<br/> Have a look at the <i>spat5.tuto-osc-3.maxpat</i> example for further details.<br/> Note that the <m> initwith </m> attribute cannot be set via message, <o>attrui</o> or inspector; it must be typed directly within the object box.</description>
+      <digest>initial state of the object</digest>
+    </attribute>
+  </attributelist>
+  <methodlist>
+    <method name="/load">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>load an SVG file from disk.</description>
+      <digest>load SVG</digest>
+    </method>
+    <method name="/next">
+      <description>increment time position.</description>
+      <digest>increment time</digest>
+    </method>
+    <method name="/next">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>increment time position with a given offset.</description>
+      <digest>increment time</digest>
+    </method>
+    <method name="/time">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>change time position.</description>
+      <digest>change time</digest>
+    </method>
+    <method name="/adjust">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>automatically center and scale the image (applied when loading the SVG).</description>
+      <digest>adjust</digest>
+    </method>
+    <method name="/path/[index]/export/coll">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>export the i-th path to coll file.</description>
+      <digest>export as coll file</digest>
+    </method>
+  </methodlist>
+  <seealsolist>
+    <seealso name="spat5.viewer"/>
+    <seealso name="spat5.trajectories"/>
+    <seealso name="spat5.transform"/>
+    <seealso name="spat5.scale"/>
+    <seealso name="spat5.translate"/>
+    <seealso name="spat5.rotate"/>
+    <seealso name="spat5.overview"/>
+  </seealsolist>
+</c74object>

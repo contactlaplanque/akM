@@ -1,0 +1,2271 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- created by libisp v5.0.2 - 18-mar-2024 19:03:59 -->
+
+<?xml-stylesheet href="./_c74_ref.xsl" type="text/xsl"?>
+
+
+<c74object name="spat5.panoramix" module="spat5">
+  <digest>3D mixing and post-production workstation</digest>
+  <description><o>spat5.panoramix</o> is a control interface for <o><o>spat5.panoramix</o>~</o>.  Designed as a virtual console, it provides a comprehensive environment for combining channel-, scene-, and object-based audio.  The incoming streams are mixed in a flexible bus architecture which tightly couples sound spatialization with reverberation effects.  The application supports a broad range of rendering techniques (VBAP, HOA, binaural, etc.) and it is remotely controllable via the Open Sound Control (OSC) protocol.<br/><br/>Reference(s) : <br/>T. Carpentier and C. Cornuau. panoramix: station de mixage et post-production 3D. In Proc. of Journees d'Informatique Musicale (JIM), pages 162 -- 169, Albi, France, April 2016. <br/><br/> T. Carpentier. Panoramix: 3D mixing and post-production workstation. In Proc. of the 42nd International Computer Music Conference (ICMC), pages 122 -- 127, Utrecht, Netherlands, Sept 2016. <br/><br/> T. Carpentier. A versatile workstation for the diffusion, mixing, and post-production of spatial audio. In Proc. of the Linux Audio Conference (LAC), Saint-Etienne, France, May 2017. <br/><br/> T. Carpentier. Spat: a comprehensive toolbox for sound spatialization in Max. In Ideas Sonicas, Vol 13(24), pages 12 -- 23, June 2021.<br/><br/></description>
+  <inletlist>
+  </inletlist>
+  <outletlist>
+  </outletlist>
+  <objarglist>
+  </objarglist>
+  <attributelist>
+    <attribute name="embed" type="boolean" set="1" get="1" size="1">
+      <description>The <m> embed </m> attribute allows to store the state of the object within the patcher. The complete state of the object is stored whenever the patcher is saved to disk. Upon loading the patcher or copying the object box, the state is restored.</description>
+      <digest>store state within the patcher</digest>
+    </attribute>
+    <attribute name="initwith" type="string" set="1" get="1" size="1">
+      <description>The <m> initwith </m> attribute can be used to specify the initial state of the object. You should provide a list of comma-separated OSC commands. The list of messages should be quoted (with double quote character &quot;). This is similar to sending the list of commands via <o>loadbang</o> or <o>loadmess</o>.<br/> Have a look at the <i>spat5.tuto-osc-3.maxpat</i> example for further details.<br/> Note that the <m> initwith </m> attribute cannot be set via message, <o>attrui</o> or inspector; it must be typed directly within the object box.</description>
+      <digest>initial state of the object</digest>
+    </attribute>
+    <attribute name="inlets" type="int" set="1" get="1" size="1">
+      <description>The <m> inlets </m> attribute represents the number of input channels of the object. This  attribute must be set in the object box, when the object is instantiated; it can not be later set with a message (or <o>attrui</o> or inspector), since  the number of signal inlets or outlets can not be changed dynamically.</description>
+      <digest>number of input channels</digest>
+    </attribute>
+    <attribute name="internals" type="int" set="1" get="1" size="1">
+      <description>The <m> internals </m> attribute represents the number of internal channels of the artificial reverberator. <br/> Spat uses a Feedback Delay Network (FDN) reverberator engine. <br/> Basically this can be seen as an array of delay lines which are fed back into a mixing matrix. The <m> internals </m> attributes represents the size of the feedback matrix. <br/> Choosing the size of this matrix is a trade-off between CPU consumption and the echo density. <br/> Increasing the size of the matrix will generate a densier reverb tail at the expense of a higher CPU load. <br/> A typical value of 8 is a good compromise between CPU load and natural sounding reverb. A value of 16 may be useful especially when dealing with a very long reverberation time or with very percussive sound (where a smaller FDN might sometimes sounds too poor). <br/> It is recommended not to use a value below 6. </description>
+      <digest>number of internal (reverberation) channels</digest>
+    </attribute>
+    <attribute name="outlets" type="int" set="1" get="1" size="1">
+      <description>The <m> outlets </m> attribute represents the number of output channels of the object. This  attribute must be set in the object box, when the object is instantiated; it can not be later set with a message (or <o>attrui</o> or inspector), since  the number of signal inlets or outlets can not be changed dynamically.</description>
+      <digest>number of output channels</digest>
+    </attribute>
+    <attribute name="parameter_enable" type="boolean" set="1" get="1" size="1">
+      <description>The <m> parameter_enable </m> attribute is used for compatibility with Max snapshots. It can also be used to store the initial state of the object (see 'Initial Enable' in the Max inspector).</description>
+      <digest>compatibility with snapshots</digest>
+    </attribute>
+  </attributelist>
+  <methodlist>
+    <method name="/post/version">
+      <description>print the version in the Max Console.</description>
+      <digest>post version</digest>
+    </method>
+    <method name="/post/version">
+      <arglist>
+        <arg type="details"/>
+      </arglist>
+      <description>print detailed version in the Max Console.</description>
+      <digest>post version</digest>
+    </method>
+    <method name="/post/doc">
+      <description>print the help documentation in the Max Console.</description>
+      <digest>post documentation</digest>
+    </method>
+    <method name="/post/state">
+      <description>print the OSC status in the Max Console.</description>
+      <digest>post current state</digest>
+    </method>
+    <method name="/preset/load">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>load a preset from file. Supported file extensions : '.txt' for human-readable OSC text file, '.osc' for binary encoded OSC file, '.coll' for human-readable Max coll file (compatible with the <o>coll</o> object). '.txt' is the default file format. You can specify the fullpath of the file, or only its filename if the file is inside Max search path.</description>
+      <digest>load preset</digest>
+    </method>
+    <method name="/preset/load">
+      <description>open a user dialog to load a preset file. Supported file extensions : '.txt' for human-readable OSC text file, '.osc' for binary encoded OSC file, '.coll' for human-readable Max coll file (compatible with the <o>coll</o> object). '.txt' is the default file format.</description>
+      <digest>load preset</digest>
+    </method>
+    <method name="/preset/export">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>export a preset to file. Supported file extensions : '.txt' for human-readable OSC text file, '.osc' for binary encoded OSC file, '.coll' for human-readable Max coll file (compatible with the <o>coll</o> object). '.txt' is the default file format. If the file extension is not provided, '.txt' will be used by default.  If the destination folder is not provided, the file will be saved in your home folder (/Users/yourlogin).</description>
+      <digest>export preset</digest>
+    </method>
+    <method name="/preset/export">
+      <description>open a user dialog to export a preset to file. Supported file extensions : '.txt' for human-readable OSC text file, '.osc' for binary encoded OSC file, '.coll' for human-readable Max coll file (compatible with the <o>coll</o> object). '.txt' is the default file format.</description>
+      <digest>export preset</digest>
+    </method>
+    <method name="/status">
+      <description>open the status window and bring it to front.</description>
+      <digest>open status window</digest>
+    </method>
+    <method name="/status/open">
+      <description>open the status window and bring it to front.</description>
+      <digest>open status window</digest>
+    </method>
+    <method name="/status/close">
+      <description>close the status window.</description>
+      <digest>close status window</digest>
+    </method>
+    <method name="/status/openorclose">
+      <description>open the status window if it was closed; close it if it was opened.</description>
+      <digest>open status window</digest>
+    </method>
+    <method name="/status/font/size">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the font size of the status window.</description>
+      <digest>font size for status window</digest>
+    </method>
+    <method name="/status/floating">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>make the status window 'floating' (i.e. always on top of other windows).</description>
+      <digest>statuswindow floating</digest>
+    </method>
+    <method name="/help">
+      <description>open the help window and bring it to front.</description>
+      <digest>open help window</digest>
+    </method>
+    <method name="/help/open">
+      <description>open the help window and bring it to front.</description>
+      <digest>open help window</digest>
+    </method>
+    <method name="/help/close">
+      <description>close the help window.</description>
+      <digest>close help window</digest>
+    </method>
+    <method name="/help/openorclose">
+      <description>open the help window if it was closed; close it if it was opened.</description>
+      <digest>open help window</digest>
+    </method>
+    <method name="/help/font/size">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the font size of the help window.</description>
+      <digest>font size for help window</digest>
+    </method>
+    <method name="/help/floating">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>make the help window 'floating' (i.e. always on top of other windows).</description>
+      <digest>helpwindow floating</digest>
+    </method>
+    <method name="/snapshot">
+      <description>open the snapshot window and bring it to front.</description>
+      <digest>open snapshot window</digest>
+    </method>
+    <method name="/snapshot/open">
+      <description>open the snapshot window and bring it to front.</description>
+      <digest>open snapshot window</digest>
+    </method>
+    <method name="/snapshot/close">
+      <description>close the snapshot window.</description>
+      <digest>close snapshot window</digest>
+    </method>
+    <method name="/snapshot/openorclose">
+      <description>open the snapshot window if it was closed; close it if it was opened.</description>
+      <digest>open snapshot window</digest>
+    </method>
+    <method name="/snapshot/font/size">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the font size of the snapshot window.</description>
+      <digest>font size for snapshot window</digest>
+    </method>
+    <method name="/snapshot/floating">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>make the snapshot window 'floating' (i.e. always on top of other windows).</description>
+      <digest>snapshotwindow floating</digest>
+    </method>
+    <method name="/status/copytoclipboard">
+      <description>copy the status to (the OS) clipboard.</description>
+      <digest>copy status to clipboard</digest>
+    </method>
+    <method name="/status/copytoclipboard">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>copy the status to (the OS) clipboard, and specify the end-of-line character (e.g. ',').</description>
+      <digest>copy status to clipboard</digest>
+    </method>
+    <method name="/dump">
+      <description>dump the complete state of the object over the rightmost outlet (a.k.a. dump outlet).</description>
+      <digest>dump state</digest>
+    </method>
+    <method name="/dump">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>dump a subset of the state of the object over the rightmost outlet. See spat5.tuto-dump-1.maxpat for usage examples.</description>
+      <digest>dump state</digest>
+    </method>
+    <method name="/snapshot/deleteall">
+      <description>delete all the snapshots currently in memory.</description>
+      <digest>clear snapshots</digest>
+    </method>
+    <method name="/snapshot/add">
+      <description>create a new snapshot with the current state.</description>
+      <digest>add a new snapshot</digest>
+    </method>
+    <method name="/snapshot/add">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>create a new snapshot with the current state, and set its name.</description>
+      <digest>add a new snapshot</digest>
+    </method>
+    <method name="/snapshot/[index]/store">
+      <description>store the current state in the i-th snapshot (in memory).</description>
+      <digest>store snapshot</digest>
+    </method>
+    <method name="/snapshot/[index]/recall">
+      <description>recall the current state from the i-th snapshot.</description>
+      <digest>recall snapshot</digest>
+    </method>
+    <method name="/snapshot/[index]/jump">
+      <description>immediately recall the current state from the i-th snapshot (ignoring recall time).</description>
+      <digest>immediately recall snapshot</digest>
+    </method>
+    <method name="/snapshot/[index]/name">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set the name of the i-th snapshot.</description>
+      <digest>set snapshot name</digest>
+    </method>
+    <method name="/snapshot/interpolate">
+      <arglist>
+        <arg type="int][int][number"/>
+      </arglist>
+      <description>interpolate between the i-th and j-th snapshots.</description>
+      <digest>interpolate between two snapshots</digest>
+    </method>
+    <method name="/snapshot/interpolate">
+      <arglist>
+        <arg type="string][string][number"/>
+      </arglist>
+      <description>interpolate between two snapshots, given their names.</description>
+      <digest>interpolate between two snapshots</digest>
+    </method>
+    <method name="/snapshot/[index]/delete">
+      <description>delete the i-th snapshot.</description>
+      <digest>delete snapshot</digest>
+    </method>
+    <method name="/snapshot/[index]/copytoclipboard">
+      <description>copy the i-th snapshot to (the OS) clipboard.</description>
+      <digest>copy snapshot to clipboard</digest>
+    </method>
+    <method name="/snapshot/[index]/copytoclipboard">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>copy the i-th snapshot to (the OS) clipboard, and specify the end-of-line character (e.g. ',').</description>
+      <digest>copy snapshot to clipboard</digest>
+    </method>
+    <method name="/snapshot/[index]/export">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>export the i-th snapshot to file.</description>
+      <digest>export snapshot</digest>
+    </method>
+    <method name="/snapshot/[index]/export/content">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>export the content of the i-th snapshot to file.</description>
+      <digest>export snapshot content</digest>
+    </method>
+    <method name="/snapshot/export">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>export all snapshots to file.</description>
+      <digest>export snapshots</digest>
+    </method>
+    <method name="/snapshot/import">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>import all snapshots from file.</description>
+      <digest>export snapshots</digest>
+    </method>
+    <method name="/snapshot/recall/next">
+      <description>recall the next snapshot.</description>
+      <digest>recall next snapshot</digest>
+    </method>
+    <method name="/snapshot/recall/previous">
+      <description>recall the previous snapshot.</description>
+      <digest>recall previous snapshot</digest>
+    </method>
+    <method name="/snapshot/jump/next">
+      <description>immediately recall the next snapshot (ignoring recall time).</description>
+      <digest>immediately recall next snapshot</digest>
+    </method>
+    <method name="/snapshot/jump/previous">
+      <description>immediately recall the previous snapshot (ignoring recall time).</description>
+      <digest>immediately recall previous snapshot</digest>
+    </method>
+    <method name="/snapshot/recall">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>recall the i-th snapshot.</description>
+      <digest>recall i-th snapshot</digest>
+    </method>
+    <method name="/snapshot/jump">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>immediately recall the i-th snapshot (ignoring recall time).</description>
+      <digest>immediately recall i-th snapshot</digest>
+    </method>
+    <method name="/snapshot/recall/bytitle">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>recall a snapshot by title/name.</description>
+      <digest>recall snapshot by title</digest>
+    </method>
+    <method name="/snapshot/jump/bytitle">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>immediately recall a snapshot by title/name (ignoring recall time).</description>
+      <digest>immediately recall snapshot by title</digest>
+    </method>
+    <method name="/snapshot/lock">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>lock edition of the snapshots.</description>
+      <digest>lock snapshots</digest>
+    </method>
+    <method name="/snapshot/renumber">
+      <description>renumber the snapshots (their OSC pattern) based on their position.</description>
+      <digest>renumber snapshots</digest>
+    </method>
+    <method name="/snapshot/sort">
+      <description>sort the snapshots alphabetically (based on their titles).</description>
+      <digest>sort snapshots alphabetically</digest>
+    </method>
+    <method name="/master/name">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set the name of the strip.</description>
+      <digest>set the name of the strip</digest>
+    </method>
+    <method name="/master/color">
+      <arglist>
+        <arg type="color"/>
+      </arglist>
+      <description>set the color of the strip.</description>
+      <digest>set the color of the strip</digest>
+    </method>
+    <method name="/master/numinputs">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set the number of input channels of the strip.</description>
+      <digest>set the number of input channels of the strip</digest>
+    </method>
+    <method name="/master/numoutputs">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set the number of output channels of the strip.</description>
+      <digest>set the number of output channels of the strip</digest>
+    </method>
+    <method name="/master/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set the visibility of the strip.</description>
+      <digest>set the visibility of the strip</digest>
+    </method>
+    <method name="/master/lock">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>lock/unlock the strip.</description>
+      <digest>lock/unlock the strip</digest>
+    </method>
+    <method name="/master/trim">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the input trim of the strip (in dB).</description>
+      <digest>set the input trim of the strip (in dB)</digest>
+    </method>
+    <method name="/master/gain">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the output gain of the strip (in dB).</description>
+      <digest>set the output gain of the strip (in dB)</digest>
+    </method>
+    <method name="/master/gain/ramptime">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the ramp time (in msec) for output gain.</description>
+      <digest>set the ramp time (in msec) for output gain</digest>
+    </method>
+    <method name="/master/levels/input/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>show/hide the input vu-meters.</description>
+      <digest>show/hide the input vu-meters</digest>
+    </method>
+    <method name="/master/levels/input/post">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set input vu-meters pre/post fader.</description>
+      <digest>set input vu-meters pre/post fader</digest>
+    </method>
+    <method name="/master/levels/output/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>show/hide the output vu-meters.</description>
+      <digest>show/hide the output vu-meters</digest>
+    </method>
+    <method name="/master/levels/input/post">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set output vu-meters pre/post fader.</description>
+      <digest>set output vu-meters pre/post fader</digest>
+    </method>
+    <method name="/master/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>mute/unmute the strip.</description>
+      <digest>mute/unmute the strip</digest>
+    </method>
+    <method name="/master/annotation">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set annotation of the strip.</description>
+      <digest>set annotation of the strip</digest>
+    </method>
+    <method name="/master/output/mode">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set output mode.</description>
+      <digest>set output mode</digest>
+    </method>
+    <method name="/master/dim">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>dim the master strip (-20 dB).</description>
+      <digest>dim the master strip (-20 dB)</digest>
+    </method>
+    <method name="/master/dynamics/attack">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set attack time (in msec) for compressor/expander.</description>
+      <digest>set attack time (in msec) for compressor/expander</digest>
+    </method>
+    <method name="/master/dynamics/release">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set release time (in msec) for compressor/expander.</description>
+      <digest>set release time (in msec) for compressor/expander</digest>
+    </method>
+    <method name="/master/dynamics/lookahead">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set lookahead time (in msec) for compressor/expander.</description>
+      <digest>set lookahead time (in msec) for compressor/expander</digest>
+    </method>
+    <method name="/master/dynamics/compressor/threshold">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set threshold (in dB) for compressor.</description>
+      <digest>set threshold (in dB) for compressor</digest>
+    </method>
+    <method name="/master/dynamics/compressor/ratio">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set ratio for compressor.</description>
+      <digest>set ratio for compressor</digest>
+    </method>
+    <method name="/master/dynamics/expander/threshold">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set threshold (in dB) for expander.</description>
+      <digest>set threshold (in dB) for expander</digest>
+    </method>
+    <method name="/master/dynamics/expander/ratio">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set ratio for expander.</description>
+      <digest>set ratio for expander</digest>
+    </method>
+    <method name="/master/dynamics/makeup">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set makeup gain (in dB) for compressor/expander.</description>
+      <digest>set makeup gain (in dB) for compressor/expander</digest>
+    </method>
+    <method name="/master/dynamics/link">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>link all channels for compressor/expander.</description>
+      <digest>link all channels for compressor/expander</digest>
+    </method>
+    <method name="/master/dynamics/bypass">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>bypass compressor/expander.</description>
+      <digest>bypass compressor/expander</digest>
+    </method>
+    <method name="/master/equalizer/bypass">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>bypass the equalizer.</description>
+      <digest>bypass the equalizer</digest>
+    </method>
+    <method name="/master/equalizer/gain">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the global gain (in dB) of the equalizer.</description>
+      <digest>set the global gain (in dB) of the equalizer</digest>
+    </method>
+    <method name="/master/equalizer/filter/[index]/freq">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the frequency (in Hz) of the i-th section.</description>
+      <digest>set the frequency (in Hz) of the i-th section</digest>
+    </method>
+    <method name="/master/equalizer/filter/[index]/q">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the resonance of the i-th section.</description>
+      <digest>set the resonance of the i-th section</digest>
+    </method>
+    <method name="/master/equalizer/filter/[index]/gain">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the gain (in dB) of the i-th section.</description>
+      <digest>set the gain (in dB) of the i-th section</digest>
+    </method>
+    <method name="/master/equalizer/filter/[index]/order">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set the filter's order of the i-th section.</description>
+      <digest>set the filter's order of the i-th section</digest>
+    </method>
+    <method name="/master/equalizer/filter/[index]/active">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable/disable the i-th section.</description>
+      <digest>enable/disable the i-th section</digest>
+    </method>
+    <method name="/monitoring/name">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set the name of the strip.</description>
+      <digest>set the name of the strip</digest>
+    </method>
+    <method name="/monitoring/color">
+      <arglist>
+        <arg type="color"/>
+      </arglist>
+      <description>set the color of the strip.</description>
+      <digest>set the color of the strip</digest>
+    </method>
+    <method name="/monitoring/numinputs">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set the number of input channels of the strip.</description>
+      <digest>set the number of input channels of the strip</digest>
+    </method>
+    <method name="/monitoring/numoutputs">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set the number of output channels of the strip.</description>
+      <digest>set the number of output channels of the strip</digest>
+    </method>
+    <method name="/monitoring/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set the visibility of the strip.</description>
+      <digest>set the visibility of the strip</digest>
+    </method>
+    <method name="/monitoring/lock">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>lock/unlock the strip.</description>
+      <digest>lock/unlock the strip</digest>
+    </method>
+    <method name="/monitoring/trim">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the input trim of the strip (in dB).</description>
+      <digest>set the input trim of the strip (in dB)</digest>
+    </method>
+    <method name="/monitoring/gain">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the output gain of the strip (in dB).</description>
+      <digest>set the output gain of the strip (in dB)</digest>
+    </method>
+    <method name="/monitoring/gain/ramptime">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the ramp time (in msec) for output gain.</description>
+      <digest>set the ramp time (in msec) for output gain</digest>
+    </method>
+    <method name="/monitoring/levels/input/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>show/hide the input vu-meters.</description>
+      <digest>show/hide the input vu-meters</digest>
+    </method>
+    <method name="/monitoring/levels/input/post">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set input vu-meters pre/post fader.</description>
+      <digest>set input vu-meters pre/post fader</digest>
+    </method>
+    <method name="/monitoring/levels/output/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>show/hide the output vu-meters.</description>
+      <digest>show/hide the output vu-meters</digest>
+    </method>
+    <method name="/monitoring/levels/input/post">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set output vu-meters pre/post fader.</description>
+      <digest>set output vu-meters pre/post fader</digest>
+    </method>
+    <method name="/monitoring/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>mute/unmute the strip.</description>
+      <digest>mute/unmute the strip</digest>
+    </method>
+    <method name="/monitoring/annotation">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set annotation of the strip.</description>
+      <digest>set annotation of the strip</digest>
+    </method>
+    <method name="/monitoring/dim">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>dim the master strip (-20 dB).</description>
+      <digest>dim the master strip (-20 dB)</digest>
+    </method>
+    <method name="/monitoring/dynamics/attack">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set attack time (in msec) for compressor/expander.</description>
+      <digest>set attack time (in msec) for compressor/expander</digest>
+    </method>
+    <method name="/monitoring/dynamics/release">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set release time (in msec) for compressor/expander.</description>
+      <digest>set release time (in msec) for compressor/expander</digest>
+    </method>
+    <method name="/monitoring/dynamics/lookahead">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set lookahead time (in msec) for compressor/expander.</description>
+      <digest>set lookahead time (in msec) for compressor/expander</digest>
+    </method>
+    <method name="/monitoring/dynamics/compressor/threshold">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set threshold (in dB) for compressor.</description>
+      <digest>set threshold (in dB) for compressor</digest>
+    </method>
+    <method name="/monitoring/dynamics/compressor/ratio">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set ratio for compressor.</description>
+      <digest>set ratio for compressor</digest>
+    </method>
+    <method name="/monitoring/dynamics/expander/threshold">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set threshold (in dB) for expander.</description>
+      <digest>set threshold (in dB) for expander</digest>
+    </method>
+    <method name="/monitoring/dynamics/expander/ratio">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set ratio for expander.</description>
+      <digest>set ratio for expander</digest>
+    </method>
+    <method name="/monitoring/dynamics/makeup">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set makeup gain (in dB) for compressor/expander.</description>
+      <digest>set makeup gain (in dB) for compressor/expander</digest>
+    </method>
+    <method name="/monitoring/dynamics/link">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>link all channels for compressor/expander.</description>
+      <digest>link all channels for compressor/expander</digest>
+    </method>
+    <method name="/monitoring/dynamics/bypass">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>bypass compressor/expander.</description>
+      <digest>bypass compressor/expander</digest>
+    </method>
+    <method name="/monitoring/equalizer/bypass">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>bypass the equalizer.</description>
+      <digest>bypass the equalizer</digest>
+    </method>
+    <method name="/monitoring/equalizer/gain">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the global gain (in dB) of the equalizer.</description>
+      <digest>set the global gain (in dB) of the equalizer</digest>
+    </method>
+    <method name="/monitoring/equalizer/filter/[index]/freq">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the frequency (in Hz) of the i-th section.</description>
+      <digest>set the frequency (in Hz) of the i-th section</digest>
+    </method>
+    <method name="/monitoring/equalizer/filter/[index]/q">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the resonance of the i-th section.</description>
+      <digest>set the resonance of the i-th section</digest>
+    </method>
+    <method name="/monitoring/equalizer/filter/[index]/gain">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the gain (in dB) of the i-th section.</description>
+      <digest>set the gain (in dB) of the i-th section</digest>
+    </method>
+    <method name="/monitoring/equalizer/filter/[index]/order">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set the filter's order of the i-th section.</description>
+      <digest>set the filter's order of the i-th section</digest>
+    </method>
+    <method name="/monitoring/equalizer/filter/[index]/active">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable/disable the i-th section.</description>
+      <digest>enable/disable the i-th section</digest>
+    </method>
+    <method name="/monitoring/hrtf">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>load hrtf from file or url (sofa format).</description>
+      <digest>load hrtf from file or url (sofa format)</digest>
+    </method>
+    <method name="/monitoring/itd/scaling">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set ITD scaling factor (in %).</description>
+      <digest>set ITD scaling factor (in %)</digest>
+    </method>
+    <method name="/monitoring/listener/orientation">
+      <arglist>
+        <arg type="number][number][number][number"/>
+      </arglist>
+      <description>set listener orientation from quaternion (xyzw).</description>
+      <digest>set listener orientation from quaternion (xyzw)</digest>
+    </method>
+    <method name="/monitoring/listener/yaw">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set listener yaw angle (in deg), using Euler zyx convention.</description>
+      <digest>set listener yaw angle (in deg), using Euler zyx convention</digest>
+    </method>
+    <method name="/monitoring/listener/pitch">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set listener pitch angle (in deg), using Euler zyx convention.</description>
+      <digest>set listener pitch angle (in deg), using Euler zyx convention</digest>
+    </method>
+    <method name="/monitoring/listener/roll">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set listener roll angle (in deg), using Euler zyx convention.</description>
+      <digest>set listener roll angle (in deg), using Euler zyx convention</digest>
+    </method>
+    <method name="/monitoring/listener/ypr">
+      <arglist>
+        <arg type="number][number][number"/>
+      </arglist>
+      <description>set listener orientation (yaw, pitch, roll in deg), using Euler zyx convention.</description>
+      <digest>set listener orientation (yaw, pitch, roll in deg), using Euler zyx convention</digest>
+    </method>
+    <method name="/monitoring/headphoneeq/type">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set headphone type.<br/>Possible values: akg k1000 closed, akg k1000 open, akg k141mk2, akg k240df, akg k240mk2, akg k271mk2, akg k271studio, akg k601, akg k701, akg k702, audiotechnica ath m50, beyerdynamic dt250, beyerdynamic dt770pro 250ohms, beyerdynamic dt880, beyerdynamic dt990pro, presonus hd7, sennheiser hd430, sennheiser hd480, sennheiser hd560ovationii, sennheiser hd565ovation, sennheiser hd600, sennheiser hd650, shure srh940, none.</description>
+    </method>
+    <method name="/bus/number">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the total number of busses.</description>
+      <digest>number of busses</digest>
+    </method>
+    <method name="/bus/[index]/format">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set the format of the i-th bus ('Binaural', 'HOA', 'HOA2D', 'KNN', 'VBAP', 'VBAP2D', 'VBIP', 'VBIP2D', 'Angular2D', 'WFS', 'LBAP', etc.).</description>
+      <digest>set the format of the i-th bus ('Binaural', 'HOA', 'HOA2D', 'KNN', 'VBAP', 'VBAP2D', 'VBIP', 'VBIP2D', 'Angular2D', 'WFS', 'LBAP', etc.)</digest>
+    </method>
+    <method name="/bus/[index]/name">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set the name of the i-th bus.</description>
+      <digest>set the name of the i-th bus</digest>
+    </method>
+    <method name="/bus/[index]/color">
+      <arglist>
+        <arg type="color"/>
+      </arglist>
+      <description>set the color of the i-th bus.</description>
+      <digest>set the color of the i-th bus</digest>
+    </method>
+    <method name="/bus/[index]/numinputs">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set the number of input channels of the i-th bus.</description>
+      <digest>set the number of input channels of the i-th bus</digest>
+    </method>
+    <method name="/bus/[index]/numoutputs">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set the number of output channels of the i-th bus.</description>
+      <digest>set the number of output channels of the i-th bus</digest>
+    </method>
+    <method name="/bus/[index]/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set the visibility of the strip.</description>
+      <digest>set the visibility of the strip</digest>
+    </method>
+    <method name="/bus/[index]/annotation">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set the annotation for the i-th bus.</description>
+      <digest>set the annotation for the i-th bus</digest>
+    </method>
+    <method name="/bus/[index]/lock">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>lock/unlock the strip.</description>
+      <digest>lock/unlock the strip</digest>
+    </method>
+    <method name="/bus/[index]/trim">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the input trim of the strip (in dB).</description>
+      <digest>set the input trim of the strip (in dB)</digest>
+    </method>
+    <method name="/bus/[index]/gain">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the output gain of the strip (in dB).</description>
+      <digest>set the output gain of the strip (in dB)</digest>
+    </method>
+    <method name="/bus/[index]/gain/ramptime">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the ramp time (in msec) for output gain.</description>
+      <digest>set the ramp time (in msec) for output gain</digest>
+    </method>
+    <method name="/bus/[index]/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>mute/unmute the strip.</description>
+      <digest>mute/unmute the strip</digest>
+    </method>
+    <method name="/bus/[index]/levels/input/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>show/hide the input vu-meters.</description>
+      <digest>show/hide the input vu-meters</digest>
+    </method>
+    <method name="/bus/[index]/levels/input/post">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set input vu-meters pre/post fader.</description>
+      <digest>set input vu-meters pre/post fader</digest>
+    </method>
+    <method name="/bus/[index]/levels/output/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>show/hide the output vu-meters.</description>
+      <digest>show/hide the output vu-meters</digest>
+    </method>
+    <method name="/bus/[index]/levels/input/post">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set output vu-meters pre/post fader.</description>
+      <digest>set output vu-meters pre/post fader</digest>
+    </method>
+    <method name="/bus/[index]/delay">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the delay (in msec) of the i-th bus (not applicable to all busses).</description>
+      <digest>set the delay (in msec) of the i-th bus (not applicable to all busses)</digest>
+    </method>
+    <method name="/bus/[index]/routing/output/[outputindex]/master">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>route the j-th output of the i-th bus a given master channel.</description>
+      <digest>route the j-th output of the i-th bus a given master channel</digest>
+    </method>
+    <method name="/bus/[index]/speakers/aed">
+      <arglist>
+        <arg type="number][number][number]..."/>
+      </arglist>
+      <description>set the list of speaker coordinates (aed) for the i-th bus (not applicable to all busses).</description>
+      <digest>set the list of speaker coordinates (aed) for the i-th bus (not applicable to all busses)</digest>
+    </method>
+    <method name="/bus/[index]/speakers/xyz">
+      <arglist>
+        <arg type="number][number][number]..."/>
+      </arglist>
+      <description>set the list of speaker coordinates (xyz) for the i-th bus (not applicable to all busses).</description>
+      <digest>set the list of speaker coordinates (xyz) for the i-th bus (not applicable to all busses)</digest>
+    </method>
+    <method name="/bus/[index]/speaker/[index]/aed">
+      <arglist>
+        <arg type="number][number][number"/>
+      </arglist>
+      <description>set the position of the j-th loudspeaker for the i-th bus (not applicable to all busses).</description>
+      <digest>set the position of the j-th loudspeaker for the i-th bus (not applicable to all busses)</digest>
+    </method>
+    <method name="/bus/[index]/speaker/[index]/xyz">
+      <arglist>
+        <arg type="number][number][number"/>
+      </arglist>
+      <description>set the position of the j-th loudspeaker for the i-th bus (not applicable to all busses).</description>
+      <digest>set the position of the j-th loudspeaker for the i-th bus (not applicable to all busses)</digest>
+    </method>
+    <method name="/bus/[index]/speakers/correction/delay">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set delay correction ('on', 'off', 'auto') for the i-th bus (not applicable to all busses).</description>
+      <digest>set delay correction ('on', 'off', 'auto') for the i-th bus (not applicable to all busses)</digest>
+    </method>
+    <method name="/bus/[index]/speakers/correction/gain">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set delay correction ('on', 'off', 'auto') for the i-th bus (not applicable to all busses).</description>
+      <digest>set delay correction ('on', 'off', 'auto') for the i-th bus (not applicable to all busses)</digest>
+    </method>
+    <method name="/bus/[index]/speaker/[index]/delay">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set delay for the j-th speaker for the i-th bus (not applicable to all busses).</description>
+      <digest>set delay for the j-th speaker for the i-th bus (not applicable to all busses)</digest>
+    </method>
+    <method name="/bus/[index]/speaker/[index]/gain/db">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set gain (in dB) for the j-th speaker for the i-th bus (not applicable to all busses).</description>
+      <digest>set gain (in dB) for the j-th speaker for the i-th bus (not applicable to all busses)</digest>
+    </method>
+    <method name="/bus/[index]/speakers/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>show/hide speakers of the i-th bus (not applicable to all busses).</description>
+      <digest>show/hide speakers of the i-th bus (not applicable to all busses)</digest>
+    </method>
+    <method name="/bus/[index]/speakers/editor/window/open">
+      <description>open the speakers editor for the i-th bus (not applicable to all busses).</description>
+      <digest>open the speakers editor for the i-th bus (not applicable to all busses)</digest>
+    </method>
+    <method name="/bus/[index]/speakers/editor/window/title">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set window title for the speakers editor for the i-th bus (not applicable to all busses).</description>
+      <digest>set window title for the speakers editor for the i-th bus (not applicable to all busses)</digest>
+    </method>
+    <method name="/bus/[index]/monitor">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable binaural monitoring for the i-th bus (not applicable to all busses).</description>
+      <digest>enable binaural monitoring for the i-th bus (not applicable to all busses)</digest>
+    </method>
+    <method name="/bus/[index]/spread">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set spread factor (in %) for the i-th bus (not applicable to all busses)(the spread applies to all sources connected to this bus).</description>
+      <digest>set spread factor (in %) for the i-th bus (not applicable to all busses)(the spread applies to all sources connected to this bus)</digest>
+    </method>
+    <method name="/bus/[index]/phantom/zenith">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>insert a phantom speaker at the zenith (for vector-base panning).</description>
+      <digest>insert a phantom speaker at the zenith (for vector-base panning)</digest>
+    </method>
+    <method name="/bus/[index]/phantom/nadir">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>insert a phantom speaker at the nadir (for vector-base panning).</description>
+      <digest>insert a phantom speaker at the nadir (for vector-base panning)</digest>
+    </method>
+    <method name="/track/indices">
+      <arglist>
+        <arg type="iii..."/>
+      </arglist>
+      <description>set the indices of Mono tracks.</description>
+      <digest>set the indices of Mono tracks</digest>
+    </method>
+    <method name="/stereo/indices">
+      <arglist>
+        <arg type="iii..."/>
+      </arglist>
+      <description>set the indices of Stereo tracks.</description>
+      <digest>set the indices of Stereo tracks</digest>
+    </method>
+    <method name="/multi/indices">
+      <arglist>
+        <arg type="iii..."/>
+      </arglist>
+      <description>set the indices of Multi tracks.</description>
+      <digest>set the indices of Multi tracks</digest>
+    </method>
+    <method name="/hoastream/indices">
+      <arglist>
+        <arg type="iii..."/>
+      </arglist>
+      <description>set the indices of HoaStream tracks.</description>
+      <digest>set the indices of HoaStream tracks</digest>
+    </method>
+    <method name="/hoadrir/indices">
+      <arglist>
+        <arg type="iii..."/>
+      </arglist>
+      <description>set the indices of HoaDrir tracks.</description>
+      <digest>set the indices of HoaDrir tracks</digest>
+    </method>
+    <method name="/em32/indices">
+      <arglist>
+        <arg type="iii..."/>
+      </arglist>
+      <description>set the indices of EigenMike32 tracks.</description>
+      <digest>set the indices of EigenMike32 tracks</digest>
+    </method>
+    <method name="/em64/indices">
+      <arglist>
+        <arg type="iii..."/>
+      </arglist>
+      <description>set the indices of EigenMike64 tracks.</description>
+      <digest>set the indices of EigenMike64 tracks</digest>
+    </method>
+    <method name="/tree/indices">
+      <arglist>
+        <arg type="iii..."/>
+      </arglist>
+      <description>set the indices of Tree tracks.</description>
+      <digest>set the indices of Tree tracks</digest>
+    </method>
+    <method name="/zylia/indices">
+      <arglist>
+        <arg type="iii..."/>
+      </arglist>
+      <description>set the indices of Zylia tracks.</description>
+      <digest>set the indices of Zylia tracks</digest>
+    </method>
+    <method name="/bformat/indices">
+      <arglist>
+        <arg type="iii..."/>
+      </arglist>
+      <description>set the indices of B-format tracks.</description>
+      <digest>set the indices of B-format tracks</digest>
+    </method>
+    <method name="/aformat/indices">
+      <arglist>
+        <arg type="iii..."/>
+      </arglist>
+      <description>set the indices of A-format tracks.</description>
+      <digest>set the indices of A-format tracks</digest>
+    </method>
+    <method name="/d2m/indices">
+      <arglist>
+        <arg type="iii..."/>
+      </arglist>
+      <description>set the indices of DirectToMaster tracks.</description>
+      <digest>set the indices of DirectToMaster tracks</digest>
+    </method>
+    <method name="/d2b/indices">
+      <arglist>
+        <arg type="iii..."/>
+      </arglist>
+      <description>set the indices of DirectToBus tracks.</description>
+      <digest>set the indices of DirectToBus tracks</digest>
+    </method>
+    <method name="/track/[index]/name">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set the name of the i-th track.</description>
+      <digest>set the name of the i-th track</digest>
+    </method>
+    <method name="/track/[index]/color">
+      <arglist>
+        <arg type="color"/>
+      </arglist>
+      <description>set the color of the i-th track.</description>
+      <digest>set the color of the i-th track</digest>
+    </method>
+    <method name="/track/[index]/numinputs">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set the number of input channels of the i-th track.</description>
+      <digest>set the number of input channels of the i-th track</digest>
+    </method>
+    <method name="/track/[index]/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set the visibility of the track.</description>
+      <digest>set the visibility of the track</digest>
+    </method>
+    <method name="/track/[index]/gain">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the output gain of the track (in dB).</description>
+      <digest>set the output gain of the track (in dB)</digest>
+    </method>
+    <method name="/track/[index]/gain/ramptime">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the ramp time (in msec) for output gain of the track.</description>
+      <digest>set the ramp time (in msec) for output gain of the track</digest>
+    </method>
+    <method name="/track/[index]/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>mute/unmute the track.</description>
+      <digest>mute/unmute the track</digest>
+    </method>
+    <method name="/track/[index]/annotation">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set the annotation for the track.</description>
+      <digest>set the annotation for the track</digest>
+    </method>
+    <method name="/track/[index]/lock">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>lock/unlock the track.</description>
+      <digest>lock/unlock the track</digest>
+    </method>
+    <method name="/track/[index]/trim">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the input trim of the track (in dB).</description>
+      <digest>set the input trim of the track (in dB)</digest>
+    </method>
+    <method name="/track/[index]/delay">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the delay of the i-th track (not applicable to all tracks).</description>
+      <digest>set the delay of the i-th track (not applicable to all tracks)</digest>
+    </method>
+    <method name="/track/[index]/levels/input/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>show/hide the input vu-meters.</description>
+      <digest>show/hide the input vu-meters</digest>
+    </method>
+    <method name="/track/[index]/levels/input/post">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set input vu-meters pre/post fader.</description>
+      <digest>set input vu-meters pre/post fader</digest>
+    </method>
+    <method name="/track/[index]/levels/output/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>show/hide the output vu-meters.</description>
+      <digest>show/hide the output vu-meters</digest>
+    </method>
+    <method name="/track/[index]/levels/input/post">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set output vu-meters pre/post fader.</description>
+      <digest>set output vu-meters pre/post fader</digest>
+    </method>
+    <method name="/track/[index]/solo">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>solo the track.</description>
+      <digest>solo the track</digest>
+    </method>
+    <method name="/track/[index]/tofront">
+      <description>bring the i-th track to the front of its siblings.</description>
+      <digest>bring the i-th track to the front of its siblings</digest>
+    </method>
+    <method name="/track/[index]/toback">
+      <description>bring the i-th track to the back of its siblings.</description>
+      <digest>bring the i-th track to the back of its siblings</digest>
+    </method>
+    <method name="/track/[index]/tofront">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>bring the i-th track to the front or back of its siblings.</description>
+      <digest>bring the i-th track to the front or back of its siblings</digest>
+    </method>
+    <method name="/track/[index]/xyz">
+      <arglist>
+        <arg type="number][number][number"/>
+      </arglist>
+      <description>set the position of the i-th track using cartesian coordinates.</description>
+      <digest>set track position</digest>
+    </method>
+    <method name="/track/[index]/aed">
+      <arglist>
+        <arg type="number][number][number"/>
+      </arglist>
+      <description>set the position of the i-th track using navigation coordinates (azimuth/elevation/distance).</description>
+      <digest>set track position</digest>
+    </method>
+    <method name="/track/[index]/xy">
+      <arglist>
+        <arg type="number][number"/>
+      </arglist>
+      <description>set the xy-coordinate of the i-th track, and use default z (=0).</description>
+      <digest>set track position</digest>
+    </method>
+    <method name="/track/[index]/az">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the azimuth of the i-th track, using default distance (=1) and elevation (=0).</description>
+      <digest>set track position</digest>
+    </method>
+    <method name="/track/[index]/x">
+      <arglist>
+        <arg type="number][number"/>
+      </arglist>
+      <description>set the x-coordinate of the i-th track, and keep y and z unchanged.</description>
+      <digest>set track position</digest>
+    </method>
+    <method name="/track/[index]/y">
+      <arglist>
+        <arg type="number][number"/>
+      </arglist>
+      <description>set the y-coordinate of the i-th track, and keep x and z unchanged.</description>
+      <digest>set track position</digest>
+    </method>
+    <method name="/track/[index]/z">
+      <arglist>
+        <arg type="number][number"/>
+      </arglist>
+      <description>set the z-coordinate of the i-th track, and keep x and y unchanged.</description>
+      <digest>set track position</digest>
+    </method>
+    <method name="/track/[index]/ade">
+      <arglist>
+        <arg type="number][number][number"/>
+      </arglist>
+      <description>set the position of the i-th track using navigation coordinates (azimuth/distance/elevation).</description>
+      <digest>set track position</digest>
+    </method>
+    <method name="/track/[index]/ae">
+      <arglist>
+        <arg type="number][number"/>
+      </arglist>
+      <description>set the azimuth/elevation of the i-th track, using default distance (=1).</description>
+      <digest>set track position</digest>
+    </method>
+    <method name="/track/[index]/ad">
+      <arglist>
+        <arg type="number][number"/>
+      </arglist>
+      <description>set the azimuth/distance of the i-th track, using default elevation (=0).</description>
+      <digest>set track position</digest>
+    </method>
+    <method name="/track/[index]/azim">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the azimuth of the i-th track. Elevation and distance remain unchanged.</description>
+      <digest>set track position</digest>
+    </method>
+    <method name="/track/[index]/elev">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the elevation of the i-th track. Azimuth and distance remain unchanged.</description>
+      <digest>set track position</digest>
+    </method>
+    <method name="/track/[index]/dist">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the distance of the i-th track. Azimuth and elevation remain unchanged.</description>
+      <digest>set track position</digest>
+    </method>
+    <method name="/track/[index]/azimelev">
+      <arglist>
+        <arg type="number][number"/>
+      </arglist>
+      <description>set the azimuth and elevation of the i-th track. Distance remains unchanged.</description>
+      <digest>set track position</digest>
+    </method>
+    <method name="/track/[index]/azimdist">
+      <arglist>
+        <arg type="number][number"/>
+      </arglist>
+      <description>set the azimuth and distance of the i-th track. Elevation remains unchanged.</description>
+      <digest>set track position</digest>
+    </method>
+    <method name="/track/[index]/bus/A/destination">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set destination for bus send A.</description>
+      <digest>set destination for bus send A</digest>
+    </method>
+    <method name="/track/[index]/bus/A/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>mute bus send A.</description>
+      <digest>mute bus send A</digest>
+    </method>
+    <method name="/track/[index]/bus/A/gain">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set gain (in dB) for bus send A.</description>
+      <digest>set gain (in dB) for bus send A</digest>
+    </method>
+    <method name="/track/[index]/bus/B/destination">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set destination for bus send B.</description>
+      <digest>set destination for bus send B</digest>
+    </method>
+    <method name="/track/[index]/bus/B/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>mute bus send B.</description>
+      <digest>mute bus send B</digest>
+    </method>
+    <method name="/track/[index]/bus/B/gain">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set gain (in dB) for bus send B.</description>
+      <digest>set gain (in dB) for bus send B</digest>
+    </method>
+    <method name="/track/[index]/bus/C/destination">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set destination for bus send C.</description>
+      <digest>set destination for bus send C</digest>
+    </method>
+    <method name="/track/[index]/bus/C/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>mute bus send C.</description>
+      <digest>mute bus send C</digest>
+    </method>
+    <method name="/track/[index]/bus/C/gain">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set gain (in dB) for bus send C.</description>
+      <digest>set gain (in dB) for bus send C</digest>
+    </method>
+    <method name="/track/[index]/bus/D/destination">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set destination for bus send D.</description>
+      <digest>set destination for bus send D</digest>
+    </method>
+    <method name="/track/[index]/bus/D/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>mute bus send D.</description>
+      <digest>mute bus send D</digest>
+    </method>
+    <method name="/track/[index]/bus/D/gain">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set gain (in dB) for bus send D.</description>
+      <digest>set gain (in dB) for bus send D</digest>
+    </method>
+    <method name="/track/[index]/bus/E/destination">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set destination for bus send E.</description>
+      <digest>set destination for bus send E</digest>
+    </method>
+    <method name="/track/[index]/bus/E/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>mute bus send E.</description>
+      <digest>mute bus send E</digest>
+    </method>
+    <method name="/track/[index]/bus/E/gain">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set gain (in dB) for bus send E.</description>
+      <digest>set gain (in dB) for bus send E</digest>
+    </method>
+    <method name="/track/[index]/bus/F/destination">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set destination for bus send F.</description>
+      <digest>set destination for bus send F</digest>
+    </method>
+    <method name="/track/[index]/bus/F/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>mute bus send F.</description>
+      <digest>mute bus send F</digest>
+    </method>
+    <method name="/track/[index]/bus/F/gain">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set gain (in dB) for bus send F.</description>
+      <digest>set gain (in dB) for bus send F</digest>
+    </method>
+    <method name="/track/[index]/bus/G/destination">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set destination for bus send G.</description>
+      <digest>set destination for bus send G</digest>
+    </method>
+    <method name="/track/[index]/bus/G/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>mute bus send G.</description>
+      <digest>mute bus send G</digest>
+    </method>
+    <method name="/track/[index]/bus/G/gain">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set gain (in dB) for bus send G.</description>
+      <digest>set gain (in dB) for bus send G</digest>
+    </method>
+    <method name="/track/[index]/bus/H/destination">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set destination for bus send H.</description>
+      <digest>set destination for bus send H</digest>
+    </method>
+    <method name="/track/[index]/bus/H/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>mute bus send H.</description>
+      <digest>mute bus send H</digest>
+    </method>
+    <method name="/track/[index]/bus/H/gain">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set gain (in dB) for bus send H.</description>
+      <digest>set gain (in dB) for bus send H</digest>
+    </method>
+    <method name="/track/[index]/bus/send/display">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set which bus is displayed in the vu-meters.</description>
+      <digest>set which bus is displayed in the vu-meters</digest>
+    </method>
+    <method name="/track/[index]/bus/visible">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set which bus send(s) are visible.</description>
+      <digest>set which bus send(s) are visible</digest>
+    </method>
+    <method name="/track/[index]/lfe/send">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set LFE send gain (in dB).</description>
+      <digest>set LFE send gain (in dB)</digest>
+    </method>
+    <method name="/track/[index]/lfe/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>mute LFE send.</description>
+      <digest>mute LFE send</digest>
+    </method>
+    <method name="/group/number">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the number of groups.</description>
+      <digest>set the number of groups</digest>
+    </method>
+    <method name="/group/[index]/name">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set name of the i-th group.</description>
+      <digest>set name of the i-th group</digest>
+    </method>
+    <method name="/group/[index]/affects/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable mute in the i-th group.</description>
+      <digest>enable mute in the i-th group</digest>
+    </method>
+    <method name="/group/[index]/affects/solo">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable solo in the i-th group.</description>
+      <digest>enable solo in the i-th group</digest>
+    </method>
+    <method name="/group/[index]/affects/send">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable send in the i-th group.</description>
+      <digest>enable send in the i-th group</digest>
+    </method>
+    <method name="/group/[index]/active">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable the i-th group.</description>
+      <digest>enable the i-th group</digest>
+    </method>
+    <method name="/group/add">
+      <description>add a new group.</description>
+      <digest>add a new group</digest>
+    </method>
+    <method name="/group/add">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>add a new group with the given name.</description>
+      <digest>add a new group with the given name</digest>
+    </method>
+    <method name="/group/delete/bytitle">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>delete the group with the given name.</description>
+      <digest>delete the group with the given name</digest>
+    </method>
+    <method name="/group/delete/bypattern">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>delete the group with the given OSC address.</description>
+      <digest>delete the group with the given OSC address</digest>
+    </method>
+    <method name="/session/delete/bytitle">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>delete a track or bus, given its title.</description>
+      <digest>delete a track or bus, given its title</digest>
+    </method>
+    <method name="/session/delete/byaddress">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>delete a track or bus, given its OSC address.</description>
+      <digest>delete a track or bus, given its OSC address</digest>
+    </method>
+    <method name="/session/add/track">
+      <arglist>
+        <arg type="string][int][string][int"/>
+      </arglist>
+      <description>create new track(s): [format][number of channels][title][number of tracks].</description>
+      <digest>create new track(s): [format][number of channels][title][number of tracks]</digest>
+    </method>
+    <method name="/session/add/track">
+      <arglist>
+        <arg type="string][int][string"/>
+      </arglist>
+      <description>create one new track: [format][number of channels][title].</description>
+      <digest>create one new track: [format][number of channels][title]</digest>
+    </method>
+    <method name="/session/add/track">
+      <arglist>
+        <arg type="string][int"/>
+      </arglist>
+      <description>create one new track: [format][number of channels].</description>
+      <digest>create one new track: [format][number of channels]</digest>
+    </method>
+    <method name="/session/add/bus">
+      <arglist>
+        <arg type="string][int][int"/>
+      </arglist>
+      <description>create one new bus: [format][number of inputs][number of outputs].</description>
+      <digest>create one new bus: [format][number of inputs][number of outputs]</digest>
+    </method>
+    <method name="/session/add/bus">
+      <arglist>
+        <arg type="string][int][int][int"/>
+      </arglist>
+      <description>create new bus(ses): [format][number of inputs][number of outputs][number of busses].</description>
+      <digest>create new bus(ses): [format][number of inputs][number of outputs][number of busses]</digest>
+    </method>
+    <method name="/options/lock">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>lock/unlock the options strip.</description>
+      <digest>lock/unlock the options strip</digest>
+    </method>
+    <method name="/options/color">
+      <arglist>
+        <arg type="color"/>
+      </arglist>
+      <description>set the color of the options strip.</description>
+      <digest>set the color of the options strip</digest>
+    </method>
+    <method name="/options/annotation">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set the annotation for the options strip.</description>
+      <digest>set the annotation for the options strip</digest>
+    </method>
+    <method name="/options/vumeters/rate">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the vu-meters refresh rate (msec).</description>
+      <digest>set the vu-meters refresh rate (msec)</digest>
+    </method>
+    <method name="/options/vumeters/input/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set visibility for the input vumeters.</description>
+      <digest>set visibility for the input vumeters</digest>
+    </method>
+    <method name="/options/vumeters/output/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set visibility for the output vumeters.</description>
+      <digest>set visibility for the output vumeters</digest>
+    </method>
+    <method name="/options/vumeters/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set visibility for all vumeters.</description>
+      <digest>set visibility for all vumeters</digest>
+    </method>
+    <method name="/options/clearsolo">
+      <description>clear all solo.</description>
+      <digest>clear all solo</digest>
+    </method>
+    <method name="/options/clearsolo/tracks">
+      <description>clear all tracks solo.</description>
+      <digest>clear all tracks solo</digest>
+    </method>
+    <method name="/options/clearsolo/bus">
+      <description>clear all busses solo.</description>
+      <digest>clear all busses solo</digest>
+    </method>
+    <method name="/options/clearsolo/busses">
+      <description>clear all busses solo.</description>
+      <digest>clear all busses solo</digest>
+    </method>
+    <method name="/options/dock">
+      <description>dock or undock the spat viewer window.</description>
+      <digest>dock or undock the spat viewer window</digest>
+    </method>
+    <method name="/options/dock/viewer">
+      <description>dock or undock the spat viewer window.</description>
+      <digest>dock or undock the spat viewer window</digest>
+    </method>
+    <method name="/options/dock/equalizer">
+      <description>dock or undock the equalizer/compressor window.</description>
+      <digest>dock or undock the equalizer/compressor window</digest>
+    </method>
+    <method name="/options/dock/viewer/window/title">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set window title for spat viewer window.</description>
+      <digest>set window title for spat viewer window</digest>
+    </method>
+    <method name="/options/dock/equalizer/window/title">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set window title for equalizer/compressor window.</description>
+      <digest>set window title for equalizer/compressor window</digest>
+    </method>
+    <method name="/options/parallel/bus">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable multi-threading for bus.</description>
+      <digest>enable multi-threading for bus</digest>
+    </method>
+    <method name="/options/parallel/tracks">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable multi-threading for tracks.</description>
+      <digest>enable multi-threading for tracks</digest>
+    </method>
+    <method name="/grid/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set the visibility of the grid.</description>
+      <digest>set the visibility of the grid</digest>
+    </method>
+    <method name="/grid/mode">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set the grid mode.<br/>Possible values: none, circular, cartesian.</description>
+      <digest>set the grid mode. Possible values: none, circular, cartesian</digest>
+    </method>
+    <method name="/grid/spacing">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the spacing between grid lines (in meters).</description>
+      <digest>set the spacing between grid lines (in meters)</digest>
+    </method>
+    <method name="/grid/line/number">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the number of grid lines.</description>
+      <digest>set the number of grid lines</digest>
+    </method>
+    <method name="/grid/angulardivisions/number">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the number of angular divisions.</description>
+      <digest>set the number of angular divisions</digest>
+    </method>
+    <method name="/grid/angulardivisions/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set the visibility of angular divisions.</description>
+      <digest>set the visibility of angular divisions</digest>
+    </method>
+    <method name="/grid/dashed">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set the line style.</description>
+      <digest>set the line style</digest>
+    </method>
+    <method name="/grid/color">
+      <arglist>
+        <arg type="color"/>
+      </arglist>
+      <description>set the line color.</description>
+      <digest>set the line color</digest>
+    </method>
+    <method name="/layout">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set the window layout.<br/>Possible values: single, leftright, topbottom.</description>
+      <digest>set the window layout. Possible values: single, leftright, topbottom</digest>
+    </method>
+    <method name="/display/zoom">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the display zoom factor.</description>
+      <digest>set the display zoom factor</digest>
+    </method>
+    <method name="/display/offsetx">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the display x translation offset (in pixels).</description>
+      <digest>set the display x translation offset (in pixels)</digest>
+    </method>
+    <method name="/display/offsety">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the display y translation offset (in pixels).</description>
+      <digest>set the display y translation offset (in pixels)</digest>
+    </method>
+    <method name="/display/offsetz">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the display z translation offset (in pixels).</description>
+      <digest>set the display z translation offset (in pixels)</digest>
+    </method>
+    <method name="/display/zoom/lock">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable/disable zooming with the mouse wheel.</description>
+      <digest>enable/disable zooming with the mouse wheel</digest>
+    </method>
+    <method name="/axis/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set the visibility of the axis.</description>
+      <digest>set the visibility of the axis</digest>
+    </method>
+    <method name="/axis/color">
+      <arglist>
+        <arg type="color"/>
+      </arglist>
+      <description>set the axis color.</description>
+      <digest>set the axis color</digest>
+    </method>
+    <method name="/axis/label/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set the visibility of the axis label.</description>
+      <digest>set the visibility of the axis label</digest>
+    </method>
+    <method name="/axis/origin/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set the visibility of the axis origin.</description>
+      <digest>set the visibility of the axis origin</digest>
+    </method>
+    <method name="/background/color">
+      <arglist>
+        <arg type="color"/>
+      </arglist>
+      <description>set the window background color.</description>
+      <digest>set the window background color</digest>
+    </method>
+    <method name="/legend/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set the visibility of the legend.</description>
+      <digest>set the visibility of the legend</digest>
+    </method>
+    <method name="/legend/color">
+      <arglist>
+        <arg type="color"/>
+      </arglist>
+      <description>set the legend color.</description>
+      <digest>set the legend color</digest>
+    </method>
+    <method name="/emphasis/source">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>emphasize sources when mouse in proximity.</description>
+      <digest>emphasize sources when mouse in proximity</digest>
+    </method>
+    <method name="/emphasis/speaker">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>emphasize speakers when mouse in proximity.</description>
+      <digest>emphasize speakers when mouse in proximity</digest>
+    </method>
+    <method name="/emphasis/microphone">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>emphasize microphones when mouse in proximity.</description>
+      <digest>emphasize microphones when mouse in proximity</digest>
+    </method>
+    <method name="/area/number">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set the number of areas.</description>
+      <digest>set the number of areas</digest>
+    </method>
+    <method name="/area/[index]/vertex/number">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set the number of vertex for the i-th area.</description>
+      <digest>set the number of vertex for the i-th area</digest>
+    </method>
+    <method name="/area/[index]/vertex/[index]/xy">
+      <arglist>
+        <arg type="number][number"/>
+      </arglist>
+      <description>set position of the j-th vertex of the i-th area.</description>
+      <digest>set position of the j-th vertex of the i-th area</digest>
+    </method>
+    <method name="/area/[index]/vertex/[index]/xyz">
+      <arglist>
+        <arg type="number][number][number"/>
+      </arglist>
+      <description>set position of the j-th vertex of the i-th area.</description>
+      <digest>set position of the j-th vertex of the i-th area</digest>
+    </method>
+    <method name="/area/[index]/vertex/[index]/aed">
+      <arglist>
+        <arg type="number][number][number"/>
+      </arglist>
+      <description>set position of the j-th vertex of the i-th area.</description>
+      <digest>set position of the j-th vertex of the i-th area</digest>
+    </method>
+    <method name="/area/[index]/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set visibility for the i-th area.</description>
+      <digest>set visibility for the i-th area</digest>
+    </method>
+    <method name="/area/[index]/color">
+      <arglist>
+        <arg type="color"/>
+      </arglist>
+      <description>set color for the i-th area.</description>
+      <digest>set color for the i-th area</digest>
+    </method>
+    <method name="/area/[index]/name">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set name for the i-th area.</description>
+      <digest>set name for the i-th area</digest>
+    </method>
+    <method name="/window/title">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set the window title (in the window titlebar).</description>
+      <digest>set the window title (in the window titlebar)</digest>
+    </method>
+    <method name="/window/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set the window visibility.</description>
+      <digest>set the window visibility</digest>
+    </method>
+    <method name="/window/moveable">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set the window movability.</description>
+      <digest>set the window movability</digest>
+    </method>
+    <method name="/window/resizable">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set the window resizability.</description>
+      <digest>set the window resizability</digest>
+    </method>
+    <method name="/window/enable">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable/disable the window.</description>
+      <digest>enable/disable the window</digest>
+    </method>
+    <method name="/window/background/color">
+      <arglist>
+        <arg type="color"/>
+      </arglist>
+      <description>set the window background color.</description>
+      <digest>set the window background color</digest>
+    </method>
+    <method name="/window/background/transparency">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the window transparency (in %).</description>
+      <digest>set the window transparency (in %)</digest>
+    </method>
+    <method name="/window/opaque">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>set the window opaque flag (optimize repaint efficiency).</description>
+      <digest>set the window opaque flag (optimize repaint efficiency)</digest>
+    </method>
+    <method name="/window/fullscreen">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable/disable fullscreen mode.</description>
+      <digest>enable/disable fullscreen mode</digest>
+    </method>
+    <method name="/window/minimise">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>minimize the window.</description>
+      <digest>minimize the window</digest>
+    </method>
+    <method name="/window/open">
+      <description>open the window (and bring it to front).</description>
+      <digest>open the window (and bring it to front)</digest>
+    </method>
+    <method name="/window/close">
+      <description>close the window.</description>
+      <digest>close the window</digest>
+    </method>
+    <method name="/window/openorclose">
+      <description>open the window if it was closed; close it if it was opened.</description>
+      <digest>open the window if it was closed; close it if it was opened</digest>
+    </method>
+    <method name="/window/size">
+      <arglist>
+        <arg type="number][number"/>
+      </arglist>
+      <description>set the window size (width, height) (in pixels).</description>
+      <digest>set the window size (width, height) (in pixels)</digest>
+    </method>
+    <method name="/window/width">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the window width (in pixels).</description>
+      <digest>set the window width (in pixels)</digest>
+    </method>
+    <method name="/window/height">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the window height (in pixels).</description>
+      <digest>set the window height (in pixels)</digest>
+    </method>
+    <method name="/window/bounds">
+      <arglist>
+        <arg type="number][number][number][number"/>
+      </arglist>
+      <description>set the window bounds (top left position, width, height) (in pixels).</description>
+      <digest>set the window bounds (top left position, width, height) (in pixels)</digest>
+    </method>
+    <method name="/window/topleft">
+      <arglist>
+        <arg type="number][number"/>
+      </arglist>
+      <description>set the window top left position (in pixels).</description>
+      <digest>set the window top left position (in pixels)</digest>
+    </method>
+    <method name="/window/centre">
+      <description>open the window, centering it on the screen.</description>
+      <digest>open the window, centering it on the screen</digest>
+    </method>
+    <method name="/window/rendering/engine">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set the graphical rendering engine of the window.</description>
+      <digest>set the graphical rendering engine of the window</digest>
+    </method>
+    <method name="/window/fps/visible">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>display the FPS performances of the window.</description>
+      <digest>display the FPS performances of the window</digest>
+    </method>
+    <method name="/window/scale">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the global scale factor of the window (in %).</description>
+      <digest>set the global scale factor of the window (in %)</digest>
+    </method>
+    <method name="/window/floating">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>make the window 'floating' (always on top).</description>
+      <digest>make the window 'floating' (always on top)</digest>
+    </method>
+    <method name="/window/hidesondeactivate">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>make the window 'hides on deactivate' (when always on top).</description>
+      <digest>make the window 'hides on deactivate' (when always on top)</digest>
+    </method>
+    <method name="/window/buttons/close">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable/disable the close button (in the window titlebar).</description>
+      <digest>enable/disable the close button (in the window titlebar)</digest>
+    </method>
+    <method name="/window/buttons/minimise">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable/disable the minimise button (in the window titlebar).</description>
+      <digest>enable/disable the minimise button (in the window titlebar)</digest>
+    </method>
+    <method name="/window/buttons/maximise">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable/disable the maximise button (in the window titlebar).</description>
+      <digest>enable/disable the maximise button (in the window titlebar)</digest>
+    </method>
+    <method name="/window/export/image">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>export the window as an image file (png or jpeg).</description>
+      <digest>export the window as an image file (png or jpeg)</digest>
+    </method>
+  </methodlist>
+  <seealsolist>
+    <seealso name="spat5.panoramix~"/>
+    <seealso name="spat5.spat~"/>
+    <seealso name="spat5.early~"/>
+    <seealso name="spat5.cluter~"/>
+    <seealso name="spat5.reverb~"/>
+    <seealso name="spat5.ircamverb~"/>
+    <seealso name="spat5.delgen"/>
+    <seealso name="spat5.shuffle~"/>
+    <seealso name="spat5.pan~"/>
+    <seealso name="spat5.decoder~"/>
+    <seealso name="spat5.osc.route"/>
+    <seealso name="spat5.osc.routepass"/>
+    <seealso name="spat5.viewer"/>
+    <seealso name="spat5.overview"/>
+  </seealsolist>
+</c74object>

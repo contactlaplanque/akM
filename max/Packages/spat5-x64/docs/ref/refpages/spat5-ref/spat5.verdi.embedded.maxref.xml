@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- created by libisp v5.0.2 - 18-mar-2024 19:03:59 -->
+
+<?xml-stylesheet href="./_c74_ref.xsl" type="text/xsl"?>
+
+
+<c74object name="spat5.verdi.embedded" module="spat5">
+  <digest>Control interface for spat5.verdi~</digest>
+  <description>spat5.verdi is a GUI for spat5.verdi~.<br/><br/></description>
+  <inletlist>
+  </inletlist>
+  <outletlist>
+  </outletlist>
+  <objarglist>
+  </objarglist>
+  <attributelist>
+    <attribute name="embed" type="boolean" set="1" get="1" size="1">
+      <description>The <m> embed </m> attribute allows to store the state of the object within the patcher. The complete state of the object is stored whenever the patcher is saved to disk. Upon loading the patcher or copying the object box, the state is restored.</description>
+      <digest>store state within the patcher</digest>
+    </attribute>
+    <attribute name="initwith" type="string" set="1" get="1" size="1">
+      <description>The <m> initwith </m> attribute can be used to specify the initial state of the object. You should provide a list of comma-separated OSC commands. The list of messages should be quoted (with double quote character &quot;). This is similar to sending the list of commands via <o>loadbang</o> or <o>loadmess</o>.<br/> Have a look at the <i>spat5.tuto-osc-3.maxpat</i> example for further details.<br/> Note that the <m> initwith </m> attribute cannot be set via message, <o>attrui</o> or inspector; it must be typed directly within the object box.</description>
+      <digest>initial state of the object</digest>
+    </attribute>
+    <attribute name="internals" type="int" set="1" get="1" size="1">
+      <description>The <m> internals </m> attribute represents the number of internal channels of the artificial reverberator. <br/> Spat uses a Feedback Delay Network (FDN) reverberator engine. <br/> Basically this can be seen as an array of delay lines which are fed back into a mixing matrix. The <m> internals </m> attributes represents the size of the feedback matrix. <br/> Choosing the size of this matrix is a trade-off between CPU consumption and the echo density. <br/> Increasing the size of the matrix will generate a densier reverb tail at the expense of a higher CPU load. <br/> A typical value of 8 is a good compromise between CPU load and natural sounding reverb. A value of 16 may be useful especially when dealing with a very long reverberation time or with very percussive sound (where a smaller FDN might sometimes sounds too poor). <br/> It is recommended not to use a value below 6. </description>
+      <digest>number of internal (reverberation) channels</digest>
+    </attribute>
+    <attribute name="outputs" type="int" set="1" get="1" size="1">
+      <description>The <m> outputs </m> attribute represents the number of output channels of the object. This  attribute must be set in the object box, when the object is instantiated; it can not be later set with a message (or <o>attrui</o> or inspector), since  the number of signal inlets or outlets can not be changed dynamically.</description>
+      <digest>number of output channels</digest>
+    </attribute>
+    <attribute name="parameter_enable" type="boolean" set="1" get="1" size="1">
+      <description>The <m> parameter_enable </m> attribute is used for compatibility with Max snapshots. It can also be used to store the initial state of the object (see 'Initial Enable' in the Max inspector).</description>
+      <digest>compatibility with snapshots</digest>
+    </attribute>
+    <attribute name="reverbs" type="" set="1" get="1" size="1">
+      <description></description>
+      <digest></digest>
+    </attribute>
+  </attributelist>
+  <methodlist>
+    <method name="/reverb/number">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set the number of reverbs.</description>
+      <digest>number of reverbs</digest>
+    </method>
+    <method name="/speaker/number">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set the number of speakers.</description>
+      <digest>number of speakers</digest>
+    </method>
+    <method name="/internals">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set the number of internal channels (same for all reverbs).</description>
+      <digest>number of internal channels</digest>
+    </method>
+    <method name="/reverb/[index]/tr0">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set global reverberation time (in seconds).</description>
+      <digest>decay time</digest>
+    </method>
+    <method name="/reverb/[index]/trl">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set relative decay time in low frequencies.</description>
+      <digest>decay time in low frequencies</digest>
+    </method>
+    <method name="/reverb/[index]/trm">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set relative decay time in mid frequencies.</description>
+      <digest>decay time in mid frequencies</digest>
+    </method>
+    <method name="/reverb/[index]/trh">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set relative decay time in high frequencies.</description>
+      <digest>decay time in high frequencies</digest>
+    </method>
+    <method name="/reverb/[index]/fl">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set reverb low/mid crossover frequency (in Hz).</description>
+      <digest>low/mid crossover</digest>
+    </method>
+    <method name="/reverb/[index]/fh">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set reverb mid/high crossover frequency (in Hz).</description>
+      <digest>mid/high crossover</digest>
+    </method>
+    <method name="/reverb/[index]/infinite">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable/disable infinite reverb.</description>
+      <digest>infinite reverb</digest>
+    </method>
+    <method name="/reverb/[index]/air">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>enable/disable air absorption in the FDN.</description>
+      <digest>set air absorption</digest>
+    </method>
+    <method name="/reverb/[index]/air/freq">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set air absorption rolloff frequency (in Hz) in the FDN.</description>
+      <digest>air absorption frequency</digest>
+    </method>
+    <method name="/reverb/[index]/delays">
+      <arglist>
+        <arg type="number][number][number]..."/>
+      </arglist>
+      <description>set the list of delays (in msec).</description>
+      <digest>delays</digest>
+    </method>
+    <method name="/reverb/[index]/delays/samples">
+      <arglist>
+        <arg type="number][number][number]..."/>
+      </arglist>
+      <description>set the list of delays (in samples).</description>
+      <digest>delays</digest>
+    </method>
+    <method name="/reverb/[index]/interpolation/mode">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set the interpolation mode.<br/>Possible values: nearest, linear, lagrange3, allpass, hermite3, watte3, bspline3, parabolic, allpass2, allpass3, nearestxfade.</description>
+      <digest>interpolation mode</digest>
+    </method>
+    <method name="/reverb/[index]/interpolation/time">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the interpolation time (in msec).</description>
+      <digest>interpolation time</digest>
+    </method>
+    <method name="/reverb/[index]/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>mute this reverb.</description>
+      <digest>mute reverb</digest>
+    </method>
+    <method name="/reverb/[index]/gain/db">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set gain (in dB).</description>
+      <digest>reverb gain</digest>
+    </method>
+    <method name="/reverb/[index]/spread">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set spatial spread (in %).</description>
+      <digest>reverb spread</digest>
+    </method>
+    <method name="/reverb/[index]/ae">
+      <arglist>
+        <arg type="number][number"/>
+      </arglist>
+      <description>set spatial direction (azimut/elevation).</description>
+      <digest>reverb direction</digest>
+    </method>
+  </methodlist>
+  <seealsolist>
+    <seealso name="spat5.verdi~"/>
+    <seealso name="spat5.oper"/>
+    <seealso name="spat5.viewer"/>
+    <seealso name="spat5.reverb~"/>
+    <seealso name="spat5.early~"/>
+    <seealso name="spat5.cluster~"/>
+    <seealso name="spat5.spat~"/>
+    <seealso name="spat5.room~"/>
+    <seealso name="spat5.ircamverb~"/>
+    <seealso name="spat5.delgen"/>
+    <seealso name="spat5.multiverb~"/>
+    <seealso name="spat5.roomsize"/>
+    <seealso name="spat5.shuffle~"/>
+    <seealso name="spat5.multiverb~"/>
+    <seealso name="spat5.conv~"/>
+    <seealso name="spat5.converb~"/>
+    <seealso name="spat5.tapout~"/>
+    <seealso name="delay~"/>
+    <seealso name="tapout~"/>
+    <seealso name="spat5.comb~"/>
+    <seealso name="spat5.allpass~"/>
+    <seealso name="spat5.reverb.timeview"/>
+    <seealso name="spat5.multi.connect"/>
+    <seealso name="spat5.overview"/>
+  </seealsolist>
+</c74object>

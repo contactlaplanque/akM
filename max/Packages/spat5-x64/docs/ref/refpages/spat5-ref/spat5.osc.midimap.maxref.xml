@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- created by libisp v5.0.0 - 06/03/2018 - 10h05m28s -->
+
+<?xml-stylesheet href="./_c74_ref.xsl" type="text/xsl"?>
+
+
+<c74object name="spat5.osc.midimap" module="spat5">
+  <digest>Map MIDI messages to OSC</digest>
+  <description><o>spat5.osc.midimap</o> maps MIDI messages to OSC.<br/><br/></description>
+  <inletlist>
+  </inletlist>
+  <outletlist>
+  </outletlist>
+  <objarglist>
+  </objarglist>
+  <attributelist>
+  </attributelist>
+  <methodlist>
+  </methodlist>
+  <seealsolist>
+    <seealso name="ctlin"/>
+    <seealso name="midiin"/>
+    <seealso name="midiinfo"/>
+    <seealso name="ctlout"/>  
+    <seealso name="spat5.osc.route"/>  
+    <seealso name="spat5.osc.routepass"/>      
+  </seealsolist>
+</c74object>

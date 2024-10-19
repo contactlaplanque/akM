@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- created by libisp v5.0.2 - 18-mar-2024 19:03:59 -->
+
+<?xml-stylesheet href="./_c74_ref.xsl" type="text/xsl"?>
+
+
+<c74object name="spat5.hoa.beamix.embedded" module="spat5">
+  <digest>Control interface for spat5.hoa.beamix~</digest>
+  <description>spat5.hoa.beamix is a GUI for spat5.hoa.beamix~.<br/><br/></description>
+  <inletlist>
+  </inletlist>
+  <outletlist>
+  </outletlist>
+  <objarglist>
+  </objarglist>
+  <attributelist>
+    <attribute name="dimension" type="int" set="1" get="1" size="1">
+      <description>The <m> dimension </m> attribute represents the dimension of the Ambisonic stream: either 2D or 3D.</description>
+      <digest>dimension of the Ambisonic stream</digest>
+    </attribute>
+    <attribute name="embed" type="boolean" set="1" get="1" size="1">
+      <description>The <m> embed </m> attribute allows to store the state of the object within the patcher. The complete state of the object is stored whenever the patcher is saved to disk. Upon loading the patcher or copying the object box, the state is restored.</description>
+      <digest>store state within the patcher</digest>
+    </attribute>
+    <attribute name="initwith" type="string" set="1" get="1" size="1">
+      <description>The <m> initwith </m> attribute can be used to specify the initial state of the object. You should provide a list of comma-separated OSC commands. The list of messages should be quoted (with double quote character &quot;). This is similar to sending the list of commands via <o>loadbang</o> or <o>loadmess</o>.<br/> Have a look at the <i>spat5.tuto-osc-3.maxpat</i> example for further details.<br/> Note that the <m> initwith </m> attribute cannot be set via message, <o>attrui</o> or inspector; it must be typed directly within the object box.</description>
+      <digest>initial state of the object</digest>
+    </attribute>
+    <attribute name="order" type="int" set="1" get="1" size="1">
+      <description>The <m> order </m> attribute represents the Ambisonic order of the stream. <br/>For 2D Ambisonic, the number of components is (2 x order + 1).<br/>For 3D Ambisonic, the number of components is (order+1) x (order+1).</description>
+      <digest>Ambisonic order of the stream</digest>
+    </attribute>
+    <attribute name="parameter_enable" type="boolean" set="1" get="1" size="1">
+      <description>The <m> parameter_enable </m> attribute is used for compatibility with Max snapshots. It can also be used to store the initial state of the object (see 'Initial Enable' in the Max inspector).</description>
+      <digest>compatibility with snapshots</digest>
+    </attribute>
+  </attributelist>
+  <methodlist>
+    <method name="/order">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set HOA order.</description>
+      <digest>set HOA order</digest>
+    </method>
+    <method name="/dimension">
+      <arglist>
+        <arg type="int"/>
+      </arglist>
+      <description>set HOA dimension.<br/>Possible values: 2, 3.</description>
+      <digest>set HOA dimension. Possible values: 2, 3</digest>
+    </method>
+    <method name="/bypass">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>global bypass.</description>
+      <digest>bypass</digest>
+    </method>
+    <method name="/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>global mute.</description>
+      <digest>mute</digest>
+    </method>
+    <method name="/norm">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>set HOA normalization.<br/>Possible values: sn3d, sn2d, n3d, n2d, fuma, maxn, unnormalized.</description>
+      <digest>set HOA normalization. Possible values: sn3d, sn2d, n3d, n2d, fuma, maxn, unnormalized</digest>
+    </method>
+    <method name="/beam/[index]/mute">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>mute the i-th beam.</description>
+      <digest>mute</digest>
+    </method>
+    <method name="/beam/[index]/bypass">
+      <arglist>
+        <arg type="boolean"/>
+      </arglist>
+      <description>bypass the i-th beam.</description>
+      <digest>mute</digest>
+    </method>
+    <method name="/beam/[index]/gain/db">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set gain for the i-th beam.</description>
+      <digest>beam gain</digest>
+    </method>
+    <method name="/beam/[index]/delay">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set delay for the i-th beam.</description>
+      <digest>beam delay</digest>
+    </method>
+    <method name="/beam/[index]/color">
+      <arglist>
+        <arg type="color"/>
+      </arglist>
+      <description>set color for the i-th beam.</description>
+      <digest>beam color</digest>
+    </method>
+  </methodlist>
+  <seealsolist>
+    <seealso name="spat5.hoa.beamix~"/>
+    <seealso name="spat5.hoa.beam~"/>
+    <seealso name="spat5.hoa.beam"/>
+    <seealso name="spat5.hoa.beam.embedded"/>
+    <seealso name="spat5.hoa.focus~"/>
+    <seealso name="spat5.hoa.focus"/>
+    <seealso name="spat5.hoa.encoder~"/>
+    <seealso name="spat5.hoa.scope~"/>
+    <seealso name="spat5.hoa.warp~"/>
+    <seealso name="spat5.hoa.dominance~"/>
+    <seealso name="spat5.hoa.mirror~"/>
+    <seealso name="spat5.hoa.blur"/>
+    <seealso name="spat5.hoa.intensity~"/>
+    <seealso name="spat5.hoa.directivity"/>
+    <seealso name="spat5.equalizer"/>
+    <seealso name="spat5.compressor"/>
+    <seealso name="spat5.compressor~"/>
+    <seealso name="spat5.overview"/>
+  </seealsolist>
+</c74object>

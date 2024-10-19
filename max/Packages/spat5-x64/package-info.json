@@ -1,0 +1,24 @@
+{
+	"name" : "spat5",
+	"description" : "software suite for real-time sound spatialization and artificial reverberation",
+	"author" : "Ircam Centre Pompidou",
+	"tags" : [ "sound spatialization", "reverberation" ],
+	"homepatcher" : "",
+	"max_version_max" : "none",
+	"max_version_min" : "8.0.0",
+	"os" : 	{
+		"macintosh" : 		{
+			"platform" : [ "x64", "arm64" ],
+			"min_version" : "10.11.x"
+		}
+,
+		"windows" : 		{
+			"platform" : [ "x64" ],
+			"min_version" : "10"
+		}
+
+	}
+,
+	"version" : "5.3.3",
+	"website" : "https://forum.ircam.fr/projects/detail/spat/"
+}

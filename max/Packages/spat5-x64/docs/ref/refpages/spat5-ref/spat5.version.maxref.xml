@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- created by libisp v5.0.0 - 09/03/2018 - 11h36m13s -->
+
+<?xml-stylesheet href="./_c74_ref.xsl" type="text/xsl"?>
+
+
+<c74object name="spat5.version" module="spat5">
+  <digest>Check Spat version</digest>
+  <description><o>spat5.version</o> checks if your spat version is up-to-date.<br/><br/></description>
+  <inletlist>
+  </inletlist>
+  <outletlist>
+  </outletlist>
+  <objarglist>
+  </objarglist>
+  <attributelist>
+  </attributelist>
+  <methodlist>
+    <method name="/post/version">
+      <description>print the version in the Max Console.</description>
+    </method>
+    <method name="/post/doc">
+      <description>print the help documentation in the Max Console.</description>
+    </method>
+    <method name="/post/state">
+      <description>print the OSC status in the Max Console.</description>
+    </method>
+    <method name="/dump">
+      <description>send the current state of the object through the dump outlet.</description>
+    </method>
+    <method name="/preset/load">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>load a preset from file (.txt, .osc, .coll).</description>
+    </method>
+    <method name="/preset/export">
+      <arglist>
+        <arg type="string"/>
+      </arglist>
+      <description>export a preset to file (.txt, .osc, .coll).</description>
+    </method>
+    <method name="/status">
+      <description>open the status window and bring it to front.</description>
+    </method>
+    <method name="/status/open">
+      <description>open the status window and bring it to front.</description>
+    </method>
+    <method name="/status/close">
+      <description>close the status window.</description>
+    </method>
+    <method name="/status/openorclose">
+      <description>open the status window if it was closed; close it if it was opened.</description>
+    </method>
+    <method name="/status/font/size">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the font size of the status window.</description>
+    </method>
+    <method name="/help">
+      <description>open the help window and bring it to front.</description>
+    </method>
+    <method name="/help/open">
+      <description>open the help window and bring it to front.</description>
+    </method>
+    <method name="/help/close">
+      <description>close the help window.</description>
+    </method>
+    <method name="/help/openorclose">
+      <description>open the help window if it was closed; close it if it was opened.</description>
+    </method>
+    <method name="/help/font/size">
+      <arglist>
+        <arg type="number"/>
+      </arglist>
+      <description>set the font size of the help window.</description>
+    </method>
+  </methodlist>
+  <seealsolist>
+  </seealsolist>
+</c74object>

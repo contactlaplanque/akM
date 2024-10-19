@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- created by libisp v5.0.2 - 18/11/2019 - 13h03m14s -->
+
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink" width="76.845" height="68.023"
+     viewBox="0 0 76.845 68.023" overflow="visible" enable-background="new 0 0 76.845 68.023"
+     xml:space="preserve">
+  <circle stroke="#000000" cx="38.435" cy="5.435" r="4.935"/>
+  <circle stroke="#000000" cx="14.435" cy="37.435" r="13.935"/>
+  <circle stroke="#000000" cx="61.927" cy="37.557" r="14.418"/>
+  <radialGradient id="XMLID_2_" cx="9.9937" cy="-0.4907" r="85.8003" gradientUnits="userSpaceOnUse">
+    <stop offset="0" style="stop-color:#FFFFFF"/>
+    <stop offset="1" style="stop-color:#000000"/>
+  </radialGradient>
+  <circle fill="url(#XMLID_2_)" stroke="#000000" cx="38.614" cy="36.209"
+          r="31.313"/>
+</svg>
