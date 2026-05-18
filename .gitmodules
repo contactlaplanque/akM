@@ -1,0 +1,3 @@
+[submodule "akm-server"]
+	path = akm-server
+	url = https://github.com/contactlaplanque/akm-server
