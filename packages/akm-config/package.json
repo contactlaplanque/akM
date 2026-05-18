@@ -1,0 +1,12 @@
+{
+  "name": "@akm/config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./schemas/layout": "./schemas/layout.schema.json",
+    "./schemas/server": "./schemas/server.schema.json",
+    "./venues/main/layout": "./venues/main/layout.json",
+    "./venues/main/server": "./venues/main/server.json"
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://akm.dev/schemas/server.schema.json",
+  "title": "akm server",
+  "type": "object",
+  "required": ["schemaVersion", "audio", "scServer", "osc", "sources", "reverb", "telemetry"],
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "audio": {
+      "type": "object",
+      "required": ["device", "sampleRate", "numInputBusChannels", "numOutputBusChannels", "safetyClipThreshold"],
+      "properties": {
+        "device": { "type": "string" },
+        "inDevice": { "type": "string" },
+        "outDevice": { "type": "string" },
+        "sampleRate": { "type": "number", "exclusiveMinimum": 0 },
+        "numInputBusChannels": { "type": "integer", "minimum": 1 },
+        "numOutputBusChannels": { "type": "integer", "minimum": 1 },
+        "safetyClipThreshold": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "scServer": {
+      "type": "object",
+      "required": ["numBuffers", "memSize", "numWireBufs", "maxNodes"],
+      "properties": {
+        "numBuffers": { "type": "integer", "minimum": 1024 },
+        "memSize": { "type": "integer", "minimum": 8192 },
+        "numWireBufs": { "type": "integer", "minimum": 64 },
+        "maxNodes": { "type": "integer", "minimum": 1024 }
+      }
+    },
+    "osc": {
+      "type": "object",
+      "required": ["listen", "reply"],
+      "properties": {
+        "listen": {
+          "type": "object",
+          "required": ["host", "port"],
+          "properties": {
+            "host": { "type": "string" },
+            "port": { "type": "integer", "minimum": 1, "maximum": 65535 }
+          }
+        },
+        "reply": {
+          "type": "object",
+          "required": ["host", "port"],
+          "properties": {
+            "host": { "type": "string" },
+            "port": { "type": "integer", "minimum": 1, "maximum": 65535 }
+          }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "inputChannel"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "inputChannel": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "reverb": {
+      "type": "object",
+      "required": ["decay", "feedback", "subMidEnabled"],
+      "properties": {
+        "decay": { "type": "number", "minimum": 0 },
+        "feedback": { "type": "number", "minimum": 0, "maximum": 1 },
+        "subMidEnabled": { "type": "boolean" }
+      }
+    },
+    "telemetry": {
+      "type": "object",
+      "required": ["stateBroadcastHz", "metersHz"],
+      "properties": {
+        "stateBroadcastHz": { "type": "number", "minimum": 1, "maximum": 60 },
+        "metersHz": { "type": "number", "minimum": 1, "maximum": 60 }
+      }
+    },
+    "performance": {
+      "type": "object",
+      "properties": {
+        "pannerUpdateHz": { "type": "number", "minimum": 0, "maximum": 120 }
+      }
+    }
+  }
+}

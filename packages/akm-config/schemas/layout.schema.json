@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://akm.dev/schemas/layout.schema.json",
+  "title": "akm layout",
+  "type": "object",
+  "required": ["schemaVersion", "id", "name", "coordinateSystem", "speakers"],
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "id": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "coordinateSystem": {
+      "type": "object",
+      "required": ["unit", "origin"],
+      "properties": {
+        "unit": { "type": "string", "enum": ["m"] },
+        "origin": { "type": "string" }
+      }
+    },
+    "panning": {
+      "type": "object",
+      "properties": {
+        "soundSpeed": { "type": "number", "exclusiveMinimum": 0 },
+        "centroid": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          ]
+        },
+        "maxRadius": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "number", "exclusiveMinimum": 0 }
+          ]
+        }
+      }
+    },
+    "speakers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "role", "position", "outputChannel"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "role": { "type": "string", "enum": ["satellite", "sub_mid", "sub_lf"] },
+          "label": { "type": "string" },
+          "position": {
+            "type": "object",
+            "required": ["x", "y", "z"],
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" },
+              "z": { "type": "number" }
+            }
+          },
+          "outputChannel": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}

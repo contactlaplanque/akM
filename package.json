@@ -1,0 +1,9 @@
+{
+  "name": "akm",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
+  "scripts": {
+    "server:boot": "sclang \"akm-server/bootstrap.scd\" -- \"packages/akm-config/venues/main/layout.json\" \"packages/akm-config/venues/main/server.json\"",
+    "validate:config": "node -e \"console.log('Config validation is documented in packages/akm-config/README.md')\""
+  }
+}

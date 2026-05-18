@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "main-36-4-2",
+  "name": "Main 36 SAT + 4 SUB_MID + 2 SUB_LF",
+  "coordinateSystem": {
+    "unit": "m",
+    "origin": "center"
+  },
+  "panning": {
+    "soundSpeed": 344.0,
+    "centroid": null,
+    "maxRadius": null
+  },
+  "speakers": [
+    { "id": "sat_1_1", "role": "satellite", "position": { "x": -6.45, "y": -3.5, "z": 0.3 }, "outputChannel": 0 },
+    { "id": "sat_1_2", "role": "satellite", "position": { "x": -6.45, "y": -3.5, "z": 1.7 }, "outputChannel": 1 },
+    { "id": "sat_1_3", "role": "satellite", "position": { "x": -6.45, "y": -3.5, "z": 3.0 }, "outputChannel": 2 },
+    { "id": "sat_2_1", "role": "satellite", "position": { "x": -2.15, "y": -3.5, "z": 0.3 }, "outputChannel": 3 },
+    { "id": "sat_2_2", "role": "satellite", "position": { "x": -2.15, "y": -3.5, "z": 1.7 }, "outputChannel": 4 },
+    { "id": "sat_2_3", "role": "satellite", "position": { "x": -2.15, "y": -3.5, "z": 3.0 }, "outputChannel": 5 },
+    { "id": "sat_3_1", "role": "satellite", "position": { "x": 2.15, "y": -3.5, "z": 0.3 }, "outputChannel": 6 },
+    { "id": "sat_3_2", "role": "satellite", "position": { "x": 2.15, "y": -3.5, "z": 1.7 }, "outputChannel": 7 },
+    { "id": "sat_3_3", "role": "satellite", "position": { "x": 2.15, "y": -3.5, "z": 3.0 }, "outputChannel": 8 },
+    { "id": "sat_4_1", "role": "satellite", "position": { "x": 6.45, "y": -3.5, "z": 0.3 }, "outputChannel": 9 },
+    { "id": "sat_4_2", "role": "satellite", "position": { "x": 6.45, "y": -3.5, "z": 1.7 }, "outputChannel": 10 },
+    { "id": "sat_4_3", "role": "satellite", "position": { "x": 6.45, "y": -3.5, "z": 3.0 }, "outputChannel": 11 },
+
+    { "id": "sat_5_1", "role": "satellite", "position": { "x": -6.45, "y": 0.0, "z": 0.3 }, "outputChannel": 12 },
+    { "id": "sat_5_2", "role": "satellite", "position": { "x": -6.45, "y": 0.0, "z": 1.7 }, "outputChannel": 13 },
+    { "id": "sat_5_3", "role": "satellite", "position": { "x": -6.45, "y": 0.0, "z": 3.0 }, "outputChannel": 14 },
+    { "id": "sat_6_1", "role": "satellite", "position": { "x": -2.15, "y": 0.0, "z": 0.3 }, "outputChannel": 15 },
+    { "id": "sat_6_2", "role": "satellite", "position": { "x": -2.15, "y": 0.0, "z": 1.7 }, "outputChannel": 16 },
+    { "id": "sat_6_3", "role": "satellite", "position": { "x": -2.15, "y": 0.0, "z": 3.0 }, "outputChannel": 17 },
+    { "id": "sat_7_1", "role": "satellite", "position": { "x": 2.15, "y": 0.0, "z": 0.3 }, "outputChannel": 18 },
+    { "id": "sat_7_2", "role": "satellite", "position": { "x": 2.15, "y": 0.0, "z": 1.7 }, "outputChannel": 19 },
+    { "id": "sat_7_3", "role": "satellite", "position": { "x": 2.15, "y": 0.0, "z": 3.0 }, "outputChannel": 20 },
+    { "id": "sat_8_1", "role": "satellite", "position": { "x": 6.45, "y": 0.0, "z": 0.3 }, "outputChannel": 21 },
+    { "id": "sat_8_2", "role": "satellite", "position": { "x": 6.45, "y": 0.0, "z": 1.7 }, "outputChannel": 22 },
+    { "id": "sat_8_3", "role": "satellite", "position": { "x": 6.45, "y": 0.0, "z": 3.0 }, "outputChannel": 23 },
+
+    { "id": "sat_9_1", "role": "satellite", "position": { "x": -6.45, "y": 3.5, "z": 0.3 }, "outputChannel": 24 },
+    { "id": "sat_9_2", "role": "satellite", "position": { "x": -6.45, "y": 3.5, "z": 1.7 }, "outputChannel": 25 },
+    { "id": "sat_9_3", "role": "satellite", "position": { "x": -6.45, "y": 3.5, "z": 3.0 }, "outputChannel": 26 },
+    { "id": "sat_10_1", "role": "satellite", "position": { "x": -2.15, "y": 3.5, "z": 0.3 }, "outputChannel": 27 },
+    { "id": "sat_10_2", "role": "satellite", "position": { "x": -2.15, "y": 3.5, "z": 1.7 }, "outputChannel": 28 },
+    { "id": "sat_10_3", "role": "satellite", "position": { "x": -2.15, "y": 3.5, "z": 3.0 }, "outputChannel": 29 },
+    { "id": "sat_11_1", "role": "satellite", "position": { "x": 2.15, "y": 3.5, "z": 0.3 }, "outputChannel": 30 },
+    { "id": "sat_11_2", "role": "satellite", "position": { "x": 2.15, "y": 3.5, "z": 1.7 }, "outputChannel": 31 },
+    { "id": "sat_11_3", "role": "satellite", "position": { "x": 2.15, "y": 3.5, "z": 3.0 }, "outputChannel": 32 },
+    { "id": "sat_12_1", "role": "satellite", "position": { "x": 6.45, "y": 3.5, "z": 0.3 }, "outputChannel": 33 },
+    { "id": "sat_12_2", "role": "satellite", "position": { "x": 6.45, "y": 3.5, "z": 1.7 }, "outputChannel": 34 },
+    { "id": "sat_12_3", "role": "satellite", "position": { "x": 6.45, "y": 3.5, "z": 3.0 }, "outputChannel": 35 },
+
+    { "id": "sub_mid_1", "role": "sub_mid", "position": { "x": -4.3, "y": -1.75, "z": 0.3 }, "outputChannel": 36 },
+    { "id": "sub_mid_2", "role": "sub_mid", "position": { "x": 4.3, "y": -1.75, "z": 0.3 }, "outputChannel": 37 },
+    { "id": "sub_mid_3", "role": "sub_mid", "position": { "x": -4.3, "y": 1.75, "z": 0.3 }, "outputChannel": 38 },
+    { "id": "sub_mid_4", "role": "sub_mid", "position": { "x": 4.3, "y": 1.75, "z": 0.3 }, "outputChannel": 39 },
+
+    { "id": "sub_lf_1", "role": "sub_lf", "position": { "x": -5.132, "y": -2.784, "z": 0.3 }, "outputChannel": 40 },
+    { "id": "sub_lf_2", "role": "sub_lf", "position": { "x": 5.132, "y": 2.784, "z": 0.3 }, "outputChannel": 41 }
+  ]
+}
