@@ -11,13 +11,10 @@ node_modules
 dist
 dist-ssr
 *.local
-pnpm-lock.yaml*
-.pnpm-store/
 
 # Editor directories and files
 .vscode/*
-.cursor/*
-**/.cursor/
+.cursor/
 !.vscode/extensions.json
 .idea
 .DS_Store

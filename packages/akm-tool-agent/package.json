@@ -1,0 +1,21 @@
+{
+  "name": "@akm/tool-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsc --watch & node --watch dist/index.js",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "osc": "^2.4.5",
+    "ws": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/ws": "latest",
+    "typescript": "^5.9.0"
+  }
+}
