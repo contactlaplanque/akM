@@ -148,6 +148,8 @@ After M5, these five milestones are **fully parallel** — each builds one self-
 
 ### M6 — Source inspector + Sources rail
 
+**Status:** Done (2026-05-19)
+
 **Scope:** The 280px sources rail and the 480px source inspector. Both read/write the same `selectedSourceId` and `sources[selected]` slice of the mock state.
 
 **Deliverable:**
@@ -164,6 +166,8 @@ After M5, these five milestones are **fully parallel** — each builds one self-
 
 ### M7 — Mixer panel
 
+**Status:** Done (2026-05-19)
+
 **Scope:** Full-width mixer view: 42 channel strips, grouped, with vertical faders + VU + mute.
 
 **Deliverable:**
@@ -179,27 +183,63 @@ After M5, these five milestones are **fully parallel** — each builds one self-
 
 ---
 
-### M8 — EQ panel (curve mode)
+### M8 — EQ panel (curve mode, DSSSP)
 
-**Scope:** Per-role 5-band EQ + HPF, **curve mode** as the production choice. Cards mode is optional/future.
+**Status:** Done (2026-05-19)
+
+**Scope:** Per-role **5-band EQ + group high-pass filter (HPF)**, **curve mode** as the production choice. Cards mode is optional/future.
+
+Use **[DSSSP](https://github.com/numberonebot/dsssp)** (`dsssp` on npm, [docs](https://dsssp.io/docs/)) for the frequency-response graph, biquad curve math, and interactive filter handles — **do not** port the handoff’s custom `<canvas>` / approximate `bandMagDb` math. Port the **panel chrome** (role tabs, band readout, layout, OSC locking) from `design_handoff_akm_tool/src/panels.jsx` and wire it to existing `useAkmState` (`eqByRole`, `filterByRole`, `selectedRole`, `oscDrivenKeys`).
+
+**Design choice — unified graphical editor:** Edit **all six filters** (5 EQ bands + 1 group HPF per role) on a **single** log-frequency graph. Do **not** use a separate left-column slider panel for the HPF as the primary control (the handoff already drew the HPF as a cutoff on the main curve; sliders were secondary). Optional compact numeric readout for HPF freq/`rq` is fine for precision and OSC badges.
+
+**Dependency (add in M8):**
+
+- `dsssp` — React SVG frequency-response components + biquad math. **License:** [AGPL-3.0](https://github.com/numberonebot/dsssp/blob/main/LICENSE); confirm compliance for this project or obtain commercial licensing from the author before shipping.
 
 **Deliverable:**
 
-- `EqPanel.tsx`:
-  - Role tabs at top: SAT / SUB_MID / SUB_LF (bind to `selectedRole`).
-  - Left column: HP filter (`filterByRole[role]`) — freq + Q sliders.
-  - Center: large drag-to-edit canvas — log freq 20 Hz–20 kHz, ±12 dB linear; 5 band handles in cyan/violet/green/orange/pink; drag to update freq/gain; right-drag/scroll for Q.
-  - Right column: numeric freq/gainDb/rq for each band.
-  - Port the curve math from `design_handoff_akm_tool/src/panels.jsx`.
-- Any field with key in `oscDrivenKeys` (e.g. `eq.satellite.peak2.gainDb`) becomes amber + read-only.
+- **`akm-tool/src/panels/eq/`**
+  - **`EqPanel.tsx`** — shell from handoff: role tabs (SAT / SUB_MID / SUB_LF → `selectedRole`), master **EQ on** toggle (`eq.enabled`), two-column body (graph + readout). Wire `setEqByRole` / `setFilterByRole`; do not change `useAkmState` shape.
+  - **`EqCurveGraph.tsx`** — DSSSP composition:
+    - `FrequencyResponseGraph` with scale `minFreq: 20`, `maxFreq: 20000`, `minGain: -12`, `maxGain: 12`, `sampleRate` from `serverConfig.audio.sampleRate`.
+    - `CompositeCurve` for the summed response (EQ bands + HPF when active).
+    - Per filter: `FilterGradient` + `FilterCurve`; per band: `FilterPoint` (drag freq/gain, **mouse wheel** for Q — matches handoff hint “scroll = Q”).
+    - **HPF:** map `filterByRole[role]` → DSSSP `HIGHPASS2` (or variant verified against SuperCollider in M13); distinct handle color (e.g. magenta/pink); `FilterCurve` with `showPin` for cutoff line; include HPF in composite when enabled.
+    - `PointerTracker` when not dragging (optional, per demo).
+    - `ResizeObserver` on graph container for width (handoff pattern).
+  - **`eq-adapters.ts`** — `EqBand` / `FilterState` ↔ DSSSP `GraphFilter` (`gainDb` → `gain`, `freq` → `freq`, `rq` → `q` with conversion TBD vs server; `lowshelf`/`peak`/`highshelf` → `LOWSHELF2` / `PEAK` / `HIGHSHELF2`; respect `enabled` / bypass).
+  - **`eq-dsssp-theme.ts`** — `GraphThemeOverride` using M3 tokens + handoff band colors: `#22d3ee`, `#a78bfa`, `#34d399`, `#fb923c`, `#f472b6` (see `BAND_COLORS` in handoff `panels.jsx`).
+  - **`BandReadout.tsx`** — right column: per-band rows (freq / gainDb / rq), band enable, selection highlight; reuse M4 `NumStep` / click-to-edit fields; extend pool for HPF OSC keys (e.g. `filter.satellite.freq`, `filter.satellite.rq`) when M14 wires takeover.
+- **`akm-tool/src/styles/eq.css`** — port `.eq-*`, `.band-*` from handoff `app.css`.
+- **`LayoutDaw.tsx`** — replace EQ placeholder with `<EqPanel />` (only touch the EQ view branch; avoid M6/M7/M9/M10 files).
 
-**Depends on:** M5.
+**OSC / read-only behavior:**
 
-**Acceptance test:** Switching role tabs reflects different curves; dragging a band handle updates the numeric fields and the rendered curve; manually adding `eq.satellite.peak2.gainDb` to `oscDrivenKeys` locks that field in amber.
+- EQ fields: keys like `eq.satellite.peak2.gainDb` → amber + read-only on readout; on graph, set `FilterPoint` `dragX` / `dragY` / `wheelQ` false for locked axes.
+- HPF fields: same pattern for `filter.*` keys when present in `oscDrivenKeys`.
+- Clamps: band gain ±12 dB on graph (per brief); HPF freq clamp **20–500 Hz** in adapter/readout even though the graph spans 20 Hz–20 kHz (avoid dragging HPF to audible nonsense).
+
+**Out of scope for M8:**
+
+- Cards mode (`eq-cards` in handoff).
+- Porting handoff canvas curve math.
+- A second `FrequencyResponseGraph` dedicated only to HPF.
+- Live OSC send (M13/M14); mock state only.
+
+**Parallel work:** M8 owns `src/panels/eq/**`, `src/styles/eq.css`, and the EQ branch in `LayoutDaw.tsx`. Do not modify `useAkmState` types, primitives, mixer, source panels, or 3D scene.
+
+**Depends on:** M5 (M4 primitives for readout fields).
+
+**Acceptance test:** Role tabs switch `eqByRole` / `filterByRole` and update the graph + readout. Dragging any of the **five** band handles updates freq/gain and the composite curve; wheel on a handle updates `rq` and readout. **HPF** handle moves cutoff (freq) and wheel adjusts Q; composite curve includes HPF. Right-column numerics stay in sync. Adding `eq.satellite.peak2.gainDb` to `oscDrivenKeys` locks that band’s gain on the graph and in the readout (amber). `/playground` optional: small DSSSP spike is not required if EQ view passes the above.
+
+**Spike (recommended before full panel):** `pnpm add dsssp`, minimal graph on `/playground` or in `EqCurveGraph`, validate dark theme + band colors against M3 tokens.
 
 ---
 
 ### M9 — System panel
+
+**Status:** Done (2026-05-19)
 
 **Scope:** Three-column system view.
 
@@ -301,6 +341,8 @@ After Phase 3, the UI is fully built but driven by mock state. These four milest
 - Keep the **same state shape** so no panel needs to change.
 - Add a fallback: if disconnected, freeze meters at zero and grey the panels (`opacity: 0.7`).
 
+**Caveat — `source.active` (from M9):** The mock simulator sets `SourceSample.active` from a fixed index set for demos; it is **not** derived from input level. OSC state messages today do not define an `active` field. During M13, **define and document an explicit web-app rule** for when a source is `active` vs idle, and apply it consistently everywhere that flag is used: System panel “Active sources” count ([`LayoutSummaryCard`](akm-tool/src/panels/system/LayoutSummaryCard.tsx)), sources rail `is-idle` / mini VU / position line ([`SourcesRail`](akm-tool/src/components/panels/SourcesRail.tsx)), and Source inspector live/idle ([`SourceInspector`](akm-tool/src/components/panels/SourceInspector.tsx)). Options to decide: server publishes a flag, infer from non-default position/params, threshold on meter level, or a dedicated OSC address — pick one and keep mock + live paths aligned.
+
 **Depends on:** M11, plus whichever Phase 3 panels you want to be live (M6–M10 don't have to be done — the hook can ship before all panels).
 
 **Acceptance test:** With agent + mock-akm-server running, the Source view shows source spheres animating in 3D from real OSC state messages; mixer meters animate from real meter messages; moving the Source inspector's `radius` slider sends `/akm/source/srcX/params` and the next echoed state matches.
@@ -365,7 +407,8 @@ When starting work on a milestone:
 
 ## References
 
-- **UI controls (faders/knobs):** [ouestlabs/audio-ui](https://github.com/ouestlabs/audio-ui) — shadcn registry; install `fader` (+ `knob` when needed for EQ).
+- **EQ curve / filter graph (M8):** [DSSSP](https://github.com/numberonebot/dsssp) — `FrequencyResponseGraph`, `FilterPoint`, `FilterCurve`, `CompositeCurve`; [docs](https://dsssp.io/docs/), [demo](https://dsssp.io/demo/), [dsssp-demo](https://github.com/NumberOneBot/dsssp-demo) for integration patterns.
+- **UI controls (faders/knobs):** [ouestlabs/audio-ui](https://github.com/ouestlabs/audio-ui) — shadcn registry; install `fader` (EQ bands use DSSSP on-graph editing, not knobs).
 - **Icons:** [lucide-react](https://lucide.dev/) (project default per `components.json`).
 - **Design source of truth:** `/Users/nicolas/Desktop/design_handoff_akm_tool/`
   - `README.md` — full design brief (visual, behavioral, OSC contract)

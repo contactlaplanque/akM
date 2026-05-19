@@ -15,6 +15,10 @@ type SourceParams = {
   reverbMix: number
 }
 
+export type SourceParamPatch = Partial<
+  Pick<SourceParams, "radius" | "exponentA" | "delayLevel" | "reverbMix">
+>
+
 export function sourceHue(index: number): number {
   return (index * 137.508) % 360
 }
@@ -45,6 +49,16 @@ export function createSimulator(sources: SourceConfig[]) {
     }
   })
 
+  const idToIndex = new Map(sources.map((src, index) => [src.id, index]))
+
+  const patchSourceParams = (sourceId: string, patch: SourceParamPatch) => {
+    const index = idToIndex.get(sourceId)
+    if (index == null) {
+      return
+    }
+    Object.assign(params[index], patch)
+  }
+
   const sample = (time: number): SourceSample[] => {
     const t = (time - t0) / 1000
     return sources.map((src, index) => {
@@ -56,10 +70,10 @@ export function createSimulator(sources: SourceConfig[]) {
           posX: 0,
           posY: 0,
           posZ: 1.7,
-          radius: 3,
-          exponentA: 2,
-          delayLevel: 1,
-          reverbMix: 0.2,
+          radius: p.radius,
+          exponentA: p.exponentA,
+          delayLevel: p.delayLevel,
+          reverbMix: p.reverbMix,
           level: 0,
           active: false,
         }
@@ -85,5 +99,5 @@ export function createSimulator(sources: SourceConfig[]) {
     })
   }
 
-  return { sample, params }
+  return { sample, patchSourceParams }
 }

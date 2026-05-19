@@ -1,0 +1,145 @@
+.daw-panel-body:has(.system) {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+  padding: 0;
+}
+
+.system {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+}
+
+.system-col {
+  background: var(--panel-lo);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.system-col .section-head {
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--hairline);
+  margin-bottom: 4px;
+}
+
+.system-col-layout {
+  background:
+    radial-gradient(640px 200px at 0% 0%, oklch(0.68 0.13 188 / 0.06), transparent 60%),
+    var(--panel-lo);
+}
+
+.system-config-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.system-config-stack .kv-cell {
+  padding: 8px 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.system-controls-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.layout-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 4px;
+}
+
+.layout-card-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.layout-card-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.layout-card-k {
+  font-size: 9.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.layout-card-v {
+  font-size: 13px;
+  color: var(--fg);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.layout-card-roles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.layout-card-role {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent, var(--border-2));
+  border-radius: var(--radius);
+  position: relative;
+}
+
+.layout-role-swatch {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.layout-role-count {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--fg);
+  letter-spacing: -0.02em;
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+
+.layout-role-label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.layout-card-role-total {
+  border-left-color: var(--primary);
+  background: var(--primary-soft);
+}

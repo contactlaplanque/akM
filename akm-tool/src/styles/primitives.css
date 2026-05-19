@@ -426,6 +426,19 @@
   padding-right: 26px;
 }
 
+.vfader-fill {
+  height: 100%;
+  min-height: 0;
+}
+
+.vfader-fill .vfader-track {
+  height: 100%;
+}
+
+.vfader-compact {
+  padding-right: 0;
+}
+
 .vfader-track {
   width: 24px;
 }

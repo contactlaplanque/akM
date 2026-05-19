@@ -134,6 +134,10 @@ export type MetersState = {
   speakerOuts: number[]
 }
 
+export type SourceParamPatch = Partial<
+  Pick<SourceSample, "radius" | "exponentA" | "delayLevel" | "reverbMix">
+>
+
 export type AkmState = {
   layout: Layout
   serverConfig: ServerConfig
@@ -175,6 +179,7 @@ export type AkmState = {
   logs: LogEntry[]
   meters: MetersState
   oscDrivenKeys: Set<string>
+  updateSourceParams: (id: string, patch: SourceParamPatch) => void
   showSpeakerLabels: boolean
   setShowSpeakerLabels: Dispatch<SetStateAction<boolean>>
 }

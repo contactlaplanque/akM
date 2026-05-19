@@ -1,6 +1,10 @@
 import { useMemo, useState } from "react"
 
+import { SourceInspector, SourcesRail } from "@/components/panels"
 import { AkmIcon } from "@/components/primitives"
+import { EqPanel } from "@/panels/eq"
+import { MixerPanel } from "@/panels/mixer"
+import { SystemPanel } from "@/panels/system"
 import { useAkmState } from "@/state/useAkmState"
 
 import { BottomStripPlaceholder } from "./BottomStripPlaceholder"
@@ -16,10 +20,10 @@ type NavItem = {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: "source", label: "Source", icon: "signal", placeholder: "Source inspector placeholder (M6)" },
-  { id: "mixer", label: "Mixer", icon: "sliders", placeholder: "Mixer panel placeholder (M7)" },
-  { id: "eq", label: "EQ", icon: "layers", placeholder: "EQ panel placeholder (M8)" },
-  { id: "system", label: "System", icon: "cpu", placeholder: "System panel placeholder (M9)" },
+  { id: "source", label: "Source", icon: "signal", placeholder: "" },
+  { id: "mixer", label: "Mixer", icon: "sliders", placeholder: "" },
+  { id: "eq", label: "EQ", icon: "layers", placeholder: "" },
+  { id: "system", label: "System", icon: "cpu", placeholder: "" },
 ]
 
 export function LayoutDaw() {
@@ -29,6 +33,8 @@ export function LayoutDaw() {
 
   const isSourceView = view === "source"
   const activeNav = useMemo(() => NAV_ITEMS.find((item) => item.id === view), [view])
+  const selectedIndex = st.sources.findIndex((s) => s.id === st.selectedSourceId)
+  const selectedSource = selectedIndex >= 0 ? st.sources[selectedIndex] : undefined
 
   return (
     <div className="app app-daw">
@@ -53,7 +59,25 @@ export function LayoutDaw() {
         {isSourceView ? (
           <>
             <section className="daw-sources">
-              <div className="sources-placeholder">Sources rail placeholder (M6)</div>
+              <SourcesRail
+                sources={st.sources}
+                sourceVisibility={st.sourceVisibility}
+                selectedSourceId={st.selectedSourceId}
+                onSelectSource={st.setSelectedSourceId}
+                onToggleSource={(id) =>
+                  st.setSourceVisibility((v) => ({ ...v, [id]: !v[id] }))
+                }
+                onShowAll={() =>
+                  st.setSourceVisibility(
+                    Object.fromEntries(st.sources.map((s) => [s.id, true])),
+                  )
+                }
+                onHideAll={() =>
+                  st.setSourceVisibility(
+                    Object.fromEntries(st.sources.map((s) => [s.id, false])),
+                  )
+                }
+              />
             </section>
             <section className="daw-scene">
               <div className="scene-placeholder">3D scene placeholder (M10)</div>
@@ -66,7 +90,62 @@ export function LayoutDaw() {
             <div className="daw-panel-title">{activeNav?.label ?? "View"}</div>
           </div>
           <div className="daw-panel-body">
-            <div className="panel-placeholder">{activeNav?.placeholder}</div>
+            {view === "source" ? (
+              <SourceInspector
+                source={selectedSource}
+                sources={st.sources}
+                selectedIndex={selectedIndex}
+                oscDrivenKeys={st.oscDrivenKeys}
+                onSelect={st.setSelectedSourceId}
+                onUpdateParams={st.updateSourceParams}
+              />
+            ) : view === "mixer" ? (
+              <MixerPanel
+                layout={st.layout}
+                gains={st.gains}
+                mutes={st.mutes}
+                onGainChange={(id, value) =>
+                  st.setGains((current) => ({ ...current, [id]: value }))
+                }
+                onMuteToggle={(id) =>
+                  st.setMutes((current) => ({ ...current, [id]: !current[id] }))
+                }
+                selectedSpeakerId={st.selectedSpeakerId}
+                onSelectSpeaker={st.setSelectedSpeakerId}
+                meters={st.meters.speakerOuts}
+                oscDrivenKeys={st.oscDrivenKeys}
+              />
+            ) : view === "eq" ? (
+              <EqPanel
+                selectedRole={st.selectedRole}
+                onRoleChange={st.setSelectedRole}
+                eqByRole={st.eqByRole}
+                onEqChange={(role, eq) =>
+                  st.setEqByRole((current) => ({ ...current, [role]: eq }))
+                }
+                filterByRole={st.filterByRole}
+                onFilterChange={(role, filter) =>
+                  st.setFilterByRole((current) => ({ ...current, [role]: filter }))
+                }
+                sampleRate={st.serverConfig.audio.sampleRate}
+                oscDrivenKeys={st.oscDrivenKeys}
+              />
+            ) : view === "system" ? (
+              <SystemPanel
+                layout={st.layout}
+                serverConfig={st.serverConfig}
+                sources={st.sources}
+                systemGainDb={st.systemGainDb}
+                onSystemGainChange={st.setSystemGainDb}
+                reverb={st.reverb}
+                onReverbChange={st.setReverb}
+                subMidReverb={st.subMidReverb}
+                onSubMidReverbChange={st.setSubMidReverb}
+                oscDrivenKeys={st.oscDrivenKeys}
+              />
+            ) : activeNav?.placeholder ? (
+              <div className="panel-placeholder">{activeNav.placeholder}</div>
+            ) : null}
           </div>
         </section>
       </main>

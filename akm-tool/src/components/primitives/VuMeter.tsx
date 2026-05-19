@@ -9,6 +9,8 @@ type VuMeterProps = {
   orient?: "v" | "h"
   size?: number
   length?: number
+  /** When true, meter stretches along the long axis to fill the parent. */
+  fill?: boolean
   peakHold?: number | null
   className?: string
   style?: CSSProperties
@@ -21,6 +23,7 @@ export function VuMeter({
   orient = "v",
   size = 4,
   length = 110,
+  fill = false,
   peakHold,
   className,
   style,
@@ -34,13 +37,22 @@ export function VuMeter({
   )
 
   const isVertical = orient === "v"
-  const dimensions = isVertical
-    ? ({ width: size, height: length } satisfies CSSProperties)
-    : ({ width: length, height: size } satisfies CSSProperties)
+  const dimensions: CSSProperties = fill
+    ? isVertical
+      ? { width: size }
+      : { height: size }
+    : isVertical
+      ? { width: size, height: length }
+      : { width: length, height: size }
 
   return (
     <div
-      className={cn("vu", isVertical ? "vu-v" : "vu-h", className)}
+      className={cn(
+        "vu",
+        isVertical ? "vu-v" : "vu-h",
+        fill && (isVertical ? "h-full min-h-0" : "w-full min-w-0"),
+        className,
+      )}
       style={{ ...dimensions, ...style }}
       role="meter"
       aria-valuemin={0}

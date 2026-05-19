@@ -5,6 +5,10 @@
 @import "@fontsource-variable/jetbrains-mono";
 @import "./styles/primitives.css";
 @import "./styles/layout-daw.css";
+@import "./styles/source-panels.css";
+@import "./styles/mixer.css";
+@import "./styles/eq.css";
+@import "./styles/system.css";
 
 @custom-variant dark (&:is(.dark *));
 

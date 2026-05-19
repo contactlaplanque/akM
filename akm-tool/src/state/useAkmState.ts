@@ -3,6 +3,7 @@ import {
   createContext,
   type ReactNode,
   useContext,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -22,6 +23,7 @@ import type {
   ServerConfig,
   SpeakerRole,
   ServerState,
+  SourceParamPatch,
 } from "./types"
 
 const layout = layoutData as Layout
@@ -37,6 +39,8 @@ const OSC_DRIVEN_POOL = [
   "eq.satellite.highShelf.freq",
   "eq.sub_mid.peak1.gainDb",
   "eq.sub_lf.lowShelf.gainDb",
+  "filter.satellite.freq",
+  "filter.satellite.rq",
   "src.src_01.radius",
   "src.src_03.reverbMix",
   "src.src_07.delayLevel",
@@ -125,6 +129,7 @@ function useAkmStateValue(): AkmState {
       new Set<string>([
         "eq.satellite.peak2.gainDb",
         "eq.satellite.peak2.freq",
+        "filter.satellite.freq",
         "src.src_03.reverbMix",
       ]),
   )
@@ -176,6 +181,11 @@ function useAkmStateValue(): AkmState {
     }, 9000)
 
     return () => window.clearInterval(intervalId)
+  }, [])
+
+  const updateSourceParams = useCallback((id: string, patch: SourceParamPatch) => {
+    simulatorRef.current.patchSourceParams(id, patch)
+    setSources((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)))
   }, [])
 
   const meters = useMemo(() => {
@@ -243,6 +253,7 @@ function useAkmStateValue(): AkmState {
     logs,
     meters,
     oscDrivenKeys,
+    updateSourceParams,
     showSpeakerLabels,
     setShowSpeakerLabels,
   }
