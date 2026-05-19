@@ -33,6 +33,27 @@ type UdpPortLike = {
 	send: (packet: { address: string; args: unknown[] }, host: string, port: number) => void;
 };
 
+function formatStartError(error: unknown, oscConfig: OscConfig): Error {
+	const messageText = error instanceof Error ? error.message : String(error);
+	const code =
+		typeof error === "object" &&
+		error !== null &&
+		"code" in error &&
+		typeof (error as { code?: unknown }).code === "string"
+			? (error as { code: string }).code
+			: null;
+
+	if (code === "EADDRINUSE") {
+		return new Error(
+			`Failed to start OSC bridge: reply port ${oscConfig.reply.host}:${oscConfig.reply.port} is already in use (EADDRINUSE).`
+		);
+	}
+
+	return new Error(
+		`Failed to start OSC bridge on ${oscConfig.reply.host}:${oscConfig.reply.port}: ${messageText}`
+	);
+}
+
 function asOscArg(value: unknown): OscArg | null {
 	if (typeof value === "number" && Number.isFinite(value)) {
 		return { type: Number.isInteger(value) ? "i" : "f", value };
@@ -109,9 +130,13 @@ export class OscBridge {
 	private msgCountCurrentSecond = 0;
 	private msgRate = 0;
 	private msgRateTicker: NodeJS.Timeout | null = null;
+	private started = false;
 
 	public constructor(private readonly oscConfig: OscConfig, logger?: Logger) {
 		this.logger = logger ?? console;
+		this.bus.on("error", () => {
+			// Keep EventEmitter "error" channel from crashing if no subscribers.
+		});
 	}
 
 	public async start(): Promise<void> {
@@ -165,28 +190,36 @@ export class OscBridge {
 		this.udpPort.on("error", (error: unknown) => {
 			const messageText = error instanceof Error ? error.message : String(error);
 			this.logger.error(`[osc-bridge] UDP error: ${messageText}`);
-			this.bus.emit("error", error);
-		});
-
-		await new Promise<void>((resolve, reject) => {
-			if (!this.udpPort) {
-				reject(new Error("UDP port is not initialized."));
-				return;
+			if (this.started) {
+				this.bus.emit("error", error);
 			}
-
-			const onReady = () => {
-				this.udpPort?.off("error", onError);
-				resolve();
-			};
-			const onError = (error: unknown) => {
-				this.udpPort?.off("ready", onReady);
-				reject(error);
-			};
-
-			this.udpPort.once("ready", onReady);
-			this.udpPort.once("error", onError);
-			this.udpPort.open();
 		});
+
+		try {
+			await new Promise<void>((resolve, reject) => {
+				if (!this.udpPort) {
+					reject(new Error("UDP port is not initialized."));
+					return;
+				}
+
+				const onReady = () => {
+					this.udpPort?.off("error", onError);
+					resolve();
+				};
+				const onError = (error: unknown) => {
+					this.udpPort?.off("ready", onReady);
+					reject(error);
+				};
+
+				this.udpPort.once("ready", onReady);
+				this.udpPort.once("error", onError);
+				this.udpPort.open();
+			});
+			this.started = true;
+		} catch (error) {
+			await this.close();
+			throw formatStartError(error, this.oscConfig);
+		}
 
 		this.msgRateTicker = setInterval(() => {
 			this.msgRate = this.msgCountCurrentSecond;
@@ -256,6 +289,8 @@ export class OscBridge {
 	}
 
 	public async close(): Promise<void> {
+		this.started = false;
+
 		if (this.msgRateTicker) {
 			clearInterval(this.msgRateTicker);
 			this.msgRateTicker = null;
