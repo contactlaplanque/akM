@@ -6,6 +6,7 @@ import {
   type ClientToAgentMessage,
   type OscArg,
   type ServerStatusMessage,
+  type StateSavedMessage,
 } from "@/services/agent-protocol"
 
 const DEFAULT_WS_URL = "ws://127.0.0.1:4280"
@@ -53,6 +54,7 @@ export class AgentClient {
   private readonly agentStatusListeners = new Set<Listener<AgentStatusMessage>>()
   private readonly serverStatusListeners = new Set<Listener<ServerStatusMessage>>()
   private readonly oscListeners = new Set<Listener<AgentOscMessage>>()
+  private readonly stateSavedListeners = new Set<Listener<StateSavedMessage>>()
 
   constructor(options: AgentClientOptions = {}) {
     this.url = options.url ?? import.meta.env.VITE_AGENT_WS_URL ?? DEFAULT_WS_URL
@@ -124,8 +126,16 @@ export class AgentClient {
     return subscribe(this.oscListeners, listener)
   }
 
+  onStateSaved(listener: Listener<StateSavedMessage>): () => void {
+    return subscribe(this.stateSavedListeners, listener)
+  }
+
   sendOsc(address: string, args: OscArg[]): void {
     this.send({ type: "osc", address, args })
+  }
+
+  saveState(state: Record<string, unknown>): void {
+    this.send({ type: "save_state", state })
   }
 
   serverStart(): void {
@@ -220,6 +230,11 @@ export class AgentClient {
     if (parsed.message.type === "server_status") {
       this.currentServerStatus = parsed.message
       emit(this.serverStatusListeners, parsed.message)
+      return
+    }
+
+    if (parsed.message.type === "state_saved") {
+      emit(this.stateSavedListeners, parsed.message)
       return
     }
 

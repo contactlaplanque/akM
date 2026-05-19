@@ -33,11 +33,17 @@ export type ServerRestartMessage = {
 	type: "server_restart";
 };
 
+export type SaveStateMessage = {
+	type: "save_state";
+	state: Record<string, unknown>;
+};
+
 export type ClientToAgentMessage =
 	| ClientOscMessage
 	| ServerStartMessage
 	| ServerStopMessage
-	| ServerRestartMessage;
+	| ServerRestartMessage
+	| SaveStateMessage;
 
 export type AgentOscMessage = {
 	type: "osc";
@@ -59,10 +65,17 @@ export type ServerStatusMessage = {
 	msgRate?: number;
 };
 
+export type StateSavedMessage = {
+	type: "state_saved";
+	ok: boolean;
+	error?: string;
+};
+
 export type AgentToClientMessage =
 	| AgentOscMessage
 	| AgentStatusMessage
-	| ServerStatusMessage;
+	| ServerStatusMessage
+	| StateSavedMessage;
 
 const OSC_ARG_TYPES = new Set<OscArgType>(["f", "i", "s", "b"]);
 
@@ -112,6 +125,10 @@ export function isClientToAgentMessage(value: unknown): value is ClientToAgentMe
 			Array.isArray(value.args) &&
 			value.args.every((arg) => isOscArg(arg))
 		);
+	}
+
+	if (value.type === "save_state") {
+		return isRecord(value.state);
 	}
 
 	return value.type === "server_start" || value.type === "server_stop" || value.type === "server_restart";

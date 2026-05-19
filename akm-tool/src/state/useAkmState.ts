@@ -17,6 +17,7 @@ import {
   encodeFilterState,
   encodeSourceParams,
   encodeSpeakerGain,
+  encodeSpeakerMute,
   encodeSubMidReverb,
   encodeSystemGain,
   encodeSystemReverb,
@@ -36,6 +37,7 @@ import type {
   LogEntry,
   MetersState,
   ReverbState,
+  SaveStatus,
   ServerConfig,
   SpeakerRole,
   SourceSample,
@@ -58,7 +60,7 @@ const SOURCE_DEFAULTS = {
   delayLevel: 1,
   reverbMix: 0.2,
   level: 0,
-  active: false,
+  active: true,
 } as const
 
 function resolveStateUpdate<T>(current: T, update: SetStateAction<T>): T {
@@ -102,28 +104,44 @@ function createInitialMeters(sources: SourceSample[]): MetersState {
 
 function createInitialHydrationState(): OscHydrationState {
   const sources = createInitialSources()
+  const saved = serverConfig.state ?? {}
+
+  const gains = Object.fromEntries(
+    layout.speakers.map((speaker) => [
+      speaker.id,
+      saved.speakerGains?.[speaker.id] ?? 0,
+    ])
+  )
+  const mutes = Object.fromEntries(
+    layout.speakers.map((speaker) => [
+      speaker.id,
+      saved.speakerMutes?.[speaker.id] ?? false,
+    ])
+  )
+  const eqByRole = {
+    satellite: saved.eqByRole?.satellite ?? initEq(),
+    sub_mid: saved.eqByRole?.sub_mid ?? initEq(),
+    sub_lf: saved.eqByRole?.sub_lf ?? initEq(),
+  }
+  const filterByRole = {
+    satellite: saved.filterByRole?.satellite ?? { freq: 110, rq: 1.0 },
+    sub_mid: saved.filterByRole?.sub_mid ?? { freq: 80, rq: 1.0 },
+    sub_lf: saved.filterByRole?.sub_lf ?? { freq: 60, rq: 1.0 },
+  }
+
   return {
     sources,
     meters: createInitialMeters(sources),
-    gains: Object.fromEntries(
-      layout.speakers.map((speaker) => [speaker.id, 0])
-    ),
-    eqByRole: {
-      satellite: initEq(),
-      sub_mid: initEq(),
-      sub_lf: initEq(),
-    },
-    filterByRole: {
-      satellite: { freq: 110, rq: 1.0 },
-      sub_mid: { freq: 80, rq: 1.0 },
-      sub_lf: { freq: 60, rq: 1.0 },
-    },
-    systemGainDb: 0,
-    reverb: {
+    gains,
+    mutes,
+    eqByRole,
+    filterByRole,
+    systemGainDb: saved.systemGainDb ?? 0,
+    reverb: saved.systemReverb ?? {
       decay: serverConfig.reverb.decay,
       feedback: serverConfig.reverb.feedback,
     },
-    subMidReverb: {
+    subMidReverb: saved.subMidReverb ?? {
       enabled: 0,
       mix: 0.25,
     },
@@ -131,7 +149,14 @@ function createInitialHydrationState(): OscHydrationState {
 }
 
 function useAkmStateValue(): AkmState {
-  const { connectionState, serverStatus, onOsc, sendOsc } = useAgentConnection()
+  const {
+    connectionState,
+    serverStatus,
+    onOsc,
+    sendOsc,
+    saveState: clientSaveState,
+    onStateSaved,
+  } = useAgentConnection()
   const [hydration, setHydration] = useState<OscHydrationState>(
     createInitialHydrationState
   )
@@ -146,7 +171,7 @@ function useAkmStateValue(): AkmState {
   const [sourceVisibility, setSourceVisibility] = useState<
     Record<string, boolean>
   >(() =>
-    Object.fromEntries(serverConfig.sources.map((source) => [source.id, true]))
+    Object.fromEntries(serverConfig.sources.map((source) => [source.id, false]))
   )
   const [roleVisibility, setRoleVisibility] = useState<
     Record<SpeakerRole, boolean>
@@ -160,8 +185,8 @@ function useAkmStateValue(): AkmState {
   >("perspective")
   const [selectedRole, setSelectedRole] = useState<SpeakerRole>("satellite")
 
-  const [mutes, setMutes] = useState<Record<string, boolean>>({})
   const [showSpeakerLabels, setShowSpeakerLabels] = useState(true)
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>({ state: "idle" })
 
   const [logs, setLogs] = useState<LogEntry[]>([])
   const previousConnectionState = useRef(connectionState)
@@ -299,6 +324,37 @@ function useAkmStateValue(): AkmState {
     [sendIfLive]
   )
 
+  const setMutes = useCallback<
+    Dispatch<SetStateAction<Record<string, boolean>>>
+  >(
+    (update) => {
+      setHydration((current) => {
+        const nextMutes = resolveStateUpdate(current.mutes, update)
+        if (nextMutes === current.mutes) {
+          return current
+        }
+
+        const allKeys = new Set([
+          ...Object.keys(current.mutes),
+          ...Object.keys(nextMutes),
+        ])
+        for (const speakerId of allKeys) {
+          const prev = current.mutes[speakerId] ?? false
+          const next = nextMutes[speakerId] ?? false
+          if (prev !== next) {
+            sendIfLive(
+              `/akm/speaker/${speakerId}/mute`,
+              encodeSpeakerMute(next)
+            )
+          }
+        }
+
+        return { ...current, mutes: nextMutes }
+      })
+    },
+    [sendIfLive]
+  )
+
   const setEqByRole = useCallback<
     Dispatch<SetStateAction<Record<SpeakerRole, EqState>>>
   >(
@@ -411,6 +467,70 @@ function useAkmStateValue(): AkmState {
     [sendIfLive]
   )
 
+  const hydrationRef = useRef(hydration)
+  hydrationRef.current = hydration
+
+  // When the SC server becomes ready, push our locally-held state out so SC
+  // matches the saved configuration even if SC restarted without reading the
+  // file (or if we hold pending unsaved tweaks).
+  const previousLiveRef = useRef(isLive)
+  useEffect(() => {
+    if (!isLive || previousLiveRef.current) {
+      previousLiveRef.current = isLive
+      return
+    }
+    previousLiveRef.current = isLive
+
+    const current = hydrationRef.current
+    sendOsc("/akm/system/gain", encodeSystemGain(current.systemGainDb))
+    sendOsc("/akm/system/reverb", encodeSystemReverb(current.reverb))
+    sendOsc(
+      "/akm/group/sub_mid/reverb",
+      encodeSubMidReverb(current.subMidReverb)
+    )
+    for (const role of SPEAKER_ROLES) {
+      sendOsc(`/akm/group/${role}/eq`, encodeEqState(current.eqByRole[role]))
+      sendOsc(
+        `/akm/group/${role}/filter`,
+        encodeFilterState(current.filterByRole[role])
+      )
+    }
+    for (const [speakerId, gainDb] of Object.entries(current.gains)) {
+      sendOsc(`/akm/speaker/${speakerId}/gain`, encodeSpeakerGain(gainDb))
+    }
+    for (const [speakerId, muted] of Object.entries(current.mutes)) {
+      sendOsc(`/akm/speaker/${speakerId}/mute`, encodeSpeakerMute(muted))
+    }
+  }, [isLive, sendOsc])
+
+  useEffect(() => {
+    return onStateSaved((message) => {
+      if (message.ok) {
+        setSaveStatus({ state: "saved", at: Date.now() })
+      } else {
+        setSaveStatus({
+          state: "error",
+          message: message.error ?? "Save failed",
+        })
+      }
+    })
+  }, [onStateSaved])
+
+  const saveState = useCallback(() => {
+    const current = hydrationRef.current
+    const payload = {
+      systemGainDb: current.systemGainDb,
+      speakerGains: current.gains,
+      speakerMutes: current.mutes,
+      eqByRole: current.eqByRole,
+      filterByRole: current.filterByRole,
+      subMidReverb: current.subMidReverb,
+      systemReverb: current.reverb,
+    }
+    setSaveStatus({ state: "saving" })
+    clientSaveState(payload as unknown as Record<string, unknown>)
+  }, [clientSaveState])
+
   const frozenMeters = useMemo(
     () => ({
       sourceIns: Array.from(
@@ -446,7 +566,7 @@ function useAkmStateValue(): AkmState {
     setSelectedRole,
     gains: hydration.gains,
     setGains,
-    mutes,
+    mutes: hydration.mutes,
     setMutes,
     eqByRole: hydration.eqByRole,
     setEqByRole,
@@ -464,6 +584,8 @@ function useAkmStateValue(): AkmState {
     updateSourceParams,
     showSpeakerLabels,
     setShowSpeakerLabels,
+    saveState,
+    saveStatus,
   }
 }
 

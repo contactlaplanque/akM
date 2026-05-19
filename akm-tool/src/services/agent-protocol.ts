@@ -7,11 +7,13 @@ import {
   type ClientToAgentMessage,
   type OscArg,
   type OscArgType,
+  type SaveStateMessage,
   type ServerRestartMessage,
   type ServerStartMessage,
   type ServerStopMessage,
   type ServerStatusMessage,
   type ServerStatusState,
+  type StateSavedMessage,
 } from "@akm/agent-protocol"
 
 const AGENT_STATUS_STATES = new Set<AgentStatusState>(["connected", "disconnected"])
@@ -79,6 +81,16 @@ export function isAgentToClientMessage(value: unknown): value is AgentToClientMe
     return true
   }
 
+  if (value.type === "state_saved") {
+    if (typeof value.ok !== "boolean") {
+      return false
+    }
+    if (value.error !== undefined && typeof value.error !== "string") {
+      return false
+    }
+    return true
+  }
+
   return false
 }
 
@@ -105,9 +117,11 @@ export type {
   ClientToAgentMessage,
   OscArg,
   OscArgType,
+  SaveStateMessage,
   ServerRestartMessage,
   ServerStartMessage,
   ServerStopMessage,
   ServerStatusMessage,
   ServerStatusState,
+  StateSavedMessage,
 }

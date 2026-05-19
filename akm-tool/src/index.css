@@ -81,6 +81,14 @@
   --osc-soft: oklch(0.78 0.16 70 / 0.16);
   --osc-line: oklch(0.78 0.16 70 / 0.45);
 
+  /* DAW shell geometry (overridden per breakpoint in layout-daw.css) */
+  --daw-topbar-h: 56px;
+  --daw-nav-w: 72px;
+  --daw-rail-w: 280px;
+  --daw-panel-w: 480px;
+  --daw-strip-h: 220px;
+  --daw-strip-h-collapsed: 26px;
+
   /* Bridge variables so existing shadcn utilities continue to render correctly. */
   --background: var(--bg);
   --foreground: var(--fg);

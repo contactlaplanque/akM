@@ -16,6 +16,7 @@ import type {
   AgentStatusState,
   OscArg,
   ServerStatusMessage,
+  StateSavedMessage,
 } from "@/services/agent-protocol"
 
 type AgentConnectionContextValue = {
@@ -25,6 +26,8 @@ type AgentConnectionContextValue = {
   client: AgentClient
   onOsc: (listener: (message: AgentOscMessage) => void) => () => void
   sendOsc: (address: string, args: OscArg[]) => void
+  saveState: (state: Record<string, unknown>) => void
+  onStateSaved: (listener: (message: StateSavedMessage) => void) => () => void
   serverStart: () => void
   serverStop: () => void
   serverRestart: () => void
@@ -79,6 +82,19 @@ export function AgentConnectionProvider({ children }: { children: ReactNode }) {
     [client],
   )
 
+  const saveState = useCallback(
+    (state: Record<string, unknown>) => {
+      client.saveState(state)
+    },
+    [client],
+  )
+
+  const onStateSaved = useCallback(
+    (listener: (message: StateSavedMessage) => void) =>
+      client.onStateSaved(listener),
+    [client],
+  )
+
   const serverStart = useCallback(() => {
     client.serverStart()
   }, [client])
@@ -99,6 +115,8 @@ export function AgentConnectionProvider({ children }: { children: ReactNode }) {
       client,
       onOsc,
       sendOsc,
+      saveState,
+      onStateSaved,
       serverStart,
       serverStop,
       serverRestart,
@@ -110,6 +128,8 @@ export function AgentConnectionProvider({ children }: { children: ReactNode }) {
       client,
       onOsc,
       sendOsc,
+      saveState,
+      onStateSaved,
       serverStart,
       serverStop,
       serverRestart,

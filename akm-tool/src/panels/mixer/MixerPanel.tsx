@@ -1,6 +1,7 @@
 import { useMemo, type CSSProperties } from "react"
 
 import { ROLE_COLORS, SPEAKER_ROLES } from "@/lib/role-colors"
+import { cn } from "@/lib/utils"
 import type { Layout, SpeakerRole } from "@/state/types"
 
 import { MixerStrips } from "./MixerStrips"
@@ -11,6 +12,7 @@ export type MixerPanelProps = {
   mutes: Record<string, boolean>
   onGainChange: (speakerId: string, db: number) => void
   onMuteToggle: (speakerId: string) => void
+  onGroupMute: (speakerIds: string[], muted: boolean) => void
   selectedSpeakerId: string
   onSelectSpeaker: (speakerId: string) => void
   meters: number[]
@@ -23,6 +25,7 @@ export function MixerPanel({
   mutes,
   onGainChange,
   onMuteToggle,
+  onGroupMute,
   selectedSpeakerId,
   onSelectSpeaker,
   meters,
@@ -41,6 +44,9 @@ export function MixerPanel({
       {SPEAKER_ROLES.map((role) => {
         const speakers = groups[role]
         const colors = ROLE_COLORS[role]
+        const groupMuted =
+          speakers.length > 0 &&
+          speakers.every((speaker) => !!mutes[speaker.id])
         return (
           <div className="mixer-group" key={role}>
             <div
@@ -53,6 +59,23 @@ export function MixerPanel({
               />
               <span className="mixer-group-title">{colors.short}</span>
               <span className="mixer-group-count">{speakers.length} ch</span>
+              <button
+                type="button"
+                className={cn(
+                  "mixer-group-mute",
+                  groupMuted && "is-on"
+                )}
+                onClick={() =>
+                  onGroupMute(
+                    speakers.map((speaker) => speaker.id),
+                    !groupMuted
+                  )
+                }
+                title={groupMuted ? `Unmute all ${colors.short}` : `Mute all ${colors.short}`}
+                aria-pressed={groupMuted}
+              >
+                M ALL
+              </button>
             </div>
             <MixerStrips
               speakers={speakers}

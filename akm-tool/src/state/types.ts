@@ -44,6 +44,16 @@ export type Layout = {
   speakers: Speaker[]
 }
 
+export type SavedState = {
+  systemGainDb?: number
+  speakerGains?: Record<string, number>
+  speakerMutes?: Record<string, boolean>
+  eqByRole?: Partial<Record<SpeakerRole, EqState>>
+  filterByRole?: Partial<Record<SpeakerRole, FilterState>>
+  subMidReverb?: SubMidReverbState
+  systemReverb?: ReverbState
+}
+
 export type ServerConfig = {
   schemaVersion: string
   audio: {
@@ -75,6 +85,7 @@ export type ServerConfig = {
     stateBroadcastHz: number
     metersHz: number
   }
+  state?: SavedState
 }
 
 export type EqBand = {
@@ -168,4 +179,12 @@ export type AkmState = {
   updateSourceParams: (id: string, patch: SourceParamPatch) => void
   showSpeakerLabels: boolean
   setShowSpeakerLabels: Dispatch<SetStateAction<boolean>>
+  saveState: () => void
+  saveStatus: SaveStatus
 }
+
+export type SaveStatus =
+  | { state: "idle" }
+  | { state: "saving" }
+  | { state: "saved"; at: number }
+  | { state: "error"; message: string }

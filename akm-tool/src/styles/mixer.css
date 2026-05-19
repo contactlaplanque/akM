@@ -3,23 +3,25 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow: hidden;
+  overflow: auto;
   padding: 0;
 }
 
 .mixer {
-  flex: 1;
+  flex: 1 0 auto;
   min-height: 0;
+  min-width: 0;
   padding: 10px 12px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .mixer-group {
-  flex: 1 1 0;
-  min-height: 0;
+  /* Keep faders operable: panel scrolls once 3 groups exceed viewport. */
+  flex: 1 0 220px;
+  min-height: 220px;
   display: flex;
   flex-direction: column;
   background: var(--panel-lo);
@@ -57,10 +59,37 @@
   font-size: 10px;
 }
 
+.mixer-group-mute {
+  margin-left: 8px;
+  padding: 2px 8px;
+  height: 18px;
+  border-radius: 3px;
+  border: 1px solid var(--border-2);
+  background: var(--panel-lo);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.mixer-group-mute:hover {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.mixer-group-mute.is-on {
+  background: var(--bad);
+  color: white;
+  border-color: var(--bad);
+}
+
 /* ScrollArea must participate in the group’s flex column so strips fill height */
 .mixer-strip-scroll {
   flex: 1 1 0;
   min-height: 0;
+  height: 100%;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -79,10 +108,11 @@
 .mixer-strip-scroll > [data-slot="scroll-area-viewport"] > div {
   display: flex !important;
   align-items: stretch;
+  justify-content: flex-start;
   height: 100% !important;
   min-height: 100% !important;
   width: max-content;
-  min-width: 100%;
+  min-width: 0;
   box-sizing: border-box;
 }
 
@@ -106,9 +136,9 @@
 
 .mixer-strip-row {
   display: flex;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   width: max-content;
-  min-width: 100%;
+  min-width: 0;
   height: 100%;
   min-height: 100%;
   gap: 3px;
@@ -271,4 +301,11 @@
   background: var(--bad);
   color: white;
   border-color: var(--bad);
+}
+
+@media (max-height: 820px) {
+  .mixer-group {
+    flex: 0 0 auto;
+    min-height: 160px;
+  }
 }

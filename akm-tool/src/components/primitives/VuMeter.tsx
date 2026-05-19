@@ -31,7 +31,9 @@ export function VuMeter({
 }: VuMeterProps) {
   const meter = useMeterLevel(rawLevel ?? 0, meterOptions)
   const fromValueProp = value != null
-  const level = normalizeMeterLevel(fromValueProp ? value : meter.displayLevel)
+  const level = fromValueProp
+    ? normalizeMeterLevel(value)
+    : normalizeMeterLevel(meter.displayLevel, { mode: "linear" })
   const resolvedPeak = normalizePeak(
     peakHold ?? (rawLevel != null && !fromValueProp ? meter.peakHold : null)
   )

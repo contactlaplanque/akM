@@ -3,6 +3,7 @@ type StatusTone = "good" | "warn" | "bad" | "idle"
 type StatusPillProps = {
   tone?: StatusTone
   label: string
+  labelShort?: string
   sub?: string
   pulse?: boolean
   active?: boolean
@@ -13,6 +14,7 @@ type StatusPillProps = {
 export function StatusPill({
   tone = "idle",
   label,
+  labelShort,
   sub,
   pulse = false,
   active = false,
@@ -28,7 +30,14 @@ export function StatusPill({
     <button className={className} onClick={onClick} title={title} type="button">
       <span className="pill-dot" />
       <span className="pill-label">
-        {label}
+        {labelShort ? (
+          <>
+            <span className="pill-label-long">{label}</span>
+            <span className="pill-label-short">{labelShort}</span>
+          </>
+        ) : (
+          label
+        )}
         {sub ? (
           <>
             {" "}

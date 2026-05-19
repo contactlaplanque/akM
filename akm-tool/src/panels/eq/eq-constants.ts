@@ -25,3 +25,4 @@ export const RQ_MAX = 10
 export const FILTER_GRAPH_HEIGHT = 200
 export const EQ_GRAPH_HEIGHT = 220
 export const EQ_GRAPH_MIN_WIDTH = 300
+export const EQ_GRAPH_MIN_WIDTH_COMPACT = 240

@@ -2,7 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react"
 
 export const METERS_HZ = 20
 
-export type MeterNormalizeMode = "linear" | "peakPair"
+export const METER_MIN_DB = -60
+export const METER_MAX_DB = 0
+const METER_DB_FLOOR_AMP = 1e-6
+
+export type MeterNormalizeMode = "linear" | "peakPair" | "dbfs"
 
 export type MeterRawLevel = number | readonly [number, number] | null | undefined
 
@@ -12,6 +16,8 @@ export interface NormalizeMeterLevelOptions {
   floor?: number
   ceiling?: number
   clamp?: boolean
+  minDb?: number
+  maxDb?: number
 }
 
 export interface MeterLevelOptions extends NormalizeMeterLevelOptions {
@@ -22,11 +28,13 @@ export interface MeterLevelOptions extends NormalizeMeterLevelOptions {
 }
 
 export const DEFAULT_METER_OPTIONS: Required<MeterLevelOptions> = {
-  mode: "linear",
+  mode: "dbfs",
   peakIndex: 0,
   floor: 0,
   ceiling: 1,
   clamp: true,
+  minDb: METER_MIN_DB,
+  maxDb: METER_MAX_DB,
   attackMs: 60,
   releaseMs: 180,
   peakHoldMs: 1200,
@@ -35,6 +43,14 @@ export const DEFAULT_METER_OPTIONS: Required<MeterLevelOptions> = {
 
 function clampValue(value: number, floor: number, ceiling: number): number {
   return Math.max(floor, Math.min(ceiling, value))
+}
+
+function amplitudeToDbNorm(amp: number, minDb: number, maxDb: number): number {
+  const safeAmp = Math.max(Math.abs(amp), METER_DB_FLOOR_AMP)
+  const db = 20 * Math.log10(safeAmp)
+  const range = maxDb - minDb
+  if (range <= 0) return 0
+  return clampValue((db - minDb) / range, 0, 1)
 }
 
 export function normalizeMeterLevel(
@@ -46,19 +62,27 @@ export function normalizeMeterLevel(
   const floor = options?.floor ?? DEFAULT_METER_OPTIONS.floor
   const ceiling = options?.ceiling ?? DEFAULT_METER_OPTIONS.ceiling
   const shouldClamp = options?.clamp ?? DEFAULT_METER_OPTIONS.clamp
+  const minDb = options?.minDb ?? DEFAULT_METER_OPTIONS.minDb
+  const maxDb = options?.maxDb ?? DEFAULT_METER_OPTIONS.maxDb
 
-  let level = 0
-  if (mode === "peakPair" && Array.isArray(raw)) {
-    level = raw[peakIndex] ?? 0
+  let amp = 0
+  if ((mode === "peakPair" || mode === "dbfs") && Array.isArray(raw)) {
+    amp = raw[peakIndex] ?? 0
+  } else if (mode === "peakPair" && !Array.isArray(raw)) {
+    amp = 0
   } else if (typeof raw === "number") {
-    level = raw
+    amp = raw
   }
 
-  if (!Number.isFinite(level)) {
-    level = 0
+  if (!Number.isFinite(amp)) {
+    amp = 0
   }
 
-  return shouldClamp ? clampValue(level, floor, ceiling) : level
+  if (mode === "dbfs") {
+    return amplitudeToDbNorm(amp, minDb, maxDb)
+  }
+
+  return shouldClamp ? clampValue(amp, floor, ceiling) : amp
 }
 
 export function useMeterLevel(rawLevel: MeterRawLevel, options?: MeterLevelOptions) {

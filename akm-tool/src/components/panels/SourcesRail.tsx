@@ -10,6 +10,7 @@ type SourcesRailProps = {
   onToggleSource: (id: string) => void
   onShowAll: () => void
   onHideAll: () => void
+  onCollapse?: () => void
 }
 
 export function SourcesRail({
@@ -20,6 +21,7 @@ export function SourcesRail({
   onToggleSource,
   onShowAll,
   onHideAll,
+  onCollapse,
 }: SourcesRailProps) {
   const shownCount = sources.filter((s) => sourceVisibility[s.id]).length
 
@@ -32,6 +34,16 @@ export function SourcesRail({
           <span className="rail-count">
             {shownCount}/{sources.length}
           </span>
+          {onCollapse ? (
+            <button
+              type="button"
+              className="rail-collapse"
+              onClick={onCollapse}
+              title="Collapse sources list"
+            >
+              <AkmIcon name="chevL" size={12} />
+            </button>
+          ) : null}
         </div>
         <div className="rail-actions">
           <button className="btn-mini" type="button" onClick={onShowAll}>

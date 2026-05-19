@@ -8,6 +8,7 @@ import {
   decodeEqState,
   decodeFilterState,
   decodeSourceState,
+  decodeSpeakerMute,
   decodeSubMidReverb,
   decodeSystemGain,
   decodeSystemReverb,
@@ -25,6 +26,7 @@ import type {
 const SOURCE_STATE_RE = /^\/akm\/server\/state\/source\/([^/]+)$/
 const SOURCE_ACK_RE = /^\/akm\/server\/ack\/source\/([^/]+)\/params$/
 const SPEAKER_GAIN_ACK_RE = /^\/akm\/server\/ack\/speaker\/([^/]+)\/gain$/
+const SPEAKER_MUTE_ACK_RE = /^\/akm\/server\/ack\/speaker\/([^/]+)\/mute$/
 const EQ_ACK_RE = /^\/akm\/server\/ack\/group\/(satellite|sub_mid|sub_lf)\/eq$/
 const FILTER_ACK_RE =
   /^\/akm\/server\/ack\/group\/(satellite|sub_mid|sub_lf)\/filter$/
@@ -37,6 +39,7 @@ export type OscHydrationState = {
   sources: SourceSample[]
   meters: MetersState
   gains: Record<string, number>
+  mutes: Record<string, boolean>
   eqByRole: Record<SpeakerRole, EqState>
   filterByRole: Record<SpeakerRole, FilterState>
   systemGainDb: number
@@ -154,6 +157,23 @@ export function reduceOscHydrationState(
     return {
       ...state,
       gains: { ...state.gains, [speakerId]: gainDb },
+    }
+  }
+
+  const speakerMuteMatch = message.address.match(SPEAKER_MUTE_ACK_RE)
+  if (speakerMuteMatch) {
+    const values = unwrapOscNumbers(message.args)
+    const muted = values ? decodeSpeakerMute(values) : null
+    if (muted == null) {
+      return state
+    }
+    const speakerId = speakerMuteMatch[1]
+    if ((state.mutes[speakerId] ?? false) === muted) {
+      return state
+    }
+    return {
+      ...state,
+      mutes: { ...state.mutes, [speakerId]: muted },
     }
   }
 

@@ -183,3 +183,14 @@ export function encodeSystemGain(gainDb: number): OscArg[] {
 export function encodeSpeakerGain(gainDb: number): OscArg[] {
   return toOscFloatArgs([gainDb])
 }
+
+export function encodeSpeakerMute(muted: boolean): OscArg[] {
+  return toOscFloatArgs([muted ? 1 : 0])
+}
+
+export function decodeSpeakerMute(values: number[]): boolean | null {
+  if (values.length !== 1) {
+    return null
+  }
+  return values[0] >= 0.5
+}

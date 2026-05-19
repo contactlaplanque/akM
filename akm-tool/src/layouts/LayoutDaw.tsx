@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { SourceInspector, SourcesRail } from "@/components/panels"
 import { AkmIcon } from "@/components/primitives"
@@ -10,6 +10,12 @@ import { useAkmState } from "@/state/useAkmState"
 
 import { BottomStrip } from "./BottomStrip"
 import { StatusBar } from "./StatusBar"
+import {
+  defaultLogHiddenForViewport,
+  isCompactSourceWidth,
+  loadLayoutPrefs,
+  saveLayoutPrefs,
+} from "./useLayoutPrefs"
 
 type ViewId = "source" | "mixer" | "eq" | "system"
 
@@ -30,7 +36,90 @@ const NAV_ITEMS: NavItem[] = [
 export function LayoutDaw() {
   const st = useAkmState()
   const [view, setView] = useState<ViewId>("source")
-  const [logHidden, setLogHidden] = useState(false)
+
+  const initialPrefs = useMemo(() => loadLayoutPrefs(), [])
+  const [sourcesRailCollapsed, setSourcesRailCollapsed] = useState(
+    initialPrefs.sourcesRailCollapsed
+  )
+  const [inspectorCollapsed, setInspectorCollapsed] = useState(() => {
+    if (initialPrefs.userTouchedLayout) return initialPrefs.inspectorCollapsed
+    if (isCompactSourceWidth()) return true
+    return initialPrefs.inspectorCollapsed
+  })
+  const [logHidden, setLogHidden] = useState(() => {
+    if (initialPrefs.logHidden !== null) return initialPrefs.logHidden
+    return defaultLogHiddenForViewport()
+  })
+
+  const userTouchedLayoutRef = useRef(initialPrefs.userTouchedLayout)
+
+  const persistPrefs = useCallback(
+    (patch: Parameters<typeof saveLayoutPrefs>[0]) => {
+      saveLayoutPrefs(patch)
+    },
+    []
+  )
+
+  const setSourcesRailCollapsedPersisted = useCallback(
+    (value: boolean | ((prev: boolean) => boolean)) => {
+      userTouchedLayoutRef.current = true
+      setSourcesRailCollapsed((prev) => {
+        const next = typeof value === "function" ? value(prev) : value
+        persistPrefs({
+          sourcesRailCollapsed: next,
+          userTouchedLayout: true,
+        })
+        return next
+      })
+    },
+    [persistPrefs]
+  )
+
+  const setInspectorCollapsedPersisted = useCallback(
+    (value: boolean | ((prev: boolean) => boolean)) => {
+      userTouchedLayoutRef.current = true
+      setInspectorCollapsed((prev) => {
+        const next = typeof value === "function" ? value(prev) : value
+        persistPrefs({
+          inspectorCollapsed: next,
+          userTouchedLayout: true,
+        })
+        return next
+      })
+    },
+    [persistPrefs]
+  )
+
+  const setLogHiddenPersisted = useCallback(
+    (value: boolean | ((prev: boolean) => boolean)) => {
+      setLogHidden((prev) => {
+        const next = typeof value === "function" ? value(prev) : value
+        persistPrefs({ logHidden: next })
+        return next
+      })
+    },
+    [persistPrefs]
+  )
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1100px)")
+    const apply = () => {
+      if (userTouchedLayoutRef.current) return
+      if (mq.matches) {
+        setInspectorCollapsed(true)
+        persistPrefs({ inspectorCollapsed: true })
+      }
+    }
+    apply()
+    mq.addEventListener("change", apply)
+    return () => mq.removeEventListener("change", apply)
+  }, [persistPrefs])
+
+  useEffect(() => {
+    if (userTouchedLayoutRef.current) return
+    if (!isCompactSourceWidth()) return
+    setInspectorCollapsed(true)
+  }, [view])
 
   const isSourceView = view === "source"
   const activeNav = useMemo(
@@ -43,11 +132,20 @@ export function LayoutDaw() {
   const selectedSource =
     selectedIndex >= 0 ? st.sources[selectedIndex] : undefined
 
+  const mainClassName = [
+    "daw-main",
+    isSourceView ? "" : "is-fullpanel",
+    isSourceView && sourcesRailCollapsed ? "is-rail-collapsed" : "",
+    isSourceView && inspectorCollapsed ? "is-panel-collapsed" : "",
+  ]
+    .filter(Boolean)
+    .join(" ")
+
   return (
     <div className={`app app-daw ${st.isLive ? "" : "is-data-stale"}`}>
       <StatusBar />
 
-      <main className={`daw-main ${isSourceView ? "" : "is-fullpanel"}`}>
+      <main className={mainClassName}>
         <nav className="daw-nav" aria-label="main views">
           {NAV_ITEMS.map((item) => (
             <button
@@ -62,6 +160,18 @@ export function LayoutDaw() {
           ))}
           <div className="navtab-spacer" />
         </nav>
+
+        {isSourceView && sourcesRailCollapsed ? (
+          <button
+            type="button"
+            className="daw-edge-reopen daw-edge-reopen--rail"
+            onClick={() => setSourcesRailCollapsedPersisted(false)}
+            title="Show sources list"
+          >
+            <AkmIcon name="chevR" size={12} />
+            <span>Sources</span>
+          </button>
+        ) : null}
 
         {isSourceView ? (
           <>
@@ -83,6 +193,9 @@ export function LayoutDaw() {
                   st.setSourceVisibility(
                     Object.fromEntries(st.sources.map((s) => [s.id, false]))
                   )
+                }
+                onCollapse={() =>
+                  setSourcesRailCollapsedPersisted(true)
                 }
               />
             </section>
@@ -113,9 +226,31 @@ export function LayoutDaw() {
           </>
         ) : null}
 
+        {isSourceView && inspectorCollapsed ? (
+          <button
+            type="button"
+            className="daw-edge-reopen daw-edge-reopen--panel"
+            onClick={() => setInspectorCollapsedPersisted(false)}
+            title="Show source inspector"
+          >
+            <AkmIcon name="chevL" size={12} />
+            <span>Inspector</span>
+          </button>
+        ) : null}
+
         <section className="daw-panel">
           <div className="daw-panel-head">
             <div className="daw-panel-title">{activeNav?.label ?? "View"}</div>
+            {isSourceView ? (
+              <button
+                type="button"
+                className="daw-panel-collapse"
+                onClick={() => setInspectorCollapsedPersisted(true)}
+                title="Collapse inspector"
+              >
+                <AkmIcon name="chevR" size={12} />
+              </button>
+            ) : null}
           </div>
           <div className="daw-panel-body">
             {view === "source" ? (
@@ -137,6 +272,15 @@ export function LayoutDaw() {
                 }
                 onMuteToggle={(id) =>
                   st.setMutes((current) => ({ ...current, [id]: !current[id] }))
+                }
+                onGroupMute={(speakerIds, muted) =>
+                  st.setMutes((current) => {
+                    const next = { ...current }
+                    for (const id of speakerIds) {
+                      next[id] = muted
+                    }
+                    return next
+                  })
                 }
                 selectedSpeakerId={st.selectedSpeakerId}
                 onSelectSpeaker={st.setSelectedSpeakerId}
@@ -187,7 +331,7 @@ export function LayoutDaw() {
         layout={st.layout}
         sources={st.sources}
         hidden={logHidden}
-        onToggle={() => setLogHidden((value) => !value)}
+        onToggle={() => setLogHiddenPersisted((value) => !value)}
       />
     </div>
   )

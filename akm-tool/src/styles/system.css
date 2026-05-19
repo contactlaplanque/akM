@@ -15,6 +15,12 @@
   min-height: 0;
 }
 
+@media (max-width: 900px) {
+  .system {
+    grid-template-columns: 1fr;
+  }
+}
+
 .system-col {
   background: var(--panel-lo);
   border: 1px solid var(--border);

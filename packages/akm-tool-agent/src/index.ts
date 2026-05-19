@@ -73,6 +73,20 @@ function numericValue(arg: OscArg): number | null {
 	return typeof arg.value === "number" && Number.isFinite(arg.value) ? arg.value : null;
 }
 
+// Atomically merge `state` into server.json so a crash mid-write cannot corrupt
+// the venue config that drives both the SC server and the frontend.
+async function persistServerState(
+	serverConfigPath: string,
+	state: Record<string, unknown>
+): Promise<void> {
+	const fileText = await fs.readFile(serverConfigPath, "utf8");
+	const parsed = JSON.parse(fileText) as Record<string, unknown>;
+	const next = { ...parsed, state };
+	const tmpPath = `${serverConfigPath}.tmp`;
+	await fs.writeFile(tmpPath, `${JSON.stringify(next, null, 2)}\n`, "utf8");
+	await fs.rename(tmpPath, serverConfigPath);
+}
+
 async function loadServerConfig(serverConfigPath: string): Promise<ServerConfig> {
 	const fileText = await fs.readFile(serverConfigPath, "utf8");
 	const parsed = JSON.parse(fileText) as Partial<ServerConfig>;
@@ -236,6 +250,22 @@ async function main(): Promise<void> {
 
 				if (parsed.message.type === "server_stop") {
 					await serverManager.stop();
+					return;
+				}
+
+				if (parsed.message.type === "save_state") {
+					try {
+						await persistServerState(serverConfigPath, parsed.message.state);
+						broadcast({ type: "state_saved", ok: true });
+						publishAgentLog(
+							`[state] saved to ${path.relative(repoRoot, serverConfigPath)}`
+						);
+					} catch (error) {
+						const messageText =
+							error instanceof Error ? error.message : String(error);
+						broadcast({ type: "state_saved", ok: false, error: messageText });
+						publishAgentLog(`[state:save:error] ${messageText}`);
+					}
 					return;
 				}
 

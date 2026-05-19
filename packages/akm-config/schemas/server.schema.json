@@ -85,6 +85,83 @@
       "properties": {
         "pannerUpdateHz": { "type": "number", "minimum": 0, "maximum": 120 }
       }
+    },
+    "state": {
+      "type": "object",
+      "description": "Persisted runtime mix state (EQ, filters, gains, mutes). Optional; SC and frontend fall back to internal defaults when missing.",
+      "properties": {
+        "systemGainDb": { "type": "number" },
+        "speakerGains": {
+          "type": "object",
+          "description": "Per-speaker gain in dB, keyed by speakerId.",
+          "additionalProperties": { "type": "number" }
+        },
+        "speakerMutes": {
+          "type": "object",
+          "description": "Per-speaker mute flags, keyed by speakerId.",
+          "additionalProperties": { "type": "boolean" }
+        },
+        "eqByRole": {
+          "type": "object",
+          "properties": {
+            "satellite": { "$ref": "#/$defs/eqState" },
+            "sub_mid": { "$ref": "#/$defs/eqState" },
+            "sub_lf": { "$ref": "#/$defs/eqState" }
+          }
+        },
+        "filterByRole": {
+          "type": "object",
+          "properties": {
+            "satellite": { "$ref": "#/$defs/filterState" },
+            "sub_mid": { "$ref": "#/$defs/filterState" },
+            "sub_lf": { "$ref": "#/$defs/filterState" }
+          }
+        },
+        "subMidReverb": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "number" },
+            "mix": { "type": "number" }
+          }
+        },
+        "systemReverb": {
+          "type": "object",
+          "properties": {
+            "decay": { "type": "number" },
+            "feedback": { "type": "number" }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "eqBand": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "number" },
+        "freq": { "type": "number" },
+        "gainDb": { "type": "number" },
+        "rq": { "type": "number" },
+        "type": { "type": "string" }
+      }
+    },
+    "eqState": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "number" },
+        "lowShelf": { "$ref": "#/$defs/eqBand" },
+        "peak1": { "$ref": "#/$defs/eqBand" },
+        "peak2": { "$ref": "#/$defs/eqBand" },
+        "peak3": { "$ref": "#/$defs/eqBand" },
+        "highShelf": { "$ref": "#/$defs/eqBand" }
+      }
+    },
+    "filterState": {
+      "type": "object",
+      "properties": {
+        "freq": { "type": "number" },
+        "rq": { "type": "number" }
+      }
     }
   }
 }

@@ -34,6 +34,7 @@
 
 .rail-count {
   margin-left: auto;
+  margin-right: 4px;
   color: var(--muted);
   font-family: var(--font-mono);
   font-size: 10px;
@@ -238,6 +239,18 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
+}
+
+@media (max-width: 1280px) {
+  .insp-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 960px) {
+  .insp-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .kv-k {

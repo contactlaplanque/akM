@@ -33,6 +33,10 @@
   font-weight: 500;
 }
 
+.pill-label-short {
+  display: none;
+}
+
 .pill-sub {
   color: var(--muted);
   font-family: var(--font-mono);

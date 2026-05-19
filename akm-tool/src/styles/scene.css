@@ -165,3 +165,31 @@
   background: rgba(0, 0, 0, 0.82);
   box-shadow: 0 0 0 1px var(--primary-line);
 }
+
+@media (max-width: 1280px) {
+  .cam-overlay {
+    bottom: 8px;
+    left: 8px;
+    flex-wrap: wrap;
+    max-width: calc(100% - 16px);
+    border-radius: 8px;
+    gap: 4px;
+    padding: 3px;
+  }
+
+  .cam-preset {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .role-tog {
+    padding: 4px 6px;
+    font-size: 9px;
+    gap: 4px;
+  }
+
+  .cam-label-tog {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+}
