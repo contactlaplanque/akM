@@ -9,6 +9,7 @@
 @import "./styles/mixer.css";
 @import "./styles/eq.css";
 @import "./styles/system.css";
+@import "./styles/scene.css";
 
 @custom-variant dark (&:is(.dark *));
 

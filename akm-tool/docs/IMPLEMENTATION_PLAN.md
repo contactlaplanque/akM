@@ -259,6 +259,8 @@ Use **[DSSSP](https://github.com/numberonebot/dsssp)** (`dsssp` on npm, [docs](h
 
 ### M10 — 3D scene with Three.js
 
+**Status:** Done (2026-05-19)
+
 **Scope:** Replace the prototype's 2D-canvas placeholder with a real Three.js scene. Reuse the _affordances_ (camera presets, role toggles, scene info, speaker labels) verbatim.
 
 **Deliverable:**

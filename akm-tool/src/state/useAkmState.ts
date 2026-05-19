@@ -82,11 +82,15 @@ function useAkmStateValue(): AkmState {
   const [selectedSpeakerId, setSelectedSpeakerId] = useState(
     layout.speakers[0]?.id ?? "sat_1_1",
   )
-  const [sourceVisibility, setSourceVisibility] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(
-      serverConfig.sources.map((source, index) => [source.id, [0, 2, 6].includes(index)]),
-    ),
-  )
+  const [sourceVisibility, setSourceVisibility] = useState<Record<string, boolean>>(() => {
+    const activeIndexes = new Set([0, 2, 6, 11, 17, 23])
+    return Object.fromEntries(
+      serverConfig.sources.map((source, index) => [
+        source.id,
+        activeIndexes.has(index),
+      ]),
+    )
+  })
   const [roleVisibility, setRoleVisibility] = useState<Record<SpeakerRole, boolean>>({
     satellite: true,
     sub_mid: true,

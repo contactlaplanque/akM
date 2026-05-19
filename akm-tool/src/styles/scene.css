@@ -1,0 +1,167 @@
+/* ============ role toggles (scene overlay) ============ */
+.role-toggles {
+  display: flex;
+  gap: 4px;
+}
+
+.role-tog {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid var(--border-2);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.role-tog:hover {
+  background: var(--panel-hi);
+  color: var(--fg-2);
+}
+
+.role-tog.is-on {
+  background: var(--panel-hi);
+  color: var(--fg);
+}
+
+.role-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+/* ============ scene viewport ============ */
+.akm-scene-host {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.akm-scene-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.akm-scene-canvas:active {
+  cursor: grabbing;
+}
+
+.cam-overlay {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  background: oklch(0.1 0.012 240 / 0.65);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  z-index: 2;
+}
+
+.cam-presets {
+  display: flex;
+  gap: 2px;
+}
+
+.cam-preset {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+
+.cam-preset:hover {
+  color: var(--fg);
+}
+
+.cam-preset.is-active {
+  background: var(--primary);
+  color: var(--primary-fg);
+}
+
+.cam-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--border-2);
+}
+
+.cam-label-tog {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+
+.cam-label-tog:hover {
+  color: var(--fg);
+}
+
+.cam-label-tog.is-on {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.cam-label-tog svg {
+  flex: none;
+}
+
+.scene-speaker-label {
+  pointer-events: none;
+  user-select: none;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgba(220, 230, 240, 0.85);
+  background: rgba(0, 0, 0, 0.55);
+  padding: 2px 4px;
+  border-radius: 2px;
+  white-space: nowrap;
+  transform: translate(-50%, -100%);
+}
+
+.scene-speaker-label.is-hovered {
+  font-size: 10px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.scene-source-label {
+  pointer-events: none;
+  user-select: none;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgba(220, 230, 240, 0.9);
+  background: rgba(0, 0, 0, 0.6);
+  padding: 2px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+  transform: translate(-50%, -100%);
+}
+
+.scene-source-label.is-selected {
+  font-size: 10px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.82);
+  box-shadow: 0 0 0 1px var(--primary-line);
+}

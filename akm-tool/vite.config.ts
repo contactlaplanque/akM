@@ -9,6 +9,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      three: path.resolve(__dirname, "./src/lib/three-patch/index.ts"),
+      "three-original": path.resolve(
+        __dirname,
+        "./node_modules/three/build/three.module.js",
+      ),
     },
   },
 })

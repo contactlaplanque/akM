@@ -4,6 +4,7 @@ import { SourceInspector, SourcesRail } from "@/components/panels"
 import { AkmIcon } from "@/components/primitives"
 import { EqPanel } from "@/panels/eq"
 import { MixerPanel } from "@/panels/mixer"
+import { CameraOverlay, Scene3D } from "@/panels/scene"
 import { SystemPanel } from "@/panels/system"
 import { useAkmState } from "@/state/useAkmState"
 
@@ -80,7 +81,28 @@ export function LayoutDaw() {
               />
             </section>
             <section className="daw-scene">
-              <div className="scene-placeholder">3D scene placeholder (M10)</div>
+              <div className="akm-scene-host">
+                <Scene3D
+                  layout={st.layout}
+                  sources={st.sources}
+                  selectedSourceId={st.selectedSourceId}
+                  sourceVisibility={st.sourceVisibility}
+                  roleVisibility={st.roleVisibility}
+                  cameraPreset={st.cameraPreset}
+                  onSelectSource={st.setSelectedSourceId}
+                  showSpeakerLabels={st.showSpeakerLabels}
+                />
+                <CameraOverlay
+                  preset={st.cameraPreset}
+                  onPreset={st.setCameraPreset}
+                  roleVisibility={st.roleVisibility}
+                  onRoleChange={(role, visible) =>
+                    st.setRoleVisibility((rv) => ({ ...rv, [role]: visible }))
+                  }
+                  showSpeakerLabels={st.showSpeakerLabels}
+                  onToggleSpeakerLabels={st.setShowSpeakerLabels}
+                />
+              </div>
             </section>
           </>
         ) : null}
