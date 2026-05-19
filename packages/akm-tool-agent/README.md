@@ -131,15 +131,59 @@ Terminal 2:
 pnpm --filter @akm/tool-agent smoke:ws
 ```
 
-The smoke client connects to `ws://127.0.0.1:4280` by default (override with `AKM_WS_URL`) and prints each inbound JSON message on a single line. Commands:
+The smoke client connects to `ws://127.0.0.1:4280` by default (override with `AKM_WS_URL`).
+
+By default it runs in **quiet** mode (mock telemetry is ~1000 msgs/s, so full logging would flood the terminal). Quiet mode prints `server_status` about once per second, plus ACKs and agent logs. Use `stats` for rate checks, or `verbose` / `AKM_WS_VERBOSE=1` to print every message.
+
+Commands:
 
 - `1` or `start`
 - `2` or `stop`
 - `3` or `restart`
 - `4` or `osc` (sample `/akm/source/src_01/params` payload)
+- `5` or `stats` (collect 5 seconds of OSC rates by address prefix)
+- `v` or `verbose` / `quiet` (toggle logging)
 - `q` to quit
+
+## Mock akm-server (no SuperCollider)
+
+Use this when you need a continuous OSC stream for UI work, without running `sclang`.
+
+Terminal A:
+
+```bash
+pnpm --filter @akm/tool-agent mock:akm
+```
+
+Terminal B:
+
+```bash
+pnpm --filter @akm/tool-agent start
+```
+
+Terminal C:
+
+```bash
+pnpm --filter @akm/tool-agent smoke:ws
+```
+
+The mock binds `osc.listen` (`127.0.0.1:23446` by default), echoes inbound `/akm/...` commands as `/akm/server/ack/...`, and streams:
+
+- `/akm/server/heartbeat` at 1 Hz (`uptimeSec`, `cpu`)
+- `/akm/server/state/source/src_XX` at 30 Hz for 32 sources
+- `/akm/server/meters` at 20 Hz with 74 values (`32 sourceIns + 42 speakerOuts`)
+- Optional ownership updates on `/akm/server/owner/{paramKey}` (`AKM_MOCK_TAKEOVER=1`, default on)
+
+Important:
+
+- Do not run `server_start` while the mock is using port `23446`.
+- Do not run the mock and real `akm-server` at the same time.
+- Use `4` / `osc` in `smoke:ws` to verify ACK echo traffic.
+
+The real `akm-server` currently forwards meters from `SendPeakRMS` (peak/rms pairs). The mock intentionally emits the UI-facing `32 + 42` level shape to support milestone M13 integration work.
 
 ## Troubleshooting
 
 - `reply port 127.0.0.1:23444 is already in use (EADDRINUSE)` means another agent instance already owns the OSC reply socket.
 - Stop the other instance and start again.
+- `listen port 127.0.0.1:23446 is already in use (EADDRINUSE)` when running `mock:akm` means another server process already owns the mock listen socket.

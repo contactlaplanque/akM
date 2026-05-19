@@ -30,6 +30,8 @@ These come first so the UI has a reliable target to talk to and a way to develop
 
 ### M2 — Mock akm-server for development
 
+**Status:** Done (2026-05-19)
+
 **Scope:** A standalone Node script that _acts like_ akm-server over OSC, so UI work doesn't need SuperCollider or hardware running. Mirrors the contract in `packages/akm-config/docs/osc.md`.
 
 **Deliverable:**
