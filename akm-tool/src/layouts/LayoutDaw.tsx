@@ -39,7 +39,7 @@ export function LayoutDaw() {
 
   return (
     <div className="app app-daw">
-      <StatusBar st={st} />
+      <StatusBar />
 
       <main className={`daw-main ${isSourceView ? "" : "is-fullpanel"}`}>
         <nav className="daw-nav" aria-label="main views">

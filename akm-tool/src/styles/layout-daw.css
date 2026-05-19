@@ -117,32 +117,72 @@ body,
   background: oklch(0.7 0.2 25 / 0.16);
 }
 
+.btn-ghost {
+  background: var(--panel);
+}
+
+.btn-ghost:hover {
+  background: var(--panel-hi);
+}
+
+.btn-danger {
+  background: oklch(0.7 0.2 25 / 0.2);
+  border-color: oklch(0.7 0.2 25 / 0.5);
+  color: oklch(0.92 0.01 25);
+}
+
+.btn-danger:hover {
+  background: oklch(0.7 0.2 25 / 0.28);
+}
+
+.btn-sm {
+  height: 26px;
+  padding: 0 8px;
+  font-size: 11px;
+}
+
 .server-ctl {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
+.server-ctl.is-confirm {
+  padding: 4px 6px 4px 10px;
+  background: oklch(0.18 0.03 25);
+  border: 1px solid oklch(0.7 0.2 25 / 0.45);
+  border-radius: 8px;
+  box-shadow: 0 4px 14px oklch(0 0 0 / 0.35);
+}
+
 .server-ctl.is-transition {
-  height: 30px;
-  border-radius: 6px;
-  padding: 0 10px;
+  padding: 6px 12px;
+  border-radius: var(--radius);
   border: 1px solid var(--border-2);
-  background: var(--panel);
+  background: var(--panel-hi);
+  color: var(--fg-2);
+  font-size: 11px;
 }
 
 .server-ctl-msg {
   font-size: 11px;
   color: var(--fg-2);
+  margin-right: 4px;
+}
+
+.server-ctl-msg b {
+  color: var(--fg);
+  font-weight: 600;
 }
 
 .server-ctl-spin {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 999px;
   border: 2px solid var(--border-2);
   border-top-color: var(--primary);
-  animation: daw-spin 1s linear infinite;
+  display: inline-block;
+  animation: daw-spin 0.8s linear infinite;
 }
 
 @keyframes daw-spin {
@@ -328,51 +368,6 @@ body,
   text-align: center;
   padding: 12px;
   position: relative;
-}
-
-.connection-badge {
-  position: absolute;
-  left: 10px;
-  bottom: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--panel-hi);
-  color: var(--muted);
-  padding: 6px 8px;
-  font-size: 10px;
-  line-height: 1.25;
-}
-
-.connection-badge-row {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-}
-
-.connection-badge-key {
-  color: var(--muted-2);
-}
-
-.connection-badge-value.is-good {
-  color: var(--good);
-}
-
-.connection-badge-value.is-warn {
-  color: var(--warn);
-}
-
-.connection-badge-value.is-muted {
-  color: var(--muted);
-}
-
-.connection-badge-meta {
-  display: inline-flex;
-  gap: 8px;
-  color: var(--muted-2);
 }
 
 .strip-reopen {

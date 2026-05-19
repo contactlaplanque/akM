@@ -116,7 +116,10 @@ async function main(): Promise<void> {
 	const wsServer = new WebSocketServer({ host: "127.0.0.1", port: wsPort });
 	const serverManager = new ServerManager({
 		sendOsc: (address, args) => oscBridge.send(address, args),
-		waitForAddress: (address, timeoutMs) => oscBridge.waitForAddress(address, timeoutMs)
+		waitForAddress: (address, timeoutMs, sinceTs) =>
+			oscBridge.waitForAddress(address, timeoutMs, sinceTs),
+		waitForAddressPrefix: (addressPrefix, timeoutMs, sinceTs) =>
+			oscBridge.waitForAddressPrefix(addressPrefix, timeoutMs, sinceTs)
 	});
 
 	const broadcast = (message: AgentToClientMessage): void => {
@@ -129,7 +132,7 @@ async function main(): Promise<void> {
 	};
 
 	const publishServerStatus = (): void => {
-		serverStatus.msgRate = oscBridge.getMsgRate();
+		serverStatus.msgRate = serverStatus.state === "ready" ? oscBridge.getMsgRate() : 0;
 		broadcast(serverStatus);
 	};
 

@@ -309,6 +309,8 @@ After Phase 3, the UI is fully built but driven by mock state. These four milest
 
 ### M12 — Server lifecycle UI (status pills + popover + Start/Stop)
 
+**Status:** Done (2026-05-19)
+
 **Scope:** Wire the real top-bar status pills, the server popover, and the guarded Start/Stop button to the agent's lifecycle messages.
 
 **Deliverable:**

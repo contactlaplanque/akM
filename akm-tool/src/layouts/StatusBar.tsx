@@ -1,84 +1,15 @@
 import { AkmIcon, StatusPill } from "@/components/primitives"
-import type { AkmState, ServerState } from "@/state/types"
+import { useAgentConnection } from "@/state/useAgentConnection"
 
-type StatusBarProps = {
-  st: AkmState
-}
+import { ServerControl } from "./ServerControl"
+import { resolveAgentPill, resolveServerPill, useHeartbeatPulse } from "./server-status-ui"
 
-type ServerControlProps = {
-  serverState: ServerState
-  onStart: () => void
-  onStop: () => void
-}
-
-function resolveServerStatus(serverState: ServerState): {
-  tone: "good" | "warn" | "bad" | "idle"
-  sub?: string
-  pulse: boolean
-} {
-  if (serverState === "ready") {
-    return { tone: "good", pulse: true }
-  }
-  if (serverState === "starting") {
-    return { tone: "warn", sub: "booting...", pulse: false }
-  }
-  if (serverState === "stopping") {
-    return { tone: "warn", sub: "stopping...", pulse: false }
-  }
-  if (serverState === "stopped") {
-    return { tone: "idle", sub: "stopped", pulse: false }
-  }
-  if (serverState === "error") {
-    return { tone: "bad", sub: "error", pulse: false }
-  }
-  return { tone: "idle", sub: "idle", pulse: false }
-}
-
-function ServerControl({ serverState, onStart, onStop }: ServerControlProps) {
-  if (serverState === "starting" || serverState === "stopping") {
-    return (
-      <div className="server-ctl is-transition">
-        <span className="server-ctl-spin" />
-        <span className="server-ctl-msg">
-          {serverState === "starting"
-            ? "Starting akm-server..."
-            : "Stopping akm-server..."}
-        </span>
-      </div>
-    )
-  }
-
-  const running = serverState === "ready"
-
-  return (
-    <div className="server-ctl">
-      {running ? (
-        <button
-          className="btn btn-danger-ghost"
-          onClick={onStop}
-          title="Stop the akm-server"
-          type="button"
-        >
-          <AkmIcon name="stop" size={12} />
-          Stop akm-server
-        </button>
-      ) : (
-        <button
-          className="btn btn-primary"
-          onClick={onStart}
-          title="Start the akm-server"
-          type="button"
-        >
-          <AkmIcon name="play" size={12} />
-          Start akm-server
-        </button>
-      )}
-    </div>
-  )
-}
-
-export function StatusBar({ st }: StatusBarProps) {
-  const serverStatus = resolveServerStatus(st.serverState)
+export function StatusBar() {
+  const { connectionState, agentStatus, serverStatus, serverStart, serverStop } = useAgentConnection()
+  const agentPill = resolveAgentPill(connectionState, agentStatus)
+  const serverPill = resolveServerPill(serverStatus)
+  const heartbeatPulse = useHeartbeatPulse(serverStatus.uptimeSec, serverStatus.state === "ready")
+  const msgRate = `${Math.round(serverStatus.msgRate ?? 0)}`
 
   return (
     <header className="topbar">
@@ -94,22 +25,24 @@ export function StatusBar({ st }: StatusBarProps) {
       </div>
 
       <div className="topbar-status">
+        <StatusPill tone={agentPill.tone} label="agent" sub={agentPill.sub} title={agentPill.title} />
         <StatusPill
-          tone={st.agentState === "connected" ? "good" : "warn"}
-          label="agent"
-          sub={st.agentState}
-        />
-        <StatusPill
-          tone={serverStatus.tone}
+          tone={serverPill.tone}
           label="akm-server"
-          sub={serverStatus.sub}
-          pulse={serverStatus.pulse}
+          sub={serverPill.sub}
+          pulse={heartbeatPulse}
+          title={serverPill.title ?? "akm-server status"}
         />
-        <StatusPill tone="idle" label="msg/s" sub="22" />
+        <StatusPill tone="idle" label="msg/s" sub={msgRate} />
       </div>
 
       <div className="topbar-actions">
-        <ServerControl serverState={st.serverState} onStart={() => {}} onStop={() => {}} />
+        <ServerControl
+          serverState={serverStatus.state}
+          error={serverStatus.error}
+          onStart={serverStart}
+          onStop={serverStop}
+        />
       </div>
     </header>
   )

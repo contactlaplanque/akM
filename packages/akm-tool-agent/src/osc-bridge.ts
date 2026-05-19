@@ -256,8 +256,39 @@ export class OscBridge {
 		};
 	}
 
-	public async waitForAddress(address: string, timeoutMs: number): Promise<OscInboundEvent> {
-		const existing = this.recentEvents.find((event) => event.address === address);
+	public async waitForAddress(
+		address: string,
+		timeoutMs: number,
+		sinceTs = Date.now()
+	): Promise<OscInboundEvent> {
+		return this.waitForMessage(
+			(event) => event.address === address,
+			timeoutMs,
+			sinceTs,
+			`OSC address: ${address}`
+		);
+	}
+
+	public async waitForAddressPrefix(
+		addressPrefix: string,
+		timeoutMs: number,
+		sinceTs = Date.now()
+	): Promise<OscInboundEvent> {
+		return this.waitForMessage(
+			(event) => event.address.startsWith(addressPrefix),
+			timeoutMs,
+			sinceTs,
+			`OSC address prefix: ${addressPrefix}`
+		);
+	}
+
+	private async waitForMessage(
+		matches: (event: OscInboundEvent) => boolean,
+		timeoutMs: number,
+		sinceTs: number,
+		description = "matching OSC message"
+	): Promise<OscInboundEvent> {
+		const existing = this.recentEvents.find((event) => event.ts >= sinceTs && matches(event));
 		if (existing) {
 			return existing;
 		}
@@ -265,11 +296,11 @@ export class OscBridge {
 		return new Promise<OscInboundEvent>((resolve, reject) => {
 			const timeout = setTimeout(() => {
 				cleanup();
-				reject(new Error(`Timeout while waiting for OSC address: ${address}`));
+				reject(new Error(`Timeout while waiting for ${description}`));
 			}, timeoutMs);
 
 			const onOsc = (event: OscInboundEvent) => {
-				if (event.address === address) {
+				if (event.ts >= sinceTs && matches(event)) {
 					cleanup();
 					resolve(event);
 				}
