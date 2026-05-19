@@ -35,8 +35,8 @@ export const DEFAULT_METER_OPTIONS: Required<MeterLevelOptions> = {
   clamp: true,
   minDb: METER_MIN_DB,
   maxDb: METER_MAX_DB,
-  attackMs: 60,
-  releaseMs: 180,
+  attackMs: 20,
+  releaseMs: 120,
   peakHoldMs: 1200,
   peakDecayPerSecond: 1.4,
 }
@@ -124,19 +124,23 @@ export function useMeterLevel(rawLevel: MeterRawLevel, options?: MeterLevelOptio
       const next = clampValue(current + (target - current) * alpha, 0, 1)
       levelRef.current = next
 
-      if (next >= peakRef.current) {
-        peakRef.current = next
+      // Peak hold tracks the RAW normalized target (not the smoothed level).
+      // This makes the peak indicator reflect actual transients instead of
+      // chasing the EMA-smoothed bar, so short impulses are visible even when
+      // the bar hasn't ramped up yet.
+      if (target >= peakRef.current) {
+        peakRef.current = target
         peakHoldUntilRef.current = now + peakHoldMs
       } else if (now > peakHoldUntilRef.current) {
         const decayAmount = (peakDecayPerSecond * dtMs) / 1000
-        peakRef.current = Math.max(next, peakRef.current - decayAmount)
+        peakRef.current = Math.max(target, peakRef.current - decayAmount)
       }
 
       setDisplayLevel(next)
       setPeakHold(peakRef.current > 0 ? peakRef.current : null)
 
       const needsLevelFrame = Math.abs(target - next) > 0.0005
-      const needsPeakFrame = peakRef.current > next + 0.0005
+      const needsPeakFrame = peakRef.current > target + 0.0005
       if (needsLevelFrame || needsPeakFrame) {
         rafRef.current = window.requestAnimationFrame(animate)
       } else {

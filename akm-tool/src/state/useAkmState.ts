@@ -128,6 +128,11 @@ function createInitialHydrationState(): OscHydrationState {
     sub_mid: saved.filterByRole?.sub_mid ?? { freq: 80, rq: 1.0 },
     sub_lf: saved.filterByRole?.sub_lf ?? { freq: 60, rq: 1.0 },
   }
+  const groupGainsDb: Record<SpeakerRole, number> = {
+    satellite: saved.groupGainsDb?.satellite ?? 0,
+    sub_mid: saved.groupGainsDb?.sub_mid ?? 0,
+    sub_lf: saved.groupGainsDb?.sub_lf ?? 0,
+  }
 
   return {
     sources,
@@ -136,6 +141,7 @@ function createInitialHydrationState(): OscHydrationState {
     mutes,
     eqByRole,
     filterByRole,
+    groupGainsDb,
     systemGainDb: saved.systemGainDb ?? 0,
     reverb: saved.systemReverb ?? {
       decay: serverConfig.reverb.decay,
@@ -408,6 +414,22 @@ function useAkmStateValue(): AkmState {
     [sendIfLiveCoalesced]
   )
 
+  const setGroupGainDb = useCallback(
+    (role: SpeakerRole, db: number) => {
+      setHydration((current) => {
+        if (current.groupGainsDb[role] === db) {
+          return current
+        }
+        sendIfLive(`/akm/group/${role}/gain`, encodeSystemGain(db))
+        return {
+          ...current,
+          groupGainsDb: { ...current.groupGainsDb, [role]: db },
+        }
+      })
+    },
+    [sendIfLive]
+  )
+
   const setSystemGainDb = useCallback<Dispatch<SetStateAction<number>>>(
     (update) => {
       setHydration((current) => {
@@ -494,6 +516,10 @@ function useAkmStateValue(): AkmState {
         `/akm/group/${role}/filter`,
         encodeFilterState(current.filterByRole[role])
       )
+      sendOsc(
+        `/akm/group/${role}/gain`,
+        encodeSystemGain(current.groupGainsDb[role])
+      )
     }
     for (const [speakerId, gainDb] of Object.entries(current.gains)) {
       sendOsc(`/akm/speaker/${speakerId}/gain`, encodeSpeakerGain(gainDb))
@@ -520,6 +546,7 @@ function useAkmStateValue(): AkmState {
     const current = hydrationRef.current
     const payload = {
       systemGainDb: current.systemGainDb,
+      groupGainsDb: current.groupGainsDb,
       speakerGains: current.gains,
       speakerMutes: current.mutes,
       eqByRole: current.eqByRole,
@@ -572,6 +599,10 @@ function useAkmStateValue(): AkmState {
     setEqByRole,
     filterByRole: hydration.filterByRole,
     setFilterByRole,
+    groupGainsDb: hydration.groupGainsDb,
+    setGroupGainDb,
+    perf: serverStatus.perf ?? null,
+    serverReady: serverStatus.state === "ready",
     systemGainDb: hydration.systemGainDb,
     setSystemGainDb,
     reverb: hydration.reverb,

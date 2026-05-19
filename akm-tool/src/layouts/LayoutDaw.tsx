@@ -302,6 +302,8 @@ export function LayoutDaw() {
                     [role]: filter,
                   }))
                 }
+                groupGainsDb={st.groupGainsDb}
+                onGroupGainChange={st.setGroupGainDb}
                 sampleRate={st.serverConfig.audio.sampleRate}
                 oscDrivenKeys={st.oscDrivenKeys}
               />
@@ -317,6 +319,8 @@ export function LayoutDaw() {
                 subMidReverb={st.subMidReverb}
                 onSubMidReverbChange={st.setSubMidReverb}
                 oscDrivenKeys={st.oscDrivenKeys}
+                perf={st.perf}
+                serverReady={st.serverReady}
               />
             ) : activeNav?.placeholder ? (
               <div className="panel-placeholder">{activeNav.placeholder}</div>

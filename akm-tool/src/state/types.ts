@@ -46,6 +46,7 @@ export type Layout = {
 
 export type SavedState = {
   systemGainDb?: number
+  groupGainsDb?: Partial<Record<SpeakerRole, number>>
   speakerGains?: Record<string, number>
   speakerMutes?: Record<string, boolean>
   eqByRole?: Partial<Record<SpeakerRole, EqState>>
@@ -167,6 +168,10 @@ export type AkmState = {
   setEqByRole: Dispatch<SetStateAction<Record<SpeakerRole, EqState>>>
   filterByRole: Record<SpeakerRole, FilterState>
   setFilterByRole: Dispatch<SetStateAction<Record<SpeakerRole, FilterState>>>
+  groupGainsDb: Record<SpeakerRole, number>
+  setGroupGainDb: (role: SpeakerRole, db: number) => void
+  perf: import("@/services/agent-protocol").ServerPerf | null
+  serverReady: boolean
   systemGainDb: number
   setSystemGainDb: Dispatch<SetStateAction<number>>
   reverb: ReverbState

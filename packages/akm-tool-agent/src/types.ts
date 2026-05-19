@@ -56,6 +56,18 @@ export type AgentStatusMessage = {
 	state: AgentStatusState;
 };
 
+export type ServerPerf = {
+	avgCPU: number;
+	peakCPU: number;
+	sampleRate: number;
+	blockSize: number;
+	numSynths: number;
+	numGroups: number;
+	numUGens: number;
+	numSynthDefs: number;
+	ts: number;
+};
+
 export type ServerStatusMessage = {
 	type: "server_status";
 	state: ServerStatusState;
@@ -63,6 +75,7 @@ export type ServerStatusMessage = {
 	cpu?: number;
 	uptimeSec?: number;
 	msgRate?: number;
+	perf?: ServerPerf;
 };
 
 export type StateSavedMessage = {

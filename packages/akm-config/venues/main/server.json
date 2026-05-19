@@ -162,7 +162,8 @@
   },
   "telemetry": {
     "stateBroadcastHz": 30,
-    "metersHz": 20
+    "metersHz": 20,
+    "perfHz": 3
   },
   "performance": {
     "pannerUpdateHz": 0
@@ -274,22 +275,22 @@
         },
         "peak2": {
           "enabled": 1,
-          "freq": 1000,
-          "gainDb": 2.5,
-          "rq": 1.399999976158142,
+          "freq": 978.8699951171875,
+          "gainDb": -0.5600000023841858,
+          "rq": 1.5,
           "type": "peak"
         },
         "peak3": {
           "enabled": 1,
-          "freq": 4000,
-          "gainDb": -1.5,
+          "freq": 3617.6201171875,
+          "gainDb": 0.14000000059604645,
           "rq": 0.8999999761581421,
           "type": "peak"
         },
         "highShelf": {
           "enabled": 1,
-          "freq": 10000,
-          "gainDb": 1,
+          "freq": 10044.7802734375,
+          "gainDb": 0.6700000166893005,
           "rq": 0.699999988079071,
           "type": "highshelf"
         }
@@ -374,15 +375,15 @@
     "filterByRole": {
       "satellite": {
         "freq": 110,
-        "rq": 1
+        "rq": 0.8999999761581421
       },
       "sub_mid": {
-        "freq": 80,
-        "rq": 1
+        "freq": 199.66000366210938,
+        "rq": 0.800000011920929
       },
       "sub_lf": {
-        "freq": 60,
-        "rq": 1
+        "freq": 120.01000213623047,
+        "rq": 0.800000011920929
       }
     },
     "subMidReverb": {
@@ -390,8 +391,8 @@
       "mix": 0.25
     },
     "systemReverb": {
-      "decay": 0.5,
-      "feedback": 0.15
+      "decay": 1,
+      "feedback": 0.20000000298023224
     }
   }
 }

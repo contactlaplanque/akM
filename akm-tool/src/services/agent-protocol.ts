@@ -8,6 +8,7 @@ import {
   type OscArg,
   type OscArgType,
   type SaveStateMessage,
+  type ServerPerf,
   type ServerRestartMessage,
   type ServerStartMessage,
   type ServerStopMessage,
@@ -78,6 +79,26 @@ export function isAgentToClientMessage(value: unknown): value is AgentToClientMe
       return false
     }
 
+    if (value.perf !== undefined) {
+      if (!isRecord(value.perf)) return false
+      const perfKeys: (keyof ServerPerf)[] = [
+        "avgCPU",
+        "peakCPU",
+        "sampleRate",
+        "blockSize",
+        "numSynths",
+        "numGroups",
+        "numUGens",
+        "numSynthDefs",
+        "ts",
+      ]
+      for (const key of perfKeys) {
+        if (!isFiniteNumber((value.perf as Record<string, unknown>)[key])) {
+          return false
+        }
+      }
+    }
+
     return true
   }
 
@@ -118,6 +139,7 @@ export type {
   OscArg,
   OscArgType,
   SaveStateMessage,
+  ServerPerf,
   ServerRestartMessage,
   ServerStartMessage,
   ServerStopMessage,

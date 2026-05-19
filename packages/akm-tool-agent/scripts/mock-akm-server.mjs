@@ -225,9 +225,27 @@ async function main() {
 		intervals.push(
 			setInterval(() => {
 				uptimeSec += 1;
-				const cpu = Math.min(1, Math.max(0, 0.08 + 0.03 * Math.sin(performance.now() / 4000)));
-				sendToAgent("/akm/server/heartbeat", [toFloatArg(uptimeSec), toFloatArg(cpu)]);
+				sendToAgent("/akm/server/heartbeat", [toFloatArg(uptimeSec)]);
 			}, 1000)
+		);
+
+		// Simulated perf telemetry (3 Hz) — matches the real server's
+		// /akm/server/perf payload shape.
+		intervals.push(
+			setInterval(() => {
+				const avgCPU = Math.min(100, Math.max(0, 8 + 3 * Math.sin(performance.now() / 4000)));
+				const peakCPU = Math.min(100, avgCPU + 5 + 2 * Math.sin(performance.now() / 1500));
+				sendToAgent("/akm/server/perf", [
+					toFloatArg(avgCPU),
+					toFloatArg(peakCPU),
+					toFloatArg(48000),
+					toFloatArg(64),
+					toFloatArg(120),
+					toFloatArg(8),
+					toFloatArg(420),
+					toFloatArg(40)
+				]);
+			}, 333)
 		);
 
 		intervals.push(

@@ -167,16 +167,54 @@ async function main(): Promise<void> {
 
 		if (event.address === "/akm/server/heartbeat") {
 			const numericArgs = event.args.map(numericValue).filter((value): value is number => value !== null);
-			if (numericArgs.length >= 2) {
+			if (numericArgs.length >= 1) {
 				uptimeSec = Math.max(0, Math.trunc(numericArgs[0]));
-				serverStatus.cpu = numericArgs[1];
 				heartbeatProvidesMetrics = true;
 			} else {
 				heartbeatProvidesMetrics = false;
 			}
 
+			// Legacy: mock used to send [uptime, cpu] on heartbeat. Keep that
+			// path alive so the existing CPU field still works if /akm/server/perf
+			// is not (yet) wired up.
+			if (numericArgs.length >= 2) {
+				serverStatus.cpu = numericArgs[1];
+			}
+
 			serverStatus.uptimeSec = uptimeSec;
 			publishServerStatus();
+			return;
+		}
+
+		if (event.address === "/akm/server/perf") {
+			const numericArgs = event.args.map(numericValue).filter((value): value is number => value !== null);
+			if (numericArgs.length >= 8) {
+				const [
+					avgCPU,
+					peakCPU,
+					sampleRate,
+					blockSize,
+					numSynths,
+					numGroups,
+					numUGens,
+					numSynthDefs
+				] = numericArgs;
+				serverStatus.perf = {
+					avgCPU,
+					peakCPU,
+					sampleRate,
+					blockSize,
+					numSynths,
+					numGroups,
+					numUGens,
+					numSynthDefs,
+					ts: Date.now()
+				};
+				// Mirror avgCPU into the legacy cpu field so existing UI keeps working.
+				serverStatus.cpu = avgCPU;
+				publishServerStatus();
+			}
+			return;
 		}
 	});
 
@@ -196,6 +234,7 @@ async function main(): Promise<void> {
 			uptimeSec = 0;
 			heartbeatProvidesMetrics = false;
 			delete serverStatus.cpu;
+			delete serverStatus.perf;
 		}
 
 		if (status.state !== "ready") {
@@ -203,6 +242,7 @@ async function main(): Promise<void> {
 			heartbeatProvidesMetrics = false;
 			serverStatus.uptimeSec = 0;
 			delete serverStatus.cpu;
+			delete serverStatus.perf;
 		}
 
 		publishServerStatus();

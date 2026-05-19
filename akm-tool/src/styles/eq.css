@@ -11,7 +11,43 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   flex-shrink: 0;
+}
+
+.eq-group-gain {
+  flex: 0 1 280px;
+  min-width: 180px;
+  display: flex;
+  align-items: center;
+}
+
+.eq-group-gain .slider-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.eq-group-gain .slider-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.eq-group-gain .slider-track {
+  position: relative;
+  height: 16px;
+  border-radius: 3px;
+}
+
+.eq-group-gain .slider-val {
+  font-size: 11px;
+  min-width: 56px;
+  text-align: right;
 }
 
 .role-tabs {

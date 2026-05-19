@@ -35,7 +35,7 @@ const SPATIAL_SLIDERS: {
   { key: "radius", label: "Radius", min: 0.1, max: 40, step: 0.1, unit: "m", fmt: (v) => v.toFixed(1) },
   { key: "exponentA", label: "Exponent", min: 1, max: 5, step: 0.05, fmt: (v) => v.toFixed(2) },
   { key: "delayLevel", label: "Delay level", min: 0, max: 5, step: 0.01, fmt: (v) => v.toFixed(2) },
-  { key: "reverbMix", label: "Reverb mix", min: 0, max: 1, step: 0.01, fmt: (v) => v.toFixed(2) },
+  { key: "reverbMix", label: "Reverb send", min: 0, max: 1, step: 0.01, fmt: (v) => v.toFixed(2) },
 ]
 
 export function SourceInspector({

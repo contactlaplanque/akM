@@ -30,6 +30,8 @@ const SPEAKER_MUTE_ACK_RE = /^\/akm\/server\/ack\/speaker\/([^/]+)\/mute$/
 const EQ_ACK_RE = /^\/akm\/server\/ack\/group\/(satellite|sub_mid|sub_lf)\/eq$/
 const FILTER_ACK_RE =
   /^\/akm\/server\/ack\/group\/(satellite|sub_mid|sub_lf)\/filter$/
+const GROUP_GAIN_ACK_RE =
+  /^\/akm\/server\/ack\/group\/(satellite|sub_mid|sub_lf)\/gain$/
 const SYSTEM_GAIN_ACK = "/akm/server/ack/system/gain"
 const SYSTEM_REVERB_ACK = "/akm/server/ack/system/reverb"
 const SUBMID_REVERB_ACK = "/akm/server/ack/group/sub_mid/reverb"
@@ -42,6 +44,7 @@ export type OscHydrationState = {
   mutes: Record<string, boolean>
   eqByRole: Record<SpeakerRole, EqState>
   filterByRole: Record<SpeakerRole, FilterState>
+  groupGainsDb: Record<SpeakerRole, number>
   systemGainDb: number
   reverb: ReverbState
   subMidReverb: SubMidReverbState
@@ -191,6 +194,23 @@ export function reduceOscHydrationState(
     return {
       ...state,
       eqByRole: { ...state.eqByRole, [role]: nextEq },
+    }
+  }
+
+  const groupGainAckMatch = message.address.match(GROUP_GAIN_ACK_RE)
+  if (groupGainAckMatch) {
+    const values = unwrapOscNumbers(message.args)
+    const nextGain = values ? decodeSystemGain(values) : null
+    if (nextGain == null) {
+      return state
+    }
+    const role = groupGainAckMatch[1] as SpeakerRole
+    if (state.groupGainsDb[role] === nextGain) {
+      return state
+    }
+    return {
+      ...state,
+      groupGainsDb: { ...state.groupGainsDb, [role]: nextGain },
     }
   }
 

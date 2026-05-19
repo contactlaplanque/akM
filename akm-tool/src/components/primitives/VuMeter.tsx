@@ -29,14 +29,17 @@ export function VuMeter({
   style,
   meterOptions,
 }: VuMeterProps) {
-  const meter = useMeterLevel(rawLevel ?? 0, meterOptions)
+  // Drive ballistics + peak hold off whichever raw input was supplied.
+  // When the parent passes `value`, we still want a peak indicator that
+  // tracks the raw amplitude (matches the bottom-strip behavior), so we
+  // feed the same source into useMeterLevel and read just its peak hold.
   const fromValueProp = value != null
+  const ballisticsSource = fromValueProp ? value : (rawLevel ?? 0)
+  const meter = useMeterLevel(ballisticsSource, meterOptions)
   const level = fromValueProp
     ? normalizeMeterLevel(value)
     : normalizeMeterLevel(meter.displayLevel, { mode: "linear" })
-  const resolvedPeak = normalizePeak(
-    peakHold ?? (rawLevel != null && !fromValueProp ? meter.peakHold : null)
-  )
+  const resolvedPeak = normalizePeak(peakHold ?? meter.peakHold)
 
   const isVertical = orient === "v"
   const dimensions: CSSProperties = fill

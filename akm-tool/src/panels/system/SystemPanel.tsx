@@ -1,3 +1,4 @@
+import type { ServerPerf } from "@/services/agent-protocol"
 import type {
   Layout,
   ReverbState,
@@ -7,6 +8,7 @@ import type {
 } from "@/state/types"
 
 import { LayoutSummaryCard } from "./LayoutSummaryCard"
+import { PerformanceCard } from "./PerformanceCard"
 import { ServerConfigColumn } from "./ServerConfigColumn"
 import { SystemControlsColumn } from "./SystemControlsColumn"
 
@@ -21,6 +23,8 @@ export type SystemPanelProps = {
   subMidReverb: SubMidReverbState
   onSubMidReverbChange: (next: SubMidReverbState) => void
   oscDrivenKeys?: Set<string>
+  perf?: ServerPerf | null
+  serverReady?: boolean
 }
 
 export function SystemPanel({
@@ -34,10 +38,13 @@ export function SystemPanel({
   subMidReverb,
   onSubMidReverbChange,
   oscDrivenKeys,
+  perf,
+  serverReady = false,
 }: SystemPanelProps) {
   return (
     <div className="system">
       <LayoutSummaryCard layout={layout} sources={sources} />
+      <PerformanceCard perf={perf ?? null} serverReady={serverReady} />
       <ServerConfigColumn serverConfig={serverConfig} />
       <SystemControlsColumn
         systemGainDb={systemGainDb}

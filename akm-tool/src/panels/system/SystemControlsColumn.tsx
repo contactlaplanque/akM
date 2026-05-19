@@ -50,8 +50,8 @@ export function SystemControlsColumn({
         <SectionHead title="Main reverb" />
         <Slider
           label="Decay"
-          min={0.2}
-          max={10}
+          min={0}
+          max={5}
           step={0.05}
           value={reverb.decay}
           unit="s"
@@ -62,7 +62,7 @@ export function SystemControlsColumn({
         <Slider
           label="Feedback"
           min={0}
-          max={0.95}
+          max={0.99}
           step={0.01}
           value={reverb.feedback}
           onChange={(feedback) => onReverbChange({ ...reverb, feedback })}

@@ -1,5 +1,6 @@
 import { useCallback, useState, type CSSProperties } from "react"
 
+import { Slider } from "@/components/primitives"
 import { ROLE_COLORS, SPEAKER_ROLES } from "@/lib/role-colors"
 import type { EqBand, EqState, FilterState, SpeakerRole } from "@/state/types"
 
@@ -23,6 +24,8 @@ export type EqPanelProps = {
   onEqChange: (role: SpeakerRole, eq: EqState) => void
   filterByRole: Record<SpeakerRole, FilterState>
   onFilterChange: (role: SpeakerRole, filter: FilterState) => void
+  groupGainsDb: Record<SpeakerRole, number>
+  onGroupGainChange: (role: SpeakerRole, db: number) => void
   sampleRate: number
   oscDrivenKeys: Set<string>
 }
@@ -34,12 +37,16 @@ export function EqPanel({
   onEqChange,
   filterByRole,
   onFilterChange,
+  groupGainsDb,
+  onGroupGainChange,
   sampleRate,
   oscDrivenKeys,
 }: EqPanelProps) {
   const eq = eqByRole[selectedRole]
   const filter = filterByRole[selectedRole]
   const filterMeta = getGroupFilterConfig(selectedRole)
+  const groupGainDb = groupGainsDb[selectedRole]
+  const roleColors = ROLE_COLORS[selectedRole]
   const { boxRef, width } = useSpectrumWidth()
   const [selectedBand, setSelectedBand] = useState<EqBandKey>("peak2")
   const [filterStageActive, setFilterStageActive] = useState(true)
@@ -113,6 +120,22 @@ export function EqPanel({
               {ROLE_COLORS[role].short}
             </button>
           ))}
+        </div>
+        <div
+          className="eq-group-gain"
+          style={{ "--accent": roleColors.fill } as CSSProperties}
+        >
+          <Slider
+            label={`${roleColors.short} GAIN`}
+            min={-24}
+            max={12}
+            step={0.1}
+            value={groupGainDb}
+            unit="dB"
+            fmt={(v) => (v >= 0 ? `+${v.toFixed(1)}` : v.toFixed(1))}
+            onChange={(db) => onGroupGainChange(selectedRole, db)}
+            accent={roleColors.fill}
+          />
         </div>
       </div>
 

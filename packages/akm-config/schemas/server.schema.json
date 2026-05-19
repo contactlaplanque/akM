@@ -77,7 +77,8 @@
       "required": ["stateBroadcastHz", "metersHz"],
       "properties": {
         "stateBroadcastHz": { "type": "number", "minimum": 1, "maximum": 60 },
-        "metersHz": { "type": "number", "minimum": 1, "maximum": 60 }
+        "metersHz": { "type": "number", "minimum": 1, "maximum": 60 },
+        "perfHz": { "type": "number", "minimum": 1, "maximum": 10 }
       }
     },
     "performance": {
@@ -91,6 +92,15 @@
       "description": "Persisted runtime mix state (EQ, filters, gains, mutes). Optional; SC and frontend fall back to internal defaults when missing.",
       "properties": {
         "systemGainDb": { "type": "number" },
+        "groupGainsDb": {
+          "type": "object",
+          "description": "Per-group gain in dB (additive to per-speaker and system gain).",
+          "properties": {
+            "satellite": { "type": "number" },
+            "sub_mid": { "type": "number" },
+            "sub_lf": { "type": "number" }
+          }
+        },
         "speakerGains": {
           "type": "object",
           "description": "Per-speaker gain in dB, keyed by speakerId.",

@@ -43,6 +43,18 @@
     var(--panel-lo);
 }
 
+.system-col-perf {
+  background:
+    radial-gradient(540px 180px at 100% 0%, oklch(0.7 0.13 280 / 0.06), transparent 60%),
+    var(--panel-lo);
+}
+
+.perf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 4px 12px;
+}
+
 .system-config-stack {
   display: flex;
   flex-direction: column;

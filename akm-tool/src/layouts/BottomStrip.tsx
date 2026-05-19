@@ -39,7 +39,7 @@ function MetersGroup({ title, values }: MetersGroupProps) {
             key={`${title}-${meterIndex}`}
             value={value}
             orient="v"
-            size={8}
+            size={6}
             fill
           />
         ))}

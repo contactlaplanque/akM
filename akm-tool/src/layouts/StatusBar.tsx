@@ -15,6 +15,23 @@ export function StatusBar() {
   const serverPill = resolveServerPill(serverStatus)
   const heartbeatPulse = useHeartbeatPulse(serverStatus.uptimeSec, serverStatus.state === "ready")
   const msgRate = `${Math.round(serverStatus.msgRate ?? 0)}`
+  const perf = serverStatus.perf
+  const cpuTone: "good" | "warn" | "bad" | "idle" = perf
+    ? perf.avgCPU >= 80
+      ? "bad"
+      : perf.avgCPU >= 60
+        ? "warn"
+        : "good"
+    : "idle"
+  const cpuLabel = perf ? `${perf.avgCPU.toFixed(0)}%` : "—"
+  const cpuTitle = perf
+    ? [
+        `avg CPU ${perf.avgCPU.toFixed(1)}%`,
+        `peak ${perf.peakCPU.toFixed(1)}%`,
+        `${perf.sampleRate.toFixed(0)} Hz / block ${perf.blockSize}`,
+        `${perf.numSynths.toFixed(0)} synths · ${perf.numUGens.toFixed(0)} ugens`,
+      ].join(" · ")
+    : "scsynth performance — waiting for telemetry"
 
   const [recentlySaved, setRecentlySaved] = useState(false)
   useEffect(() => {
@@ -63,6 +80,13 @@ export function StatusBar() {
           title={serverPill.title ?? "akm-server status"}
         />
         <StatusPill tone="idle" label="msg/s" labelShort="msg/s" sub={msgRate} />
+        <StatusPill
+          tone={cpuTone}
+          label="cpu"
+          labelShort="cpu"
+          sub={cpuLabel}
+          title={cpuTitle}
+        />
       </div>
 
       <div className="topbar-actions">
