@@ -77,22 +77,38 @@ These three are sequential (each depends on the previous), but lightweight. Afte
 
 ### M4 — Shared primitives library
 
-**Scope:** Port `design_handoff_akm_tool/src/shared.jsx` and the primitives section of `panels.jsx` to TypeScript. Pure presentational, props-driven, no global state.
+**Scope:** Port `design_handoff_akm_tool/src/shared.jsx` and the primitives section of `panels.jsx` to TypeScript. Pure presentational, props-driven, no global state. Controls lean on [audio-ui](https://github.com/ouestlabs/audio-ui) where it fits; metering stays **custom** but backed by a small level-processing layer so OSC updates (20 Hz) look smooth and truthful on screen.
+
+**Dependencies (add in M4):**
+
+- `lucide-react` — icons (already in the project; use directly, no hand-drawn SVG set).
+- `@audio-ui/react` + shadcn registry items `fader` (and optionally `knob` for later EQ work) from the audio-ui registry — copied into `src/components/audio/` and themed with M3 tokens.
+
+**Meter data model (accuracy):**
+
+Meters are **not** read from the browser audio device. Levels come from `/akm/server/meters` (mock now, live in M13) as per-channel floats. The UI normalizes and conditions them before paint:
+
+- **`akm-tool/src/lib/meters.ts`** — single place for meter math:
+  - `normalizeMeterLevel(raw, options?)` → clamped `0..1` (handles linear OSC samples; in M13, also maps real-server `SendPeakRMS` peak/RMS pairs when needed).
+  - `useMeterLevel(rawLevel, { peakHoldMs?, attackMs?, releaseMs? })` — optional client-side peak hold + light attack/release so 20 Hz OSC does not look stepped; defaults tuned for ~20 Hz input.
+  - Document expected wire shape: mock = one float per channel; production may send pairs until server/UI agree on one format.
+- **`VuMeter.tsx`** — presentational only: `value` and optional `peakHold` in `0..1`, vertical/horizontal, sizes from handoff; CSS mask-descending gradient from `design_handoff_akm_tool/src/app.css` (`.vu`, `.vu-mask`, `.vu-peak`).
+- Do **not** use [web-audio-peak-meter](https://github.com/esonderegger/web-audio-peak-meter) — it requires a Web Audio `AudioNode`; akM audio runs in SuperCollider.
 
 **Deliverable in `akm-tool/src/components/primitives/`:**
 
-- `Icon.tsx` (the 12-icon set; or wire to `lucide-react` 1:1)
-- `StatusPill.tsx` (good/warn/bad/idle + pulse)
-- `VuMeter.tsx` (mask-descending gradient, horizontal + vertical orientations)
-- `Slider.tsx` (track + fill, click-to-edit numeric, `oscDriven` prop)
-- `NumStep.tsx` (`[-][value][+]`, click-to-edit)
-- `VFader.tsx` (vertical −60…+12 dB)
-- `SectionHead.tsx`, `KvGrid.tsx`, `Kbd.tsx` — tiny layout helpers
-- A `Storybook`-like `/playground` route in the dev app showing every primitive in every state.
+- **Icons** — `lucide-react` only (thin `icons.ts` map from handoff names → Lucide components if useful; no `Icon.tsx` SVG path set).
+- **`StatusPill.tsx`** — good/warn/bad/idle + pulse.
+- **`VuMeter.tsx`** — uses `useMeterLevel` when driven by raw OSC samples; accepts pre-normalized `value` for tests/playground.
+- **`VFader.tsx`** — vertical −60…+12 dB; wrap audio-ui `Fader` (`orientation="vertical"`, dB range, double-click reset to 0 dB, tick marks); AKM styling + `oscDriven` → disabled + amber chrome.
+- **`Slider.tsx`** — horizontal param sliders (radius, EQ freq, etc.): prefer audio-ui horizontal `Fader` where range/step fit; otherwise shadcn `Slider` + prototype fill bar; keep click-to-edit numeric + `oscDriven` / `.osc-tag` from handoff.
+- **`NumStep.tsx`** — custom `[-][value][+]` + click-to-edit (no audio-ui equivalent).
+- **`SectionHead.tsx`, `KvGrid.tsx`, `Kbd.tsx`** — tiny layout helpers from handoff.
+- **`/playground` route** — every primitive in default, hover, disabled, and `is-osc` states; include a **meter bench**: static levels, animated mock stream (~20 Hz), and peak-hold demo.
 
 **Depends on:** M3.
 
-**Acceptance test:** Visit `/playground`; every primitive renders in default + hover + disabled + `is-osc` (amber) states matching the prototype.
+**Acceptance test:** Visit `/playground`; every primitive matches the prototype visually. Meters: sweeping mock levels update smoothly without visible stair-stepping; peak-hold tick tracks transients; gradient/mask matches handoff. Faders/sliders: audio-ui interaction (drag, keyboard) works; `oscDriven` locks control and shows amber treatment. Icons render from Lucide at the sizes used in the rail and top bar.
 
 ---
 
@@ -274,7 +290,7 @@ After Phase 3, the UI is fully built but driven by mock state. These four milest
 - Refactor `useAkmState.ts` to:
   - Listen to `onOsc(({ address, args }) => …)` and dispatch by address pattern:
     - `/akm/server/state/source/{id}` → update `sources[id]`
-    - `/akm/server/meters` → update `meters.sourceIns` + `meters.speakerOuts`
+    - `/akm/server/meters` → update `meters.sourceIns` + `meters.speakerOuts` via `normalizeMeterLevel` from M4 (`lib/meters.ts`) so all panels share one normalization path
     - `/akm/server/ack/source/{id}/params` → reconcile local optimistic update with server echo
     - …all other ACKs likewise
   - Outgoing changes go through `sendOsc()` instead of mutating local state directly (optimistic local update + ack reconciliation).
@@ -303,7 +319,7 @@ After Phase 3, the UI is fully built but driven by mock state. These four milest
   - Meters pane (right) — chunked VU groups (SAT 1–8, 9–16, …, SUB_MID, SUB_LF, INPUTS) bound to the live `meters` slice.
   - Collapses to 26px handle that shows the last log line.
 
-**Depends on:** M13 (live state), M4 (VU primitive).
+**Depends on:** M13 (live state), M4 (`VuMeter` + meter normalization).
 
 **Acceptance test:** Cause the mock-akm-server (or real server) to "external-write" a param — that param's slider goes amber and read-only across panels; when the simulated timeout fires, it returns to local control. Bottom strip log streams new entries; meters animate from the same data as the mixer.
 
@@ -345,6 +361,8 @@ When starting work on a milestone:
 
 ## References
 
+- **UI controls (faders/knobs):** [ouestlabs/audio-ui](https://github.com/ouestlabs/audio-ui) — shadcn registry; install `fader` (+ `knob` when needed for EQ).
+- **Icons:** [lucide-react](https://lucide.dev/) (project default per `components.json`).
 - **Design source of truth:** `/Users/nicolas/Desktop/design_handoff_akm_tool/`
   - `README.md` — full design brief (visual, behavioral, OSC contract)
   - `CLAUDE.md` — hard rules and fidelity expectations
