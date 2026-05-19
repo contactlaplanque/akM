@@ -8,7 +8,7 @@ import { CameraOverlay, Scene3D } from "@/panels/scene"
 import { SystemPanel } from "@/panels/system"
 import { useAkmState } from "@/state/useAkmState"
 
-import { BottomStripPlaceholder } from "./BottomStripPlaceholder"
+import { BottomStrip } from "./BottomStrip"
 import { StatusBar } from "./StatusBar"
 
 type ViewId = "source" | "mixer" | "eq" | "system"
@@ -33,12 +33,18 @@ export function LayoutDaw() {
   const [logHidden, setLogHidden] = useState(false)
 
   const isSourceView = view === "source"
-  const activeNav = useMemo(() => NAV_ITEMS.find((item) => item.id === view), [view])
-  const selectedIndex = st.sources.findIndex((s) => s.id === st.selectedSourceId)
-  const selectedSource = selectedIndex >= 0 ? st.sources[selectedIndex] : undefined
+  const activeNav = useMemo(
+    () => NAV_ITEMS.find((item) => item.id === view),
+    [view]
+  )
+  const selectedIndex = st.sources.findIndex(
+    (s) => s.id === st.selectedSourceId
+  )
+  const selectedSource =
+    selectedIndex >= 0 ? st.sources[selectedIndex] : undefined
 
   return (
-    <div className="app app-daw">
+    <div className={`app app-daw ${st.isLive ? "" : "is-data-stale"}`}>
       <StatusBar />
 
       <main className={`daw-main ${isSourceView ? "" : "is-fullpanel"}`}>
@@ -70,12 +76,12 @@ export function LayoutDaw() {
                 }
                 onShowAll={() =>
                   st.setSourceVisibility(
-                    Object.fromEntries(st.sources.map((s) => [s.id, true])),
+                    Object.fromEntries(st.sources.map((s) => [s.id, true]))
                   )
                 }
                 onHideAll={() =>
                   st.setSourceVisibility(
-                    Object.fromEntries(st.sources.map((s) => [s.id, false])),
+                    Object.fromEntries(st.sources.map((s) => [s.id, false]))
                   )
                 }
               />
@@ -147,7 +153,10 @@ export function LayoutDaw() {
                 }
                 filterByRole={st.filterByRole}
                 onFilterChange={(role, filter) =>
-                  st.setFilterByRole((current) => ({ ...current, [role]: filter }))
+                  st.setFilterByRole((current) => ({
+                    ...current,
+                    [role]: filter,
+                  }))
                 }
                 sampleRate={st.serverConfig.audio.sampleRate}
                 oscDrivenKeys={st.oscDrivenKeys}
@@ -172,8 +181,11 @@ export function LayoutDaw() {
         </section>
       </main>
 
-      <BottomStripPlaceholder
+      <BottomStrip
         logs={st.logs}
+        meters={st.meters}
+        layout={st.layout}
+        sources={st.sources}
         hidden={logHidden}
         onToggle={() => setLogHidden((value) => !value)}
       />

@@ -74,7 +74,6 @@ export function EqPanel({
 
   const updateFilter = useCallback(
     (patch: Partial<FilterState>) => {
-      setFilterStageActive(true)
       const nextFreq = clampGroupFilterFreq(
         selectedRole,
         patch.freq !== undefined ? patch.freq : filter.freq,
@@ -83,6 +82,7 @@ export function EqPanel({
       if (nextFreq === filter.freq && nextRq === filter.rq) {
         return
       }
+      setFilterStageActive(true)
       onFilterChange(selectedRole, { freq: nextFreq, rq: nextRq })
     },
     [filter.freq, filter.rq, onFilterChange, selectedRole],

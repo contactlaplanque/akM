@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "id": "main-36-4-2",
-  "name": "Main 36 SAT + 4 SUB_MID + 2 SUB_LF",
+  "id": "main-36-3-2",
+  "name": "Main 36 SAT + 3 SUB_MID + 2 SUB_LF",
   "coordinateSystem": {
     "unit": "m",
     "origin": "center"
@@ -51,12 +51,11 @@
     { "id": "sat_12_2", "role": "satellite", "position": { "x": 6.45, "y": 3.5, "z": 1.7 }, "outputChannel": 34 },
     { "id": "sat_12_3", "role": "satellite", "position": { "x": 6.45, "y": 3.5, "z": 3.0 }, "outputChannel": 35 },
 
-    { "id": "sub_mid_1", "role": "sub_mid", "position": { "x": -4.3, "y": -1.75, "z": 0.3 }, "outputChannel": 36 },
-    { "id": "sub_mid_2", "role": "sub_mid", "position": { "x": 4.3, "y": -1.75, "z": 0.3 }, "outputChannel": 37 },
-    { "id": "sub_mid_3", "role": "sub_mid", "position": { "x": -4.3, "y": 1.75, "z": 0.3 }, "outputChannel": 38 },
-    { "id": "sub_mid_4", "role": "sub_mid", "position": { "x": 4.3, "y": 1.75, "z": 0.3 }, "outputChannel": 39 },
+    { "id": "sub_mid_1", "role": "sub_mid", "position": { "x": -4.3, "y": 0.0, "z": 0.3 }, "outputChannel": 36 },
+    { "id": "sub_mid_2", "role": "sub_mid", "position": { "x": 0.0, "y": 0.0, "z": 0.3 }, "outputChannel": 37 },
+    { "id": "sub_mid_3", "role": "sub_mid", "position": { "x": 4.3, "y": 0.0, "z": 0.3 }, "outputChannel": 38 },
 
-    { "id": "sub_lf_1", "role": "sub_lf", "position": { "x": -5.132, "y": -2.784, "z": 0.3 }, "outputChannel": 40 },
-    { "id": "sub_lf_2", "role": "sub_lf", "position": { "x": 5.132, "y": 2.784, "z": 0.3 }, "outputChannel": 41 }
+    { "id": "sub_lf_1", "role": "sub_lf", "position": { "x": -7, "y": 4, "z": 0.3 }, "outputChannel": 39 },
+    { "id": "sub_lf_2", "role": "sub_lf", "position": { "x": 7, "y": -4, "z": 0.3 }, "outputChannel": 40 }
   ]
 }

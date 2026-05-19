@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:real": "pnpm run dev",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,tsx}\"",

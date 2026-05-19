@@ -4,11 +4,11 @@ import { AkmStateProvider } from "@/state/useAkmState"
 
 export function App() {
   return (
-    <AkmStateProvider>
-      <AgentConnectionProvider>
+    <AgentConnectionProvider>
+      <AkmStateProvider>
         <LayoutDaw />
-      </AgentConnectionProvider>
-    </AkmStateProvider>
+      </AkmStateProvider>
+    </AgentConnectionProvider>
   )
 }
 

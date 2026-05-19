@@ -38,12 +38,18 @@ body,
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--primary) 0%, oklch(0.55 0.13 200) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    oklch(0.55 0.13 200) 100%
+  );
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--primary-fg);
-  box-shadow: 0 0 0 1px var(--primary-line), 0 2px 8px oklch(0.68 0.13 188 / 0.2);
+  box-shadow:
+    0 0 0 1px var(--primary-line),
+    0 2px 8px oklch(0.68 0.13 188 / 0.2);
 }
 
 .brand-text {
@@ -292,6 +298,12 @@ body,
   overflow: auto;
 }
 
+.app-daw.is-data-stale .daw-sources,
+.app-daw.is-data-stale .daw-scene,
+.app-daw.is-data-stale .daw-panel-body {
+  opacity: 0.7;
+}
+
 .panel-placeholder,
 .scene-placeholder,
 .sources-placeholder {
@@ -313,6 +325,8 @@ body,
   display: flex;
   flex-direction: column;
   height: 220px;
+  width: 100%;
+  min-width: 0;
   transition: height 0.2s ease;
   position: relative;
 }
@@ -349,25 +363,14 @@ body,
   border-color: var(--border-2);
 }
 
-.strip-body {
+.bottom-strip-body {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  flex: 1;
   height: 100%;
-  padding: 14px;
-}
-
-.strip-placeholder {
-  border: 1px dashed var(--border-2);
-  border-radius: 8px;
-  color: var(--muted);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 12px;
-  position: relative;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
 }
 
 .strip-reopen {
@@ -388,6 +391,15 @@ body,
 .strip-reopen:hover {
   background: var(--panel-lo);
   color: var(--fg-2);
+}
+
+.strip-reopen > svg {
+  flex: none;
+  color: var(--muted);
+}
+
+.strip-reopen:hover > svg {
+  color: var(--fg);
 }
 
 .strip-reopen-label {
@@ -419,6 +431,145 @@ body,
 .strip-reopen-tail-label {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Terminal-like log pane in the bottom strip. */
+.log-pane {
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* Smooth scroll caused autoscroll to lag behind incoming log entries: while
+     the browser animated towards the previous target, new logs pushed the
+     bottom further down. Use instant scrolling so each new log lands exactly
+     at the bottom. */
+  scroll-behavior: auto;
+  padding: 10px 14px 12px;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  min-width: 0;
+  box-sizing: border-box;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.55;
+  border-right: 1px solid var(--border);
+  background:
+    radial-gradient(1200px 200px at 0% 0%, oklch(0.18 0.012 188 / 0.18), transparent 70%),
+    linear-gradient(to bottom, oklch(0.08 0.005 240) 0%, oklch(0.07 0.005 240) 100%);
+  color: oklch(0.85 0.02 188);
+}
+
+.log-pane::-webkit-scrollbar {
+  width: 6px;
+}
+
+.log-pane::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: 3px;
+}
+
+.log-row {
+  display: flex;
+  flex: none;
+  gap: 8px;
+  padding: 1px 0;
+  align-items: baseline;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.log-row + .log-row {
+  border-top: 1px dashed oklch(1 0 0 / 0.02);
+}
+
+.log-ts {
+  color: var(--muted-2);
+  flex: none;
+  width: 64px;
+}
+
+.log-pane .log-kind {
+  flex: none;
+  width: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.log-label {
+  color: var(--fg-2);
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.log-detail {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+}
+
+.log-empty {
+  color: var(--muted-2);
+  margin-top: 4px;
+}
+
+/* Chunked VU groups for bottom-strip meters. */
+.meters-pane {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  padding: 10px 36px 12px 14px;
+  min-width: 0;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  align-items: stretch;
+}
+
+.meters-pane::-webkit-scrollbar {
+  width: 6px;
+  height: 4px;
+}
+
+.meters-pane::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: 2px;
+}
+
+.meters-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+}
+
+.meters-head {
+  color: var(--muted-2);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.meters-bars {
+  display: flex;
+  gap: 1px;
+  min-height: 0;
+  flex: 1;
+  align-items: stretch;
+  padding: 3px;
+  background: oklch(0.06 0 0);
+  border-radius: 3px;
+  border: 1px solid var(--hairline);
 }
 
 .log-kind {

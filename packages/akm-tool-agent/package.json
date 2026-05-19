@@ -8,6 +8,7 @@
     "dev": "tsc --watch & node --watch dist/index.js",
     "build": "tsc",
     "start": "node dist/index.js",
+    "dev:real": "pnpm run build && pnpm run start",
     "smoke:ws": "node scripts/ws-smoke.mjs",
     "mock:akm": "node scripts/mock-akm-server.mjs"
   },

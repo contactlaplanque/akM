@@ -1,28 +1,45 @@
 import {
-  createElement,
   createContext,
+  createElement,
+  type Dispatch,
   type ReactNode,
-  useContext,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
+  type SetStateAction,
   useState,
 } from "react"
 
-import layoutData from "./layout.json"
-import serverData from "./server.json"
-import { seedLogs } from "./seed-logs"
-import { createSimulator } from "./simulator"
+import {
+  encodeEqState,
+  encodeFilterState,
+  encodeSourceParams,
+  encodeSpeakerGain,
+  encodeSubMidReverb,
+  encodeSystemGain,
+  encodeSystemReverb,
+  mergeSourcePatch,
+} from "./osc-codec"
+import { eqByRoleEqual, filterByRoleEqual } from "./eq-filter-equality"
+import { appendLog, logEntryFromOsc } from "./log-buffer"
+import { reduceOscHydrationState, type OscHydrationState } from "./osc-dispatch"
+import layoutData from "../../../packages/akm-config/venues/main/layout.json"
+import serverData from "../../../packages/akm-config/venues/main/server.json"
+import { useAgentConnection } from "./useAgentConnection"
 import type {
-  AgentState,
   AkmState,
   EqState,
   FilterState,
   Layout,
+  LogEntry,
+  MetersState,
+  ReverbState,
   ServerConfig,
   SpeakerRole,
-  ServerState,
+  SourceSample,
+  SubMidReverbState,
   SourceParamPatch,
 } from "./types"
 
@@ -31,20 +48,25 @@ const serverConfig = serverData as ServerConfig
 
 const AkmStateContext = createContext<AkmState | null>(null)
 
-const OSC_DRIVEN_POOL = [
-  "eq.satellite.peak2.gainDb",
-  "eq.satellite.peak2.freq",
-  "eq.satellite.peak2.rq",
-  "eq.satellite.lowShelf.gainDb",
-  "eq.satellite.highShelf.freq",
-  "eq.sub_mid.peak1.gainDb",
-  "eq.sub_lf.lowShelf.gainDb",
-  "filter.satellite.freq",
-  "filter.satellite.rq",
-  "src.src_01.radius",
-  "src.src_03.reverbMix",
-  "src.src_07.delayLevel",
-]
+const SPEAKER_ROLES: SpeakerRole[] = ["satellite", "sub_mid", "sub_lf"]
+const SOURCE_DEFAULTS = {
+  posX: 0,
+  posY: 0,
+  posZ: 1.7,
+  radius: 3,
+  exponentA: 1,
+  delayLevel: 1,
+  reverbMix: 0.2,
+  level: 0,
+  active: false,
+} as const
+
+function resolveStateUpdate<T>(current: T, update: SetStateAction<T>): T {
+  if (typeof update === "function") {
+    return (update as (prevState: T) => T)(current)
+  }
+  return update
+}
 
 function initEq(): EqState {
   return {
@@ -53,179 +75,361 @@ function initEq(): EqState {
     peak1: { freq: 250, gainDb: 0, rq: 1, enabled: 1, type: "peak" },
     peak2: { freq: 1000, gainDb: 2.5, rq: 1.4, enabled: 1, type: "peak" },
     peak3: { freq: 4000, gainDb: -1.5, rq: 0.9, enabled: 1, type: "peak" },
-    highShelf: { freq: 10000, gainDb: 1, rq: 0.7, enabled: 1, type: "highshelf" },
+    highShelf: {
+      freq: 10000,
+      gainDb: 1,
+      rq: 0.7,
+      enabled: 1,
+      type: "highshelf",
+    },
   }
 }
 
-function pickRandomKeys(pool: string[], minSize: number, maxSize: number): Set<string> {
-  const count = minSize + Math.floor(Math.random() * (maxSize - minSize + 1))
-  const picks = new Set<string>()
-  while (picks.size < count) {
-    picks.add(pool[Math.floor(Math.random() * pool.length)])
+function createInitialSources(): SourceSample[] {
+  return serverConfig.sources.map((source) => ({
+    id: source.id,
+    inputChannel: source.inputChannel,
+    ...SOURCE_DEFAULTS,
+  }))
+}
+
+function createInitialMeters(sources: SourceSample[]): MetersState {
+  return {
+    sourceIns: Array.from({ length: sources.length }, () => 0),
+    speakerOuts: Array.from({ length: layout.speakers.length }, () => 0),
   }
-  return picks
+}
+
+function createInitialHydrationState(): OscHydrationState {
+  const sources = createInitialSources()
+  return {
+    sources,
+    meters: createInitialMeters(sources),
+    gains: Object.fromEntries(
+      layout.speakers.map((speaker) => [speaker.id, 0])
+    ),
+    eqByRole: {
+      satellite: initEq(),
+      sub_mid: initEq(),
+      sub_lf: initEq(),
+    },
+    filterByRole: {
+      satellite: { freq: 110, rq: 1.0 },
+      sub_mid: { freq: 80, rq: 1.0 },
+      sub_lf: { freq: 60, rq: 1.0 },
+    },
+    systemGainDb: 0,
+    reverb: {
+      decay: serverConfig.reverb.decay,
+      feedback: serverConfig.reverb.feedback,
+    },
+    subMidReverb: {
+      enabled: 0,
+      mix: 0.25,
+    },
+  }
 }
 
 function useAkmStateValue(): AkmState {
-  const simulatorRef = useRef(createSimulator(serverConfig.sources))
-  const [sources, setSources] = useState(() =>
-    simulatorRef.current.sample(performance.now()),
+  const { connectionState, serverStatus, onOsc, sendOsc } = useAgentConnection()
+  const [hydration, setHydration] = useState<OscHydrationState>(
+    createInitialHydrationState
   )
-
-  const [agentState, setAgentState] = useState<AgentState>("connected")
-  const [serverState, setServerState] = useState<ServerState>("ready")
-  const [cpu, setCpu] = useState(34)
-  const [uptimeSec, setUptimeSec] = useState(1283)
+  const isLive =
+    connectionState === "connected" && serverStatus.state === "ready"
 
   const [selectedSourceId, setSelectedSourceId] = useState("src_01")
   const [hoveredSpeakerId, setHoveredSpeakerId] = useState<string | null>(null)
   const [selectedSpeakerId, setSelectedSpeakerId] = useState(
-    layout.speakers[0]?.id ?? "sat_1_1",
+    layout.speakers[0]?.id ?? "sat_1_1"
   )
-  const [sourceVisibility, setSourceVisibility] = useState<Record<string, boolean>>(() => {
-    const activeIndexes = new Set([0, 2, 6, 11, 17, 23])
-    return Object.fromEntries(
-      serverConfig.sources.map((source, index) => [
-        source.id,
-        activeIndexes.has(index),
-      ]),
-    )
-  })
-  const [roleVisibility, setRoleVisibility] = useState<Record<SpeakerRole, boolean>>({
+  const [sourceVisibility, setSourceVisibility] = useState<
+    Record<string, boolean>
+  >(() =>
+    Object.fromEntries(serverConfig.sources.map((source) => [source.id, true]))
+  )
+  const [roleVisibility, setRoleVisibility] = useState<
+    Record<SpeakerRole, boolean>
+  >({
     satellite: true,
     sub_mid: true,
     sub_lf: true,
   })
-  const [cameraPreset, setCameraPreset] = useState<"perspective" | "top" | "front">(
-    "perspective",
-  )
+  const [cameraPreset, setCameraPreset] = useState<
+    "perspective" | "top" | "front"
+  >("perspective")
   const [selectedRole, setSelectedRole] = useState<SpeakerRole>("satellite")
 
-  const [gains, setGains] = useState<Record<string, number>>(() =>
-    Object.fromEntries(layout.speakers.map((speaker) => [speaker.id, 0])),
-  )
   const [mutes, setMutes] = useState<Record<string, boolean>>({})
-  const [eqByRole, setEqByRole] = useState<Record<SpeakerRole, EqState>>({
-    satellite: initEq(),
-    sub_mid: initEq(),
-    sub_lf: initEq(),
-  })
-  const [filterByRole, setFilterByRole] = useState<Record<SpeakerRole, FilterState>>({
-    satellite: { freq: 110, rq: 1.0 },
-    sub_mid: { freq: 80, rq: 1.0 },
-    sub_lf: { freq: 60, rq: 1.0 },
-  })
-
-  const [systemGainDb, setSystemGainDb] = useState(0)
-  const [reverb, setReverb] = useState({
-    decay: serverConfig.reverb.decay,
-    feedback: serverConfig.reverb.feedback,
-  })
-  const [subMidReverb, setSubMidReverb] = useState({
-    enabled: 0,
-    mix: 0.25,
-  })
   const [showSpeakerLabels, setShowSpeakerLabels] = useState(true)
 
-  const [logs, setLogs] = useState(() => seedLogs())
-  const [oscDrivenKeys, setOscDrivenKeys] = useState(
-    () =>
-      new Set<string>([
-        "eq.satellite.peak2.gainDb",
-        "eq.satellite.peak2.freq",
-        "filter.satellite.freq",
-        "src.src_03.reverbMix",
-      ]),
-  )
+  const [logs, setLogs] = useState<LogEntry[]>([])
+  const previousConnectionState = useRef(connectionState)
+  const previousServerState = useRef(serverStatus.state)
+  const [oscDrivenKeys] = useState(() => new Set<string>())
 
   useEffect(() => {
-    let rafId = 0
-    let lastTime = performance.now()
+    const didConnectToAgent =
+      previousConnectionState.current !== "connected" &&
+      connectionState === "connected"
+    const didStartServer =
+      previousServerState.current !== "starting" &&
+      serverStatus.state === "starting"
 
-    const tick = () => {
-      const now = performance.now()
-      setSources(simulatorRef.current.sample(now))
-
-      if (now - lastTime > 1000) {
-        setCpu((value) => Math.max(10, Math.min(85, value + (Math.random() - 0.5) * 4)))
-        setUptimeSec((value) => value + 1)
-        lastTime = now
-      }
-
-      rafId = requestAnimationFrame(tick)
+    if (didConnectToAgent || didStartServer) {
+      setLogs([])
     }
 
-    rafId = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(rafId)
-  }, [])
+    previousConnectionState.current = connectionState
+    previousServerState.current = serverStatus.state
+  }, [connectionState, serverStatus.state])
 
   useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setLogs((current) => {
-        const next = [...current]
-        const now = new Date()
-        next.push({
-          id: Math.random().toString(36).slice(2),
-          ts: now.getTime(),
-          tsLabel: now.toTimeString().slice(0, 8),
-          kind: Math.random() < 0.85 ? "ack" : "log",
-          label: `/akm/source/src_${String(Math.floor(Math.random() * 32) + 1).padStart(2, "0")}/params`,
-          detail: `(${(Math.random() * 4 - 2).toFixed(3)}, ${(Math.random() * 4 - 2).toFixed(3)}, 2.0, 2.5, 2.0, 1.0, 0.1)`,
-        })
-        return next.slice(-250)
-      })
-    }, 700)
-
-    return () => window.clearInterval(intervalId)
-  }, [])
-
-  useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setOscDrivenKeys(pickRandomKeys(OSC_DRIVEN_POOL, 2, 4))
-    }, 9000)
-
-    return () => window.clearInterval(intervalId)
-  }, [])
-
-  const updateSourceParams = useCallback((id: string, patch: SourceParamPatch) => {
-    simulatorRef.current.patchSourceParams(id, patch)
-    setSources((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)))
-  }, [])
-
-  const meters = useMemo(() => {
-    const sourceIns = sources.map((source) => Math.min(1, source.level || 0))
-    const speakerOuts = layout.speakers.map((speaker) => {
-      let sum = 0
-
-      for (const source of sources) {
-        if (!source.active) {
-          continue
-        }
-        const distance = Math.hypot(
-          source.posX - speaker.position.x,
-          source.posY - speaker.position.y,
-          source.posZ - speaker.position.z,
-        )
-        const weight = Math.max(0, 1 - distance / (source.radius * 1.5))
-        sum += source.level * weight
+    return onOsc((message) => {
+      setHydration((current) => reduceOscHydrationState(current, message))
+      const logEntry = logEntryFromOsc(message)
+      if (!logEntry) {
+        return
       }
-
-      return Math.min(1, sum * (speaker.role === "satellite" ? 0.55 : 0.85))
+      setLogs((current) => appendLog(current, logEntry))
     })
+  }, [onOsc])
 
-    return { sourceIns, speakerOuts }
-  }, [sources])
+  const sendIfLive = useCallback(
+    (address: string, args: ReturnType<typeof encodeSystemGain>) => {
+      if (!isLive) {
+        return
+      }
+      sendOsc(address, args)
+    },
+    [isLive, sendOsc]
+  )
+
+  // Coalesce OSC sends across an animation frame, keyed by address. This
+  // collapses high-frequency drag events (mousemove can fire >100 Hz on fast
+  // mice) into one send per address per frame, which prevents flooding the SC
+  // server and the OSC ack feedback storm that was tripping React's max update
+  // depth heuristic.
+  const pendingOscRef = useRef<Map<string, ReturnType<typeof encodeSystemGain>>>(
+    new Map()
+  )
+  const oscFlushRafRef = useRef<number | null>(null)
+  const flushPendingOsc = useCallback(() => {
+    oscFlushRafRef.current = null
+    const pending = pendingOscRef.current
+    if (pending.size === 0) return
+    for (const [address, args] of pending) {
+      sendOsc(address, args)
+    }
+    pending.clear()
+  }, [sendOsc])
+  useEffect(() => {
+    return () => {
+      if (oscFlushRafRef.current !== null) {
+        cancelAnimationFrame(oscFlushRafRef.current)
+        oscFlushRafRef.current = null
+      }
+      pendingOscRef.current.clear()
+    }
+  }, [])
+  const sendIfLiveCoalesced = useCallback(
+    (address: string, args: ReturnType<typeof encodeSystemGain>) => {
+      if (!isLive) return
+      pendingOscRef.current.set(address, args)
+      if (oscFlushRafRef.current === null) {
+        oscFlushRafRef.current = requestAnimationFrame(flushPendingOsc)
+      }
+    },
+    [flushPendingOsc, isLive]
+  )
+
+  const updateSourceParams = useCallback(
+    (id: string, patch: SourceParamPatch) => {
+      setHydration((current) => {
+        const source = current.sources.find((item) => item.id === id)
+        if (!source) {
+          return current
+        }
+
+        const sourcePayload = mergeSourcePatch(source, patch)
+        const didChange =
+          source.radius !== sourcePayload.radius ||
+          source.exponentA !== sourcePayload.exponentA ||
+          source.delayLevel !== sourcePayload.delayLevel ||
+          source.reverbMix !== sourcePayload.reverbMix
+        if (!didChange) {
+          return current
+        }
+
+        const nextSources = current.sources.map((item) =>
+          item.id === id ? { ...item, ...sourcePayload } : item
+        )
+        sendIfLiveCoalesced(
+          `/akm/source/${id}/params`,
+          encodeSourceParams(sourcePayload)
+        )
+        return { ...current, sources: nextSources }
+      })
+    },
+    [sendIfLiveCoalesced]
+  )
+
+  const setGains = useCallback<
+    Dispatch<SetStateAction<Record<string, number>>>
+  >(
+    (update) => {
+      setHydration((current) => {
+        const nextGains = resolveStateUpdate(current.gains, update)
+        if (nextGains === current.gains) {
+          return current
+        }
+
+        for (const [speakerId, gainDb] of Object.entries(nextGains)) {
+          if (current.gains[speakerId] !== gainDb) {
+            sendIfLive(
+              `/akm/speaker/${speakerId}/gain`,
+              encodeSpeakerGain(gainDb)
+            )
+          }
+        }
+
+        return { ...current, gains: nextGains }
+      })
+    },
+    [sendIfLive]
+  )
+
+  const setEqByRole = useCallback<
+    Dispatch<SetStateAction<Record<SpeakerRole, EqState>>>
+  >(
+    (update) => {
+      setHydration((current) => {
+        const nextEqByRole = resolveStateUpdate(current.eqByRole, update)
+        if (eqByRoleEqual(nextEqByRole, current.eqByRole)) {
+          return current
+        }
+
+        for (const role of SPEAKER_ROLES) {
+          if (nextEqByRole[role] !== current.eqByRole[role]) {
+            sendIfLiveCoalesced(
+              `/akm/group/${role}/eq`,
+              encodeEqState(nextEqByRole[role])
+            )
+          }
+        }
+
+        return { ...current, eqByRole: nextEqByRole }
+      })
+    },
+    [sendIfLiveCoalesced]
+  )
+
+  const setFilterByRole = useCallback<
+    Dispatch<SetStateAction<Record<SpeakerRole, FilterState>>>
+  >(
+    (update) => {
+      setHydration((current) => {
+        const nextFilterByRole = resolveStateUpdate(
+          current.filterByRole,
+          update
+        )
+        if (filterByRoleEqual(nextFilterByRole, current.filterByRole)) {
+          return current
+        }
+
+        for (const role of SPEAKER_ROLES) {
+          if (nextFilterByRole[role] !== current.filterByRole[role]) {
+            sendIfLiveCoalesced(
+              `/akm/group/${role}/filter`,
+              encodeFilterState(nextFilterByRole[role])
+            )
+          }
+        }
+
+        return { ...current, filterByRole: nextFilterByRole }
+      })
+    },
+    [sendIfLiveCoalesced]
+  )
+
+  const setSystemGainDb = useCallback<Dispatch<SetStateAction<number>>>(
+    (update) => {
+      setHydration((current) => {
+        const nextSystemGainDb = resolveStateUpdate(
+          current.systemGainDb,
+          update
+        )
+        if (nextSystemGainDb === current.systemGainDb) {
+          return current
+        }
+        sendIfLive("/akm/system/gain", encodeSystemGain(nextSystemGainDb))
+        return { ...current, systemGainDb: nextSystemGainDb }
+      })
+    },
+    [sendIfLive]
+  )
+
+  const setReverb = useCallback<Dispatch<SetStateAction<ReverbState>>>(
+    (update) => {
+      setHydration((current) => {
+        const nextReverb = resolveStateUpdate(current.reverb, update)
+        if (
+          nextReverb.decay === current.reverb.decay &&
+          nextReverb.feedback === current.reverb.feedback
+        ) {
+          return current
+        }
+        sendIfLive("/akm/system/reverb", encodeSystemReverb(nextReverb))
+        return { ...current, reverb: nextReverb }
+      })
+    },
+    [sendIfLive]
+  )
+
+  const setSubMidReverb = useCallback<
+    Dispatch<SetStateAction<SubMidReverbState>>
+  >(
+    (update) => {
+      setHydration((current) => {
+        const nextSubMidReverb = resolveStateUpdate(
+          current.subMidReverb,
+          update
+        )
+        if (
+          nextSubMidReverb.enabled === current.subMidReverb.enabled &&
+          nextSubMidReverb.mix === current.subMidReverb.mix
+        ) {
+          return current
+        }
+        sendIfLive(
+          "/akm/group/sub_mid/reverb",
+          encodeSubMidReverb(nextSubMidReverb)
+        )
+        return { ...current, subMidReverb: nextSubMidReverb }
+      })
+    },
+    [sendIfLive]
+  )
+
+  const frozenMeters = useMemo(
+    () => ({
+      sourceIns: Array.from(
+        { length: hydration.meters.sourceIns.length },
+        () => 0
+      ),
+      speakerOuts: Array.from(
+        { length: hydration.meters.speakerOuts.length },
+        () => 0
+      ),
+    }),
+    [hydration.meters.sourceIns.length, hydration.meters.speakerOuts.length]
+  )
 
   return {
     layout,
     serverConfig,
-    sources,
-    agentState,
-    serverState,
-    cpu,
-    uptimeSec,
-    setServerState,
-    setAgentState,
+    isLive,
+    sources: hydration.sources,
     selectedSourceId,
     setSelectedSourceId,
     hoveredSpeakerId,
@@ -240,22 +444,22 @@ function useAkmStateValue(): AkmState {
     setCameraPreset,
     selectedRole,
     setSelectedRole,
-    gains,
+    gains: hydration.gains,
     setGains,
     mutes,
     setMutes,
-    eqByRole,
+    eqByRole: hydration.eqByRole,
     setEqByRole,
-    filterByRole,
+    filterByRole: hydration.filterByRole,
     setFilterByRole,
-    systemGainDb,
+    systemGainDb: hydration.systemGainDb,
     setSystemGainDb,
-    reverb,
+    reverb: hydration.reverb,
     setReverb,
-    subMidReverb,
+    subMidReverb: hydration.subMidReverb,
     setSubMidReverb,
     logs,
-    meters,
+    meters: isLive ? hydration.meters : frozenMeters,
     oscDrivenKeys,
     updateSourceParams,
     showSpeakerLabels,

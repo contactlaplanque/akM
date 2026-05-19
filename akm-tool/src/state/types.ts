@@ -2,16 +2,6 @@ import type { Dispatch, SetStateAction } from "react"
 
 export type SpeakerRole = "satellite" | "sub_mid" | "sub_lf"
 
-export type AgentState = "connected" | "disconnected" | "connecting" | "error"
-
-export type ServerState =
-  | "idle"
-  | "starting"
-  | "ready"
-  | "stopping"
-  | "stopped"
-  | "error"
-
 export type SourceConfig = {
   id: string
   inputChannel: number
@@ -28,6 +18,7 @@ export type SourceSample = {
   delayLevel: number
   reverbMix: number
   level: number
+  /** Computed in `source-active.ts` from normalized source input meter level. */
   active: boolean
 }
 
@@ -141,13 +132,8 @@ export type SourceParamPatch = Partial<
 export type AkmState = {
   layout: Layout
   serverConfig: ServerConfig
+  isLive: boolean
   sources: SourceSample[]
-  agentState: AgentState
-  serverState: ServerState
-  cpu: number
-  uptimeSec: number
-  setServerState: Dispatch<SetStateAction<ServerState>>
-  setAgentState: Dispatch<SetStateAction<AgentState>>
   selectedSourceId: string
   setSelectedSourceId: Dispatch<SetStateAction<string>>
   hoveredSpeakerId: string | null

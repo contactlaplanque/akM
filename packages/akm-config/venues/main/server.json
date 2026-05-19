@@ -6,7 +6,7 @@
     "outDevice": "16A-1",
     "sampleRate": 48000,
     "numInputBusChannels": 32,
-    "numOutputBusChannels": 42,
+    "numOutputBusChannels": 41,
     "safetyClipThreshold": 1.0
   },
   "scServer": {
