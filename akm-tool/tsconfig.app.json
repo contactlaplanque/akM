@@ -25,7 +25,8 @@
     "noUncheckedSideEffectImports": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@akm/agent-protocol": ["../packages/akm-tool-agent/src/types.ts"]
     }
   },
   "include": ["src"]

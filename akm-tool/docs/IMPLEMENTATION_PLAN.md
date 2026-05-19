@@ -287,6 +287,8 @@ After Phase 3, the UI is fully built but driven by mock state. These four milest
 
 ### M11 — WebSocket client + connection state
 
+**Status:** Done (2026-05-19)
+
 **Scope:** Build the transport layer the UI uses to talk to `akm-tool-agent`. Keep it isolated behind a single hook so the rest of the app doesn't care about WebSockets.
 
 **Deliverable:**
@@ -315,6 +317,7 @@ After Phase 3, the UI is fully built but driven by mock state. These four milest
   - `agent` pill bound to `agentStatus` from M11.
   - `akm-server` pill bound to `serverStatus.state` (idle / starting / ready / stopping / stopped / error); pulses on heartbeat (use `serverStatus.uptimeSec` increment as the trigger).
   - `msg/s` pill bound to `serverStatus.msgRate`.
+- Remove the temporary M11 debug `<ConnectionBadge />` from the bottom strip placeholder once the top-bar pills are wired to live state.
 - `ServerPopover.tsx`:
   - Opens on `akm-server` pill click; shows state, CPU, uptime, last heartbeat ts, audio/OSC config (from M9 data), Start/Stop/Restart buttons.
 - `ServerControl.tsx` (right side of top bar):

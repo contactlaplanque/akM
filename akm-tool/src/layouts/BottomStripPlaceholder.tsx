@@ -1,6 +1,8 @@
 import { AkmIcon } from "@/components/primitives"
 import type { LogEntry } from "@/state/types"
 
+import { ConnectionBadge } from "./ConnectionBadge"
+
 type BottomStripPlaceholderProps = {
   logs: LogEntry[]
   hidden: boolean
@@ -42,6 +44,7 @@ export function BottomStripPlaceholder({
         <div className="strip-placeholder">
           <div>Bottom strip placeholder (M14)</div>
           <div className="mono-sm">Live logs + meters will mount here.</div>
+          <ConnectionBadge />
         </div>
       </div>
     </div>

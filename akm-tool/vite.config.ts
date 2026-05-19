@@ -9,6 +9,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@akm/agent-protocol": path.resolve(
+        __dirname,
+        "../packages/akm-tool-agent/src/types.ts",
+      ),
       three: path.resolve(__dirname, "./src/lib/three-patch/index.ts"),
       "three-original": path.resolve(
         __dirname,
