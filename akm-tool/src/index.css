@@ -4,6 +4,7 @@
 @import "@fontsource-variable/inter";
 @import "@fontsource-variable/jetbrains-mono";
 @import "./styles/primitives.css";
+@import "./styles/layout-daw.css";
 
 @custom-variant dark (&:is(.dark *));
 

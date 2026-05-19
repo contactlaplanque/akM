@@ -27,8 +27,15 @@ export function StatusPill({
   return (
     <button className={className} onClick={onClick} title={title} type="button">
       <span className="pill-dot" />
-      <span className="pill-label">{label}</span>
-      {sub ? <span className="pill-sub">{sub}</span> : null}
+      <span className="pill-label">
+        {label}
+        {sub ? (
+          <>
+            {" "}
+            <span className="pill-sub">{sub}</span>
+          </>
+        ) : null}
+      </span>
     </button>
   )
 }

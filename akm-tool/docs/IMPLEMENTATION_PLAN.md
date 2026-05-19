@@ -77,6 +77,8 @@ These three are sequential (each depends on the previous), but lightweight. Afte
 
 ### M4 — Shared primitives library
 
+**Status:** Done (2026-05-19)
+
 **Scope:** Port `design_handoff_akm_tool/src/shared.jsx` and the primitives section of `panels.jsx` to TypeScript. Pure presentational, props-driven, no global state. Controls lean on [audio-ui](https://github.com/ouestlabs/audio-ui) where it fits; metering stays **custom** but backed by a small level-processing layer so OSC updates (20 Hz) look smooth and truthful on screen.
 
 **Dependencies (add in M4):**
@@ -113,6 +115,8 @@ Meters are **not** read from the browser audio device. Levels come from `/akm/se
 ---
 
 ### M5 — LayoutDaw shell + mock state hook
+
+**Status:** Done (2026-05-19)
 
 **Scope:** The outer chrome of the app — grid, top bar, icon nav, bottom strip — wired to an in-memory mock state hook that has the **exact shape** of `useAkmState` from the handoff.
 

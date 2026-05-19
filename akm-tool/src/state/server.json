@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "1.0.0",
+  "audio": {
+    "device": "16A-1",
+    "inDevice": "BlackHole 64ch",
+    "outDevice": "16A-1",
+    "sampleRate": 48000,
+    "numInputBusChannels": 32,
+    "numOutputBusChannels": 42,
+    "safetyClipThreshold": 1.0
+  },
+  "scServer": {
+    "numBuffers": 4194304,
+    "memSize": 2097152,
+    "numWireBufs": 2048,
+    "maxNodes": 32768
+  },
+  "osc": {
+    "listen": {
+      "host": "127.0.0.1",
+      "port": 23446
+    },
+    "reply": {
+      "host": "127.0.0.1",
+      "port": 23444
+    }
+  },
+  "sources": [
+    { "id": "src_01", "inputChannel": 0 },
+    { "id": "src_02", "inputChannel": 1 },
+    { "id": "src_03", "inputChannel": 2 },
+    { "id": "src_04", "inputChannel": 3 },
+    { "id": "src_05", "inputChannel": 4 },
+    { "id": "src_06", "inputChannel": 5 },
+    { "id": "src_07", "inputChannel": 6 },
+    { "id": "src_08", "inputChannel": 7 },
+    { "id": "src_09", "inputChannel": 8 },
+    { "id": "src_10", "inputChannel": 9 },
+    { "id": "src_11", "inputChannel": 10 },
+    { "id": "src_12", "inputChannel": 11 },
+    { "id": "src_13", "inputChannel": 12 },
+    { "id": "src_14", "inputChannel": 13 },
+    { "id": "src_15", "inputChannel": 14 },
+    { "id": "src_16", "inputChannel": 15 },
+    { "id": "src_17", "inputChannel": 16 },
+    { "id": "src_18", "inputChannel": 17 },
+    { "id": "src_19", "inputChannel": 18 },
+    { "id": "src_20", "inputChannel": 19 },
+    { "id": "src_21", "inputChannel": 20 },
+    { "id": "src_22", "inputChannel": 21 },
+    { "id": "src_23", "inputChannel": 22 },
+    { "id": "src_24", "inputChannel": 23 },
+    { "id": "src_25", "inputChannel": 24 },
+    { "id": "src_26", "inputChannel": 25 },
+    { "id": "src_27", "inputChannel": 26 },
+    { "id": "src_28", "inputChannel": 27 },
+    { "id": "src_29", "inputChannel": 28 },
+    { "id": "src_30", "inputChannel": 29 },
+    { "id": "src_31", "inputChannel": 30 },
+    { "id": "src_32", "inputChannel": 31 }
+  ],
+  "reverb": {
+    "decay": 0.5,
+    "feedback": 0.5,
+    "subMidEnabled": false
+  },
+  "telemetry": {
+    "stateBroadcastHz": 30,
+    "metersHz": 20
+  },
+  "performance": {
+    "pannerUpdateHz": 0
+  }
+}
