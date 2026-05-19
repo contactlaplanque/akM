@@ -55,6 +55,8 @@ These three are sequential (each depends on the previous), but lightweight. Afte
 
 ### M3 — Design tokens, typography, base shell
 
+**Status:** Done (2026-05-19)
+
 **Scope:** Replace the shadcn-default theme with the design's oklch token system; bundle Inter + JetBrains Mono; set up the dark base.
 
 **Deliverable:**
