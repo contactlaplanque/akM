@@ -17,9 +17,6 @@ export type SourceSample = {
   exponentA: number
   delayLevel: number
   reverbMix: number
-  level: number
-  /** Computed in `source-active.ts` from normalized source input meter level. */
-  active: boolean
 }
 
 export type Speaker = {
@@ -134,11 +131,6 @@ export type LogEntry = {
   detail?: string
 }
 
-export type MetersState = {
-  sourceIns: number[]
-  speakerOuts: number[]
-}
-
 export type SourceParamPatch = Partial<
   Pick<SourceSample, "radius" | "exponentA" | "delayLevel" | "reverbMix">
 >
@@ -181,7 +173,6 @@ export type AkmState = {
   subMidReverb: SubMidReverbState
   setSubMidReverb: Dispatch<SetStateAction<SubMidReverbState>>
   logs: LogEntry[]
-  meters: MetersState
   updateSourceParams: (id: string, patch: SourceParamPatch) => void
   showSpeakerLabels: boolean
   setShowSpeakerLabels: Dispatch<SetStateAction<boolean>>

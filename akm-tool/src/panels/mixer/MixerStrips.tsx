@@ -1,3 +1,5 @@
+import { useCallback } from "react"
+
 import type { Speaker } from "@/state/types"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
@@ -8,7 +10,6 @@ type MixerStripsProps = {
   gains: Record<string, number>
   mutes: Record<string, boolean>
   selectedSpeakerId: string
-  meters: number[]
   onGainChange: (speakerId: string, db: number) => void
   onMuteToggle: (speakerId: string) => void
   onSelectSpeaker: (speakerId: string) => void
@@ -19,11 +20,25 @@ export function MixerStrips({
   gains,
   mutes,
   selectedSpeakerId,
-  meters,
   onGainChange,
   onMuteToggle,
   onSelectSpeaker,
 }: MixerStripsProps) {
+  // Stable per-speaker callbacks so memoised `<ChannelStrip>` doesn't see
+  // a fresh prop identity on every render.
+  const handleGainChange = useCallback(
+    (speakerId: string, value: number) => onGainChange(speakerId, value),
+    [onGainChange]
+  )
+  const handleMuteToggle = useCallback(
+    (speakerId: string) => onMuteToggle(speakerId),
+    [onMuteToggle]
+  )
+  const handleSelect = useCallback(
+    (speakerId: string) => onSelectSpeaker(speakerId),
+    [onSelectSpeaker]
+  )
+
   return (
     <ScrollArea type="always" className="mixer-strip-scroll">
       <div className="mixer-strip-row">
@@ -35,10 +50,9 @@ export function MixerStrips({
             gain={gains[speaker.id] ?? 0}
             muted={!!mutes[speaker.id]}
             selected={speaker.id === selectedSpeakerId}
-            meter={meters[speaker.outputChannel] ?? 0}
-            onChange={(value) => onGainChange(speaker.id, value)}
-            onMute={() => onMuteToggle(speaker.id)}
-            onSelect={() => onSelectSpeaker(speaker.id)}
+            onChange={handleGainChange}
+            onMute={handleMuteToggle}
+            onSelect={handleSelect}
           />
         ))}
       </div>

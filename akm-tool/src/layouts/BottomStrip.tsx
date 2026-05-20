@@ -4,23 +4,25 @@ import { AkmIcon, VuMeter } from "@/components/primitives"
 import type {
   Layout,
   LogEntry,
-  MetersState,
   SourceSample,
   SpeakerRole,
 } from "@/state/types"
 
 type BottomStripProps = {
   logs: LogEntry[]
-  meters: MetersState
   layout: Layout
   sources: SourceSample[]
   hidden: boolean
   onToggle: () => void
 }
 
+type MeterSlot =
+  | { kind: "source"; sourceIndex: number; label: string }
+  | { kind: "speaker"; outputChannel: number; label: string }
+
 type MetersGroupProps = {
   title: string
-  values: number[]
+  slots: MeterSlot[]
 }
 
 const ROLE_LABELS: Record<SpeakerRole, string> = {
@@ -29,20 +31,30 @@ const ROLE_LABELS: Record<SpeakerRole, string> = {
   sub_lf: "SUB_LF",
 }
 
-function MetersGroup({ title, values }: MetersGroupProps) {
+function MetersGroup({ title, slots }: MetersGroupProps) {
   return (
     <div className="meters-group">
       <div className="meters-head">{title}</div>
       <div className="meters-bars">
-        {values.map((value, meterIndex) => (
-          <VuMeter
-            key={`${title}-${meterIndex}`}
-            value={value}
-            orient="v"
-            size={6}
-            fill
-          />
-        ))}
+        {slots.map((slot) =>
+          slot.kind === "source" ? (
+            <VuMeter
+              key={`${title}-src-${slot.sourceIndex}`}
+              sourceIndex={slot.sourceIndex}
+              orient="v"
+              size={6}
+              fill
+            />
+          ) : (
+            <VuMeter
+              key={`${title}-spk-${slot.outputChannel}`}
+              speakerOutputChannel={slot.outputChannel}
+              orient="v"
+              size={6}
+              fill
+            />
+          )
+        )}
       </div>
     </div>
   )
@@ -50,7 +62,6 @@ function MetersGroup({ title, values }: MetersGroupProps) {
 
 export function BottomStrip({
   logs,
-  meters,
   layout,
   sources,
   hidden,
@@ -58,34 +69,39 @@ export function BottomStrip({
 }: BottomStripProps) {
   const logPaneRef = useRef<HTMLDivElement | null>(null)
   const stickRef = useRef(true)
+  const lastLogCountRef = useRef(0)
   const visibleLogs = logs.slice(-300)
-  const speakerGroups = useMemo(() => {
+
+  const speakerGroups = useMemo<MetersGroupProps[]>(() => {
     const byRole = new Map<SpeakerRole, number[]>()
     for (const speaker of layout.speakers) {
-      const values = byRole.get(speaker.role) ?? []
-      values.push(speaker.outputChannel)
-      byRole.set(speaker.role, values)
+      const channels = byRole.get(speaker.role) ?? []
+      channels.push(speaker.outputChannel)
+      byRole.set(speaker.role, channels)
     }
-
     return Array.from(byRole.entries()).map(([role, channels]) => {
-      const orderedChannels = [...channels].sort((a, b) => a - b)
+      const ordered = [...channels].sort((a, b) => a - b)
       return {
         title: ROLE_LABELS[role] ?? role.toUpperCase(),
-        values: orderedChannels.map(
-          (channel) => meters.speakerOuts[channel] ?? 0
-        ),
+        slots: ordered.map<MeterSlot>((outputChannel) => ({
+          kind: "speaker",
+          outputChannel,
+          label: `out ${outputChannel}`,
+        })),
       }
     })
-  }, [layout.speakers, meters.speakerOuts])
-  const inputValues = useMemo(() => {
+  }, [layout.speakers])
+
+  const sourceSlots = useMemo<MeterSlot[]>(() => {
     return sources
-      .map((source, index) => ({
-        inputChannel: source.inputChannel,
-        value: meters.sourceIns[index] ?? 0,
-      }))
+      .map((source, index) => ({ inputChannel: source.inputChannel, index }))
       .sort((a, b) => a.inputChannel - b.inputChannel)
-      .map((entry) => entry.value)
-  }, [meters.sourceIns, sources])
+      .map<MeterSlot>(({ index }) => ({
+        kind: "source",
+        sourceIndex: index,
+        label: `src ${index}`,
+      }))
+  }, [sources])
 
   const onLogScroll = (event: UIEvent<HTMLDivElement>) => {
     const element = event.currentTarget
@@ -95,16 +111,18 @@ export function BottomStrip({
       element.scrollTop + element.clientHeight >= element.scrollHeight - 24
   }
 
-  // `useLayoutEffect` ensures we read scrollHeight after the DOM update for
-  // this commit so the new row is already laid out. Setting scrollTop to a
-  // value past scrollHeight clamps to max; combined with the CSS rule that
-  // disables smooth scrolling for the log pane, this guarantees the latest
-  // entry is fully visible.
+  // Only re-snap the log pane to the bottom when a NEW entry was actually
+  // appended. Previously the effect ran on every `logs` array identity
+  // change, which re-fired on every state-context invalidation and forced
+  // a layout read / scroll write on every commit.
   useLayoutEffect(() => {
     const pane = logPaneRef.current
+    const count = visibleLogs.length
+    if (count === lastLogCountRef.current) return
+    lastLogCountRef.current = count
     if (!stickRef.current || !pane) return
     pane.scrollTop = pane.scrollHeight + 1000
-  }, [logs])
+  }, [visibleLogs.length])
 
   if (hidden) {
     const latest = logs.length > 0 ? logs[logs.length - 1] : null
@@ -163,9 +181,9 @@ export function BottomStrip({
           )}
         </div>
         <div className="meters-pane">
-          <MetersGroup title="SOURCES IN" values={inputValues} />
+          <MetersGroup title="SOURCES IN" slots={sourceSlots} />
           {speakerGroups.map((group) => (
-            <MetersGroup key={group.title} title={group.title} values={group.values} />
+            <MetersGroup key={group.title} title={group.title} slots={group.slots} />
           ))}
         </div>
       </div>

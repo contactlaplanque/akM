@@ -1,11 +1,12 @@
 import { Html, Line } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
-import { useLayoutEffect, useMemo, useRef } from "react"
+import { memo, useLayoutEffect, useMemo, useRef } from "react"
 import * as THREE from "three"
 
+import { liveDataStore } from "@/state/live-data-store"
 import type { SourceSample } from "@/state/types"
 
-import { akmPosition, akmVec3FromSource } from "./scene-coords"
+import { akmPosition } from "./scene-coords"
 import { sourceColorThree } from "./source-color-three"
 import { isSourceVisible } from "./source-visibility"
 
@@ -83,52 +84,65 @@ function RadiusField({ radius, color }: { radius: number; color: string }) {
 
 const targetPos = new THREE.Vector3()
 
-function SourceMesh({
-  source,
-  index,
+type SourceMeshProps = {
+  sourceId: string
+  sourceIndex: number
+  paletteIndex: number
+  radius: number
+  selected: boolean
+  onSelect: (id: string) => void
+}
+
+function SourceMeshImpl({
+  sourceId,
+  sourceIndex,
+  paletteIndex,
+  radius,
   selected,
   onSelect,
-}: {
-  source: SourceSample
-  index: number
-  selected: boolean
-  onSelect: () => void
-}) {
+}: SourceMeshProps) {
   const groupRef = useRef<THREE.Group>(null)
-  const sampleRef = useRef(source)
-  sampleRef.current = source
-  const color = sourceColorThree(index)
-
+  const color = sourceColorThree(paletteIndex)
+  // Cache the (stable mutable) transform record outside React state. The
+  // store returns the same object across calls for a given index so
+  // `useFrame` can read fresh values every frame without re-rendering.
+  const transformRef = useRef(liveDataStore.getSourceTransform(sourceIndex))
   useLayoutEffect(() => {
-    const [x, y, z] = akmPosition(akmVec3FromSource(source))
+    transformRef.current = liveDataStore.getSourceTransform(sourceIndex)
+    const transform = transformRef.current
+    const [x, y, z] = akmPosition({
+      x: transform.posX,
+      y: transform.posY,
+      z: transform.posZ,
+    })
     groupRef.current?.position.set(x, y, z)
-  }, [source.id])
+  }, [sourceIndex])
 
   useFrame((_, delta) => {
     const group = groupRef.current
     if (!group) return
-
-    const [tx, ty, tz] = akmPosition(akmVec3FromSource(sampleRef.current))
+    const t = transformRef.current
+    const [tx, ty, tz] = akmPosition({ x: t.posX, y: t.posY, z: t.posZ })
     targetPos.set(tx, ty, tz)
-    const t = 1 - Math.exp(-POSITION_SMOOTHING * delta)
-    group.position.lerp(targetPos, t)
+    const alpha = 1 - Math.exp(-POSITION_SMOOTHING * delta)
+    group.position.lerp(targetPos, alpha)
   })
+
+  const handleSelect = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation()
+    onSelect(sourceId)
+  }
 
   return (
     <group ref={groupRef}>
-      {selected && <RadiusField radius={source.radius} color={color} />}
+      {selected && <RadiusField radius={radius} color={color} />}
       {selected && (
         <mesh scale={2.2}>
           <sphereGeometry args={[SPHERE_RADIUS, 12, 10]} />
           <meshBasicMaterial color={color} transparent opacity={0.1} />
         </mesh>
       )}
-      <mesh
-        onClick={(e) => {
-          e.stopPropagation()
-          onSelect()
-        }}
-      >
+      <mesh onClick={handleSelect}>
         <sphereGeometry
           args={[selected ? SPHERE_RADIUS * 1.2 : SPHERE_RADIUS * 0.9, 16, 12]}
         />
@@ -146,12 +160,14 @@ function SourceMesh({
         <span
           className={`scene-source-label mono-sm ${selected ? "is-selected" : ""}`}
         >
-          {source.id}
+          {sourceId}
         </span>
       </Html>
     </group>
   )
 }
+
+const SourceMesh = memo(SourceMeshImpl)
 
 export function Sources({
   sources,
@@ -159,6 +175,17 @@ export function Sources({
   sourceVisibility,
   onSelectSource,
 }: SourcesProps) {
+  // O(1) lookup of palette index by id. Replaces the previous O(n) findIndex
+  // call inside the render loop that ran on every meter tick when sources
+  // still lived in the React context.
+  const indexById = useMemo(() => {
+    const map = new Map<string, number>()
+    for (let i = 0; i < sources.length; i += 1) {
+      map.set(sources[i].id, i)
+    }
+    return map
+  }, [sources])
+
   const visibleSources = useMemo(
     () => sources.filter((s) => isSourceVisible(s, { sourceVisibility })),
     [sources, sourceVisibility],
@@ -167,14 +194,16 @@ export function Sources({
   return (
     <group>
       {visibleSources.map((source) => {
-        const index = sources.findIndex((s) => s.id === source.id)
+        const paletteIndex = indexById.get(source.id) ?? 0
         return (
           <SourceMesh
             key={source.id}
-            source={source}
-            index={index >= 0 ? index : 0}
+            sourceId={source.id}
+            sourceIndex={paletteIndex}
+            paletteIndex={paletteIndex}
+            radius={source.radius}
             selected={source.id === selectedSourceId}
-            onSelect={() => onSelectSource(source.id)}
+            onSelect={onSelectSource}
           />
         )
       })}

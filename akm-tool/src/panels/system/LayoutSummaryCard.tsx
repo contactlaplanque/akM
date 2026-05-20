@@ -18,10 +18,10 @@ export function LayoutSummaryCard({ layout, sources }: LayoutSummaryCardProps) {
     return counts
   }, [layout.speakers])
 
-  const activeCount = useMemo(
-    () => sources.filter((source) => source.active).length,
-    [sources],
-  )
+  // Sources are now always considered active in the structural state —
+  // the eye toggle in the rail is the single source of truth for whether
+  // a source is rendered.
+  const activeCount = sources.length
 
   return (
     <div className="system-col system-col-layout">

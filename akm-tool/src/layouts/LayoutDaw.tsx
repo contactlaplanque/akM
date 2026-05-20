@@ -283,7 +283,6 @@ export function LayoutDaw() {
                 }
                 selectedSpeakerId={st.selectedSpeakerId}
                 onSelectSpeaker={st.setSelectedSpeakerId}
-                meters={st.meters.speakerOuts}
               />
             ) : view === "eq" ? (
               <EqPanel
@@ -326,7 +325,6 @@ export function LayoutDaw() {
 
       <BottomStrip
         logs={st.logs}
-        meters={st.meters}
         layout={st.layout}
         sources={st.sources}
         hidden={logHidden}

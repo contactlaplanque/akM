@@ -15,7 +15,6 @@ export type MixerPanelProps = {
   onGroupMute: (speakerIds: string[], muted: boolean) => void
   selectedSpeakerId: string
   onSelectSpeaker: (speakerId: string) => void
-  meters: number[]
 }
 
 export function MixerPanel({
@@ -27,7 +26,6 @@ export function MixerPanel({
   onGroupMute,
   selectedSpeakerId,
   onSelectSpeaker,
-  meters,
 }: MixerPanelProps) {
   const groups = useMemo(() => {
     const byRole = {} as Record<SpeakerRole, typeof layout.speakers>
@@ -80,7 +78,6 @@ export function MixerPanel({
               gains={gains}
               mutes={mutes}
               selectedSpeakerId={selectedSpeakerId}
-              meters={meters}
               onGainChange={onGainChange}
               onMuteToggle={onMuteToggle}
               onSelectSpeaker={onSelectSpeaker}

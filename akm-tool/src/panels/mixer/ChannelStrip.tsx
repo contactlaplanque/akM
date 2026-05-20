@@ -1,3 +1,5 @@
+import { memo, useCallback } from "react"
+
 import { VFader, VuMeter } from "@/components/primitives"
 import type { Speaker } from "@/state/types"
 import { cn } from "@/lib/utils"
@@ -8,35 +10,42 @@ type ChannelStripProps = {
   gain: number
   muted: boolean
   selected: boolean
-  meter: number
   oscDriven?: boolean
-  onChange: (db: number) => void
-  onMute: () => void
-  onSelect: () => void
+  onChange: (speakerId: string, db: number) => void
+  onMute: (speakerId: string) => void
+  onSelect: (speakerId: string) => void
 }
 
-export function ChannelStrip({
+function ChannelStripImpl({
   speaker,
   index,
   gain,
   muted,
   selected,
-  meter,
   oscDriven = false,
   onChange,
   onMute,
   onSelect,
 }: ChannelStripProps) {
+  // Bind the per-strip callbacks to this speaker.id without forcing the
+  // parent to allocate one callback per strip per render.
+  const handleChange = useCallback(
+    (db: number) => onChange(speaker.id, db),
+    [onChange, speaker.id]
+  )
+  const handleMute = useCallback(() => onMute(speaker.id), [onMute, speaker.id])
+  const handleSelect = useCallback(() => onSelect(speaker.id), [onSelect, speaker.id])
+
   return (
     <div
       className={cn("strip", selected && "is-selected", muted && "is-muted")}
-      onClick={onSelect}
+      onClick={handleSelect}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault()
-          onSelect()
+          handleSelect()
         }
       }}
     >
@@ -50,7 +59,7 @@ export function ChannelStrip({
       <div className="strip-body" onClick={(e) => e.stopPropagation()}>
         <VFader
           value={gain}
-          onChange={onChange}
+          onChange={handleChange}
           fill
           compact
           accent="var(--primary)"
@@ -59,7 +68,7 @@ export function ChannelStrip({
           className="strip-vfader"
         />
         <VuMeter
-          value={meter}
+          speakerOutputChannel={speaker.outputChannel}
           orient="v"
           size={3}
           fill
@@ -78,7 +87,7 @@ export function ChannelStrip({
           className={cn("strip-mute", muted && "is-on")}
           onClick={(e) => {
             e.stopPropagation()
-            onMute()
+            handleMute()
           }}
         >
           M
@@ -87,3 +96,5 @@ export function ChannelStrip({
     </div>
   )
 }
+
+export const ChannelStrip = memo(ChannelStripImpl)

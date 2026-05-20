@@ -62,7 +62,7 @@ export function SourcesRail({
             return (
               <div
                 key={source.id}
-                className={`source-row ${isSelected ? "is-selected" : ""} ${source.active ? "" : "is-idle"}`}
+                className={`source-row ${isSelected ? "is-selected" : ""}`}
                 onClick={() => onSelectSource(source.id)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {
@@ -77,28 +77,18 @@ export function SourcesRail({
                 <div className="source-meta">
                   <div className="source-id">{source.id}</div>
                   <div className="source-pos mono-sm">
-                    {source.active ? (
-                      <>
-                        x {source.posX.toFixed(2)}
-                        <span className="sep">·</span>y {source.posY.toFixed(2)}
-                        <span className="sep">·</span>z {source.posZ.toFixed(2)}
-                      </>
-                    ) : (
-                      <span className="muted">
-                        idle · in {source.inputChannel}
-                      </span>
-                    )}
+                    x {source.posX.toFixed(2)}
+                    <span className="sep">·</span>y {source.posY.toFixed(2)}
+                    <span className="sep">·</span>z {source.posZ.toFixed(2)}
                   </div>
                 </div>
-                {source.active ? (
-                  <VuMeter
-                    rawLevel={source.level}
-                    orient="v"
-                    size={4}
-                    length={22}
-                    className="vu-tiny"
-                  />
-                ) : null}
+                <VuMeter
+                  sourceIndex={index}
+                  orient="v"
+                  size={4}
+                  length={22}
+                  className="vu-tiny"
+                />
                 <button
                   className={`vis-btn ${visible ? "is-on" : ""}`}
                   type="button"

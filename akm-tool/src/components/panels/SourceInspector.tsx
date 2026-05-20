@@ -73,11 +73,11 @@ export function SourceInspector({
             <div className="insp-id-meta">
               <div className="insp-id mono">{source.id}</div>
               <div className="insp-sub mono-sm">
-                input ch {source.inputChannel} · {source.active ? "live" : "idle"}
+                input ch {source.inputChannel}
               </div>
             </div>
             <VuMeter
-              rawLevel={source.level}
+              sourceIndex={currentIndex >= 0 ? currentIndex : 0}
               orient="v"
               size={5}
               length={34}
@@ -96,7 +96,7 @@ export function SourceInspector({
         <KvCell label="z" value={source.posZ.toFixed(3)} unit="m" />
         <KvCell label="radius" value={source.radius.toFixed(2)} unit="m" />
         <KvCell label="exponent A" value={source.exponentA.toFixed(2)} />
-        <KvCell label="status" value={source.active ? "active" : "idle"} />
+        <KvCell label="input ch" value={String(source.inputChannel)} />
       </KvGrid>
 
       <div className="section">

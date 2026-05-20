@@ -1,11 +1,14 @@
-import type { CSSProperties } from "react"
+import { memo, type CSSProperties } from "react"
 
-import { normalizeMeterLevel, type MeterLevelOptions, useMeterLevel } from "@/lib/meters"
+import {
+  useMeterLevel,
+  useSourceMeter,
+  useSpeakerMeter,
+} from "@/lib/meter-driver"
+import { type MeterLevelOptions } from "@/lib/meters"
 import { cn } from "@/lib/utils"
 
-type VuMeterProps = {
-  value?: number
-  rawLevel?: number
+type VuMeterPresentationProps = {
   orient?: "v" | "h"
   size?: number
   length?: number
@@ -14,33 +17,40 @@ type VuMeterProps = {
   peakHold?: number | null
   className?: string
   style?: CSSProperties
+}
+
+type VuMeterProps = VuMeterPresentationProps & {
+  /** App-side path: index into the live store's source meter array. */
+  sourceIndex?: number
+  /** App-side path: speaker output channel into the live store. */
+  speakerOutputChannel?: number
+  /**
+   * Legacy paths (mainly the playground): `value` is a pre-normalised
+   * 0..1 level, `rawLevel` is a raw amplitude. Prefer
+   * sourceIndex / speakerOutputChannel for live data.
+   */
+  value?: number
+  rawLevel?: number
   meterOptions?: MeterLevelOptions
 }
 
-export function VuMeter({
-  value,
-  rawLevel,
+/**
+ * Pure renderer — only takes the normalised display level and an optional
+ * peak. All three meter variants below feed into this so the bar markup
+ * stays in one place.
+ */
+function VuMeterBar({
+  level,
+  peak,
   orient = "v",
   size = 4,
   length = 110,
   fill = false,
-  peakHold,
   className,
   style,
-  meterOptions,
-}: VuMeterProps) {
-  // Drive ballistics + peak hold off whichever raw input was supplied.
-  // When the parent passes `value`, we still want a peak indicator that
-  // tracks the raw amplitude (matches the bottom-strip behavior), so we
-  // feed the same source into useMeterLevel and read just its peak hold.
-  const fromValueProp = value != null
-  const ballisticsSource = fromValueProp ? value : (rawLevel ?? 0)
-  const meter = useMeterLevel(ballisticsSource, meterOptions)
-  const level = fromValueProp
-    ? normalizeMeterLevel(value)
-    : normalizeMeterLevel(meter.displayLevel, { mode: "linear" })
-  const resolvedPeak = normalizePeak(peakHold ?? meter.peakHold)
-
+}: VuMeterPresentationProps & { level: number; peak: number | null }) {
+  const clamped = clamp01(level)
+  const resolvedPeak = normalizePeak(peak)
   const isVertical = orient === "v"
   const dimensions: CSSProperties = fill
     ? isVertical
@@ -62,14 +72,14 @@ export function VuMeter({
       role="meter"
       aria-valuemin={0}
       aria-valuemax={1}
-      aria-valuenow={level}
+      aria-valuenow={clamped}
     >
       <div
         className="vu-mask"
         style={
           isVertical
-            ? { height: `${(1 - level) * 100}%` }
-            : { width: `${(1 - level) * 100}%`, right: 0, left: "auto" }
+            ? { height: `${(1 - clamped) * 100}%` }
+            : { width: `${(1 - clamped) * 100}%`, right: 0, left: "auto" }
         }
       />
       {resolvedPeak != null ? (
@@ -86,9 +96,110 @@ export function VuMeter({
   )
 }
 
-function normalizePeak(value: number | null): number | null {
+function SourceVuMeter({
+  index,
+  peakHoldOverride,
+  ...rest
+}: VuMeterPresentationProps & { index: number; peakHoldOverride?: number | null }) {
+  const { displayLevel, peakHold } = useSourceMeter(index)
+  return (
+    <VuMeterBar
+      {...rest}
+      level={displayLevel}
+      peak={peakHoldOverride ?? peakHold}
+    />
+  )
+}
+
+function SpeakerVuMeter({
+  outputChannel,
+  peakHoldOverride,
+  ...rest
+}: VuMeterPresentationProps & {
+  outputChannel: number
+  peakHoldOverride?: number | null
+}) {
+  const { displayLevel, peakHold } = useSpeakerMeter(outputChannel)
+  return (
+    <VuMeterBar
+      {...rest}
+      level={displayLevel}
+      peak={peakHoldOverride ?? peakHold}
+    />
+  )
+}
+
+function LegacyVuMeter({
+  source,
+  meterOptions,
+  peakHoldOverride,
+  ...rest
+}: VuMeterPresentationProps & {
+  source: number
+  meterOptions?: MeterLevelOptions
+  peakHoldOverride?: number | null
+}) {
+  const { displayLevel, peakHold } = useMeterLevel(source, meterOptions)
+  return (
+    <VuMeterBar
+      {...rest}
+      level={displayLevel}
+      peak={peakHoldOverride ?? peakHold}
+    />
+  )
+}
+
+function VuMeterImpl(props: VuMeterProps) {
+  const {
+    sourceIndex,
+    speakerOutputChannel,
+    value,
+    rawLevel,
+    peakHold,
+    meterOptions,
+    ...rest
+  } = props
+  if (sourceIndex != null) {
+    return (
+      <SourceVuMeter
+        {...rest}
+        index={sourceIndex}
+        peakHoldOverride={peakHold}
+      />
+    )
+  }
+  if (speakerOutputChannel != null) {
+    return (
+      <SpeakerVuMeter
+        {...rest}
+        outputChannel={speakerOutputChannel}
+        peakHoldOverride={peakHold}
+      />
+    )
+  }
+  const legacySource = value != null ? value : (rawLevel ?? 0)
+  return (
+    <LegacyVuMeter
+      {...rest}
+      source={legacySource}
+      meterOptions={meterOptions}
+      peakHoldOverride={peakHold}
+    />
+  )
+}
+
+function normalizePeak(value: number | null | undefined): number | null {
   if (value == null || !Number.isFinite(value)) {
     return null
   }
   return Math.max(0, Math.min(1, value))
 }
+
+function clamp01(value: number): number {
+  if (!Number.isFinite(value)) return 0
+  if (value < 0) return 0
+  if (value > 1) return 1
+  return value
+}
+
+export const VuMeter = memo(VuMeterImpl)

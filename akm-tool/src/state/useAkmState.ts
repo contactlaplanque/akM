@@ -24,6 +24,7 @@ import {
   mergeSourcePatch,
 } from "./osc-codec"
 import { eqByRoleEqual, filterByRoleEqual } from "./eq-filter-equality"
+import { liveDataStore } from "./live-data-store"
 import { appendLog, logEntryFromOsc } from "./log-buffer"
 import { reduceOscHydrationState, type OscHydrationState } from "./osc-dispatch"
 import layoutData from "../../../packages/akm-config/venues/main/layout.json"
@@ -35,7 +36,6 @@ import type {
   FilterState,
   Layout,
   LogEntry,
-  MetersState,
   ReverbState,
   SaveStatus,
   ServerConfig,
@@ -59,9 +59,16 @@ const SOURCE_DEFAULTS = {
   exponentA: 1,
   delayLevel: 1,
   reverbMix: 0.2,
-  level: 0,
-  active: true,
 } as const
+
+// Configure the live store with the layout's source/speaker counts on
+// module load so meter writes from the OSC dispatcher always land in
+// a correctly-sized typed array, regardless of when the first React
+// render happens.
+liveDataStore.configure(
+  serverData.sources.length,
+  layoutData.speakers.length
+)
 
 function resolveStateUpdate<T>(current: T, update: SetStateAction<T>): T {
   if (typeof update === "function") {
@@ -118,13 +125,6 @@ function createInitialSources(): SourceSample[] {
   }))
 }
 
-function createInitialMeters(sources: SourceSample[]): MetersState {
-  return {
-    sourceIns: Array.from({ length: sources.length }, () => 0),
-    speakerOuts: Array.from({ length: layout.speakers.length }, () => 0),
-  }
-}
-
 function createInitialHydrationState(): OscHydrationState {
   const sources = createInitialSources()
   const saved = serverConfig.state ?? {}
@@ -159,7 +159,6 @@ function createInitialHydrationState(): OscHydrationState {
 
   return {
     sources,
-    meters: createInitialMeters(sources),
     gains,
     mutes,
     eqByRole,
@@ -553,21 +552,6 @@ function useAkmStateValue(): AkmState {
     clientSaveState(payload as unknown as Record<string, unknown>)
   }, [clientSaveState])
 
-  const frozenMeters = useMemo(
-    () => ({
-      sourceIns: Array.from(
-        { length: hydration.meters.sourceIns.length },
-        () => 0
-      ),
-      speakerOuts: Array.from(
-        { length: hydration.meters.speakerOuts.length },
-        () => 0
-      ),
-    }),
-    [hydration.meters.sourceIns.length, hydration.meters.speakerOuts.length]
-  )
-
-  const meters = isLive ? hydration.meters : frozenMeters
   const perf = serverStatus.perf ?? null
   const serverReady = serverStatus.state === "ready"
 
@@ -616,7 +600,6 @@ function useAkmStateValue(): AkmState {
       subMidReverb: hydration.subMidReverb,
       setSubMidReverb,
       logs,
-      meters,
       updateSourceParams,
       showSpeakerLabels,
       setShowSpeakerLabels,
@@ -652,7 +635,6 @@ function useAkmStateValue(): AkmState {
       hydration.subMidReverb,
       setSubMidReverb,
       logs,
-      meters,
       updateSourceParams,
       showSpeakerLabels,
       saveState,

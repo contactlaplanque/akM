@@ -1,13 +1,11 @@
-import { normalizeMeterLevel } from "@/lib/meters"
 import type { AgentOscMessage } from "@/services/agent-protocol"
 
-import { applySourceLevels } from "./source-active"
+import { liveDataStore } from "./live-data-store"
 import { unwrapOscNumbers } from "./osc-args"
 import { EQ_ARG_COUNT, decodeEqState } from "./osc-codec"
 import type {
   EqState,
   FilterState,
-  MetersState,
   ReverbState,
   SourceSample,
   SpeakerRole,
@@ -27,7 +25,6 @@ const ROLES: SpeakerRole[] = ["satellite", "sub_mid", "sub_lf"]
 
 export type OscHydrationState = {
   sources: SourceSample[]
-  meters: MetersState
   gains: Record<string, number>
   mutes: Record<string, boolean>
   eqByRole: Record<SpeakerRole, EqState>
@@ -44,26 +41,19 @@ export type OscHydrationState = {
   speakerIdByIndex: string[]
 }
 
-function numbersEqual(a: number[], b: number[]): boolean {
-  if (a.length !== b.length) {
-    return false
-  }
-  for (let index = 0; index < a.length; index += 1) {
-    if (a[index] !== b[index]) {
-      return false
-    }
-  }
-  return true
-}
-
 /**
- * Replace the source at `index` with a value-aware merge: if every field in
- * `patch` already matches the existing source, return the original `sources`
- * array unchanged so React's `===` identity check short-circuits the entire
- * subtree.
+ * Replace the source at `index` with a value-aware merge: if every structural
+ * field in `patch` already matches the existing source, return the original
+ * `sources` array unchanged so React's `===` identity check short-circuits
+ * the subtree.
  *
  * Skipping this check is the difference between 30 idle re-renders per
  * second per source and zero, which is the v3 webapp-freeze fix.
+ *
+ * Source positions (`posX`/`posY`/`posZ`) intentionally stay in React state
+ * here so the inspector / 3D scene get correct initial frames, but they are
+ * ALSO pushed into `liveDataStore.applySourcePosition` so the 3D scene can
+ * lerp through `useFrame` without ever invalidating the React context.
  */
 function patchSourceAt(
   sources: SourceSample[],
@@ -326,12 +316,7 @@ export function reduceOscHydrationState(
   state: OscHydrationState,
   message: AgentOscMessage,
 ): OscHydrationState {
-  if (
-    message.address === STATE_SOURCES_ADDRESS ||
-    // The /event/ready payload doubles as a system snapshot; sources are
-    // sent separately in the snapshot-replay packet from the agent.
-    false
-  ) {
+  if (message.address === STATE_SOURCES_ADDRESS) {
     const values = unwrapOscNumbers(message.args)
     if (!values || values.length === 0) {
       return state
@@ -339,15 +324,22 @@ export function reduceOscHydrationState(
     let next = state.sources
     for (let i = 0; i + SOURCE_STRIDE <= values.length; i += SOURCE_STRIDE) {
       const idx = Math.trunc(values[i])
+      const posX = values[i + 1]
+      const posY = values[i + 2]
+      const posZ = values[i + 3]
       const patch = {
-        posX: values[i + 1],
-        posY: values[i + 2],
-        posZ: values[i + 3],
+        posX,
+        posY,
+        posZ,
         radius: values[i + 4],
         exponentA: values[i + 5],
         delayLevel: values[i + 6],
         reverbMix: values[i + 7],
       }
+      // Push positions into the live store as well so the 3D scene's
+      // `useFrame` reader sees fresh values on the next animation frame
+      // without going through a React render.
+      liveDataStore.applySourcePosition(idx, posX, posY, posZ)
       next = patchSourceAt(next, idx, patch)
     }
     if (next === state.sources) {
@@ -368,34 +360,22 @@ export function reduceOscHydrationState(
   }
 
   if (message.address === METERS_ADDRESS) {
+    // Meters never touch React state any more: they go straight into the
+    // typed-array-backed live store and the shared meter driver smooths
+    // for any subscribed `<VuMeter>`.
     const values = unwrapOscNumbers(message.args)
     if (!values) {
       return state
     }
-
     const sourceCount = state.sources.length
-    const speakerCount = state.meters.speakerOuts.length
-    if (values.length < sourceCount + speakerCount) {
+    if (values.length < sourceCount) {
       return state
     }
-
-    const sourceIns = values
-      .slice(0, sourceCount)
-      .map((value) => normalizeMeterLevel(value, { mode: "linear" }))
-    const speakerOuts = values
-      .slice(sourceCount, sourceCount + speakerCount)
-      .map((value) => normalizeMeterLevel(value, { mode: "linear" }))
-    const nextSources = applySourceLevels(state.sources, sourceIns)
-    const nextMeters =
-      numbersEqual(sourceIns, state.meters.sourceIns) &&
-      numbersEqual(speakerOuts, state.meters.speakerOuts)
-        ? state.meters
-        : { sourceIns, speakerOuts }
-
-    if (nextSources === state.sources && nextMeters === state.meters) {
-      return state
-    }
-    return { ...state, sources: nextSources, meters: nextMeters }
+    liveDataStore.applyMeters(
+      values.slice(0, sourceCount),
+      values.slice(sourceCount)
+    )
+    return state
   }
 
   return state

@@ -1,5 +1,5 @@
 import { Html } from "@react-three/drei"
-import { useLayoutEffect, useMemo, useRef } from "react"
+import { memo, useLayoutEffect, useMemo, useRef } from "react"
 import type { Mesh } from "three"
 
 import type { Layout, Speaker, SpeakerRole } from "@/state/types"
@@ -20,7 +20,7 @@ type SpeakersProps = {
   showSpeakerLabels: boolean
 }
 
-function SpeakerMesh({
+function SpeakerMeshImpl({
   speaker,
   showLabel,
 }: {
@@ -61,12 +61,20 @@ function SpeakerMesh({
   )
 }
 
+const SpeakerMesh = memo(SpeakerMeshImpl)
+
 export function Speakers({
   layout,
   roleVisibility,
   showSpeakerLabels,
 }: SpeakersProps) {
-  const visibleSpeakers = layout.speakers.filter((sp) => roleVisibility[sp.role])
+  // Speaker list is static once the layout JSON loads; only the role
+  // visibility filter ever changes. Memoise so r3f children don't
+  // reconcile when the parent re-renders for an unrelated reason.
+  const visibleSpeakers = useMemo(
+    () => layout.speakers.filter((sp) => roleVisibility[sp.role]),
+    [layout.speakers, roleVisibility],
+  )
 
   return (
     <group>
