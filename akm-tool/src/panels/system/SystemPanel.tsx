@@ -22,7 +22,6 @@ export type SystemPanelProps = {
   onReverbChange: (next: ReverbState) => void
   subMidReverb: SubMidReverbState
   onSubMidReverbChange: (next: SubMidReverbState) => void
-  oscDrivenKeys?: Set<string>
   perf?: ServerPerf | null
   serverReady?: boolean
 }
@@ -37,7 +36,6 @@ export function SystemPanel({
   onReverbChange,
   subMidReverb,
   onSubMidReverbChange,
-  oscDrivenKeys,
   perf,
   serverReady = false,
 }: SystemPanelProps) {
@@ -53,7 +51,6 @@ export function SystemPanel({
         onReverbChange={onReverbChange}
         subMidReverb={subMidReverb}
         onSubMidReverbChange={onSubMidReverbChange}
-        oscDrivenKeys={oscDrivenKeys}
       />
     </div>
   )

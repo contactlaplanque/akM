@@ -4,7 +4,10 @@ import { unwrapOscString } from "./osc-args"
 import type { LogEntry, LogKind } from "./types"
 
 const AGENT_LOG_ADDRESS = "/akm/agent/log"
-const SERVER_ACK_PREFIX = "/akm/server/ack/"
+// v3 server emits /event/* channels for notable lifecycle moments (ready,
+// quit, error, state_saved). The legacy /ack/* prefix was deleted along with
+// the per-message echo storm — see akm-server/lib/06_osc.scd.
+const SERVER_EVENT_PREFIX = "/akm/server/event/"
 const LOG_DETAIL_MAX_CHARS = 120
 
 export const LOG_BUFFER_MAX = 250
@@ -78,12 +81,9 @@ export function logEntryFromOsc(message: AgentOscMessage): LogEntry | null {
     return createLogEntry(classifyAgentLogKind(line), line)
   }
 
-  if (message.address.startsWith(SERVER_ACK_PREFIX)) {
-    return createLogEntry(
-      "ack",
-      message.address,
-      formatOscArgs(message.args)
-    )
+  if (message.address.startsWith(SERVER_EVENT_PREFIX)) {
+    const kind = message.address.endsWith("/error") ? "error" : "event"
+    return createLogEntry(kind, message.address, formatOscArgs(message.args))
   }
 
   return null

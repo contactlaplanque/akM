@@ -1,21 +1,25 @@
-import { useCallback, useState, type CSSProperties } from "react"
+import { useCallback, type CSSProperties } from "react"
 
 import { Slider } from "@/components/primitives"
 import { ROLE_COLORS, SPEAKER_ROLES } from "@/lib/role-colors"
 import type { EqBand, EqState, FilterState, SpeakerRole } from "@/state/types"
 
-import { eqOscKey, filterOscKey } from "./eq-adapters"
-import { BandReadout } from "./BandReadout"
-import { type EqBandKey } from "./eq-constants"
-import { EqSpectrumGraph } from "./EqSpectrumGraph"
-import { FilterSpectrumGraph } from "./FilterSpectrumGraph"
+import { clampGainDb } from "./eq-adapters"
+import {
+  BAND_COLORS,
+  EQ_BAND_KEYS,
+  EQ_GAIN_MAX,
+  EQ_GAIN_MIN,
+  FREQ_MAX,
+  FREQ_MIN,
+  RQ_MAX,
+  RQ_MIN,
+  type EqBandKey,
+} from "./eq-constants"
 import {
   clampGroupFilterFreq,
   getGroupFilterConfig,
 } from "./group-filter-config"
-import { GroupFilterReadout } from "./GroupFilterReadout"
-import { SignalFlowConnector } from "./SignalFlowConnector"
-import { useSpectrumWidth } from "./useSpectrumWidth"
 
 export type EqPanelProps = {
   selectedRole: SpeakerRole
@@ -26,8 +30,26 @@ export type EqPanelProps = {
   onFilterChange: (role: SpeakerRole, filter: FilterState) => void
   groupGainsDb: Record<SpeakerRole, number>
   onGroupGainChange: (role: SpeakerRole, db: number) => void
-  sampleRate: number
-  oscDrivenKeys: Set<string>
+}
+
+function formatFreq(value: number): string {
+  return value < 1000
+    ? value.toFixed(0)
+    : `${(value / 1000).toFixed(value < 10_000 ? 2 : 1)}`
+}
+
+function formatGain(value: number): string {
+  return value >= 0 ? `+${value.toFixed(1)}` : value.toFixed(1)
+}
+
+function formatQ(rq: number): string {
+  return rq.toFixed(2)
+}
+
+const PEAK_LABELS: Record<EqBandKey, string> = {
+  peak1: "Peak 1",
+  peak2: "Peak 2",
+  peak3: "Peak 3",
 }
 
 export function EqPanel({
@@ -39,42 +61,33 @@ export function EqPanel({
   onFilterChange,
   groupGainsDb,
   onGroupGainChange,
-  sampleRate,
-  oscDrivenKeys,
 }: EqPanelProps) {
   const eq = eqByRole[selectedRole]
   const filter = filterByRole[selectedRole]
   const filterMeta = getGroupFilterConfig(selectedRole)
   const groupGainDb = groupGainsDb[selectedRole]
   const roleColors = ROLE_COLORS[selectedRole]
-  const { boxRef, width } = useSpectrumWidth()
-  const [selectedBand, setSelectedBand] = useState<EqBandKey>("peak2")
-  const [filterStageActive, setFilterStageActive] = useState(true)
-
-  const isEqOsc = useCallback(
-    (band: EqBandKey, field: "freq" | "gainDb" | "rq") =>
-      oscDrivenKeys.has(eqOscKey(selectedRole, band, field)),
-    [oscDrivenKeys, selectedRole],
-  )
-
-  const isFilterOsc = useCallback(
-    (field: "freq" | "rq") => oscDrivenKeys.has(filterOscKey(selectedRole, field)),
-    [oscDrivenKeys, selectedRole],
-  )
 
   const updateBand = useCallback(
     (bandKey: EqBandKey, patch: Partial<EqBand>) => {
       const current = eq[bandKey]
-      const hasChange = (Object.keys(patch) as (keyof EqBand)[]).some(
-        (key) => patch[key] !== undefined && patch[key] !== current[key],
-      )
-      if (!hasChange) return
-
-      setFilterStageActive(false)
-      onEqChange(selectedRole, {
-        ...eq,
-        [bandKey]: { ...current, ...patch },
-      })
+      const next: EqBand = {
+        freq: patch.freq !== undefined ? patch.freq : current.freq,
+        gainDb:
+          patch.gainDb !== undefined ? clampGainDb(patch.gainDb) : current.gainDb,
+        rq: patch.rq !== undefined ? patch.rq : current.rq,
+        enabled:
+          patch.enabled !== undefined ? patch.enabled : current.enabled,
+      }
+      if (
+        next.freq === current.freq &&
+        next.gainDb === current.gainDb &&
+        next.rq === current.rq &&
+        next.enabled === current.enabled
+      ) {
+        return
+      }
+      onEqChange(selectedRole, { ...eq, [bandKey]: next })
     },
     [eq, onEqChange, selectedRole],
   )
@@ -89,20 +102,10 @@ export function EqPanel({
       if (nextFreq === filter.freq && nextRq === filter.rq) {
         return
       }
-      setFilterStageActive(true)
       onFilterChange(selectedRole, { freq: nextFreq, rq: nextRq })
     },
     [filter.freq, filter.rq, onFilterChange, selectedRole],
   )
-
-  const selectBand = useCallback((band: EqBandKey) => {
-    setFilterStageActive(false)
-    setSelectedBand(band)
-  }, [])
-
-  const selectFilterStage = useCallback(() => {
-    setFilterStageActive(true)
-  }, [])
 
   return (
     <div className="eq">
@@ -116,11 +119,27 @@ export function EqPanel({
               style={{ "--accent": ROLE_COLORS[role].fill } as CSSProperties}
               onClick={() => onRoleChange(role)}
             >
-              <span className="role-swatch" style={{ background: ROLE_COLORS[role].fill }} />
+              <span
+                className="role-swatch"
+                style={{ background: ROLE_COLORS[role].fill }}
+              />
               {ROLE_COLORS[role].short}
             </button>
           ))}
         </div>
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={!!eq.enabled}
+            onChange={(e) =>
+              onEqChange(selectedRole, {
+                ...eq,
+                enabled: e.target.checked ? 1 : 0,
+              })
+            }
+          />
+          <span>EQ on</span>
+        </label>
         <div
           className="eq-group-gain"
           style={{ "--accent": roleColors.fill } as CSSProperties}
@@ -132,7 +151,7 @@ export function EqPanel({
             step={0.1}
             value={groupGainDb}
             unit="dB"
-            fmt={(v) => (v >= 0 ? `+${v.toFixed(1)}` : v.toFixed(1))}
+            fmt={formatGain}
             onChange={(db) => onGroupGainChange(selectedRole, db)}
             accent={roleColors.fill}
           />
@@ -140,9 +159,9 @@ export function EqPanel({
       </div>
 
       <div className="eq-body">
-        <div className="eq-chain" ref={boxRef}>
+        <div className="eq-chain">
           <section
-            className={`eq-stage eq-stage-filter ${filterStageActive ? "is-active" : ""}`}
+            className="eq-stage eq-stage-filter is-active"
             style={{ "--accent": filterMeta.color } as CSSProperties}
             aria-label="Group filter"
           >
@@ -155,71 +174,110 @@ export function EqPanel({
                 </span>
               </div>
             </div>
-            <FilterSpectrumGraph
-              width={width}
-              filter={filter}
-              sampleRate={sampleRate}
-              selectedRole={selectedRole}
-              active={filterStageActive}
-              oscDrivenKeys={oscDrivenKeys}
-              onSelect={selectFilterStage}
-              onChange={updateFilter}
-            />
-            <div className="eq-stage-params">
-              <GroupFilterReadout
-                role={selectedRole}
-                filter={filter}
-                selected={filterStageActive}
-                onSelect={selectFilterStage}
-                onChange={updateFilter}
-                isOsc={isFilterOsc}
+            <div className="param-card-fields" style={{ padding: "4px 4px 8px" }}>
+              <Slider
+                label="freq"
+                min={filterMeta.freqMin}
+                max={filterMeta.freqMax}
+                step={1}
+                value={filter.freq}
+                unit="Hz"
+                fmt={(v) => v.toFixed(0)}
+                accent={filterMeta.color}
+                onChange={(v) => updateFilter({ freq: v })}
+              />
+              <Slider
+                label="Q"
+                min={RQ_MIN}
+                max={RQ_MAX}
+                step={0.05}
+                value={filter.rq}
+                fmt={formatQ}
+                accent={filterMeta.color}
+                onChange={(v) => updateFilter({ rq: v })}
               />
             </div>
           </section>
 
-          <SignalFlowConnector />
-
           <section
-            className={`eq-stage eq-stage-eq ${!filterStageActive ? "is-active" : ""}`}
-            aria-label="Five-band equalizer"
+            className="eq-stage eq-stage-eq is-active"
+            aria-label="Three-peak parametric EQ"
           >
             <div className="eq-stage-head">
               <div className="eq-stage-title">
                 <span className="eq-stage-step mono-sm">2</span>
                 <span className="eq-stage-name">Equalizer</span>
-                <span className="eq-stage-type mono-sm">5-band</span>
+                <span className="eq-stage-type mono-sm">3 peaks</span>
               </div>
-              <label className="toggle">
-                <input
-                  type="checkbox"
-                  checked={!!eq.enabled}
-                  onChange={(e) =>
-                    onEqChange(selectedRole, { ...eq, enabled: e.target.checked ? 1 : 0 })
-                  }
-                />
-                <span>EQ on</span>
-              </label>
             </div>
-            <EqSpectrumGraph
-              width={width}
-              eq={eq}
-              sampleRate={sampleRate}
-              selectedRole={selectedRole}
-              selectedBand={selectedBand}
-              eqEnabled={!!eq.enabled}
-              oscDrivenKeys={oscDrivenKeys}
-              onSelectBand={selectBand}
-              onBandChange={updateBand}
-            />
-            <BandReadout
-              eq={eq}
-              selectedBand={selectedBand}
-              onSelectBand={selectBand}
-              onBandChange={updateBand}
-              isOsc={isEqOsc}
-            />
+            <div className="eq-stage-params eq-stage-params-bands">
+              {EQ_BAND_KEYS.map((bandKey, index) => {
+                const band = eq[bandKey]
+                const accent = BAND_COLORS[index]
+                const enabled = !!band.enabled
+                return (
+                  <div
+                    key={bandKey}
+                    className={`param-card ${enabled ? "" : "is-off"}`}
+                    style={{ "--accent": accent } as CSSProperties}
+                  >
+                    <div className="param-card-head">
+                      <button
+                        type="button"
+                        className="param-card-swatch param-card-swatch-btn"
+                        style={{ background: accent }}
+                        onClick={() =>
+                          updateBand(bandKey, { enabled: enabled ? 0 : 1 })
+                        }
+                        title={enabled ? "Disable band" : "Enable band"}
+                        aria-pressed={enabled}
+                      >
+                        {enabled ? "ON" : "OFF"}
+                      </button>
+                      <span className="param-card-title">
+                        {PEAK_LABELS[bandKey]}
+                      </span>
+                    </div>
+                    <div className="param-card-fields">
+                      <Slider
+                        label="freq"
+                        min={FREQ_MIN}
+                        max={FREQ_MAX}
+                        step={1}
+                        value={band.freq}
+                        unit="Hz"
+                        fmt={formatFreq}
+                        accent={accent}
+                        onChange={(v) => updateBand(bandKey, { freq: v })}
+                      />
+                      <Slider
+                        label="gain"
+                        min={EQ_GAIN_MIN}
+                        max={EQ_GAIN_MAX}
+                        step={0.1}
+                        value={band.gainDb}
+                        unit="dB"
+                        fmt={formatGain}
+                        accent={accent}
+                        onChange={(v) => updateBand(bandKey, { gainDb: v })}
+                      />
+                      <Slider
+                        label="Q"
+                        min={RQ_MIN}
+                        max={RQ_MAX}
+                        step={0.05}
+                        value={band.rq}
+                        fmt={formatQ}
+                        accent={accent}
+                        onChange={(v) => updateBand(bandKey, { rq: v })}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
             <p className="eq-hint">
-              drag handles · scroll = Q · click numbers to edit · OSC-driven values are locked
+              click colour swatch to bypass · drag sliders · click numbers to type
             </p>
           </section>
         </div>

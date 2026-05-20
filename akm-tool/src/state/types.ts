@@ -94,16 +94,18 @@ export type EqBand = {
   gainDb: number
   rq: number
   enabled: number
-  type: "lowshelf" | "peak" | "highshelf"
 }
 
+/**
+ * v3 group EQ: three parametric peaks per role. The per-role group filter
+ * (RHPF for satellites, RLPF for subs) covers what the legacy lowShelf /
+ * highShelf bands used to do, so they were dropped in v3.
+ */
 export type EqState = {
   enabled: number
-  lowShelf: EqBand
   peak1: EqBand
   peak2: EqBand
   peak3: EqBand
-  highShelf: EqBand
 }
 
 export type FilterState = {
@@ -180,7 +182,6 @@ export type AkmState = {
   setSubMidReverb: Dispatch<SetStateAction<SubMidReverbState>>
   logs: LogEntry[]
   meters: MetersState
-  oscDrivenKeys: Set<string>
   updateSourceParams: (id: string, patch: SourceParamPatch) => void
   showSpeakerLabels: boolean
   setShowSpeakerLabels: Dispatch<SetStateAction<boolean>>

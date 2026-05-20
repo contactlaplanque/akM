@@ -12,7 +12,9 @@ import { toOscFloatArgs } from "./osc-args"
 
 export const SOURCE_PARAMS_ARG_COUNT = 7
 export const FILTER_ARG_COUNT = 2
-export const EQ_ARG_COUNT = 21
+// v3 group-EQ wire/bus layout: [eqOn, p1_on, p1_freq, p1_gainDb, p1_rq,
+// p2_on, p2_freq, p2_gainDb, p2_rq, p3_on, p3_freq, p3_gainDb, p3_rq].
+export const EQ_ARG_COUNT = 13
 
 export type SourceStateOscValues = Pick<
   SourceSample,
@@ -57,13 +59,11 @@ export function mergeSourcePatch(
 }
 
 /*
- * SC bus layout (akm-server/lib/03_synthdefs.scd):
- * [0]=eq.enabled
- * [1..4]=lowShelf(enabled,freq,gainDb,rq)
- * [5..8]=peak1(enabled,freq,gainDb,rq)
- * [9..12]=peak2(enabled,freq,gainDb,rq)
- * [13..16]=peak3(enabled,freq,gainDb,rq)
- * [17..20]=highShelf(enabled,freq,gainDb,rq)
+ * SC bus layout (v3, akm-server/lib/03_synthdefs.scd):
+ * [0]    = eq.enabled
+ * [1..4] = peak1 (enabled, freq, gainDb, rq)
+ * [5..8] = peak2 (enabled, freq, gainDb, rq)
+ * [9..12]= peak3 (enabled, freq, gainDb, rq)
  */
 export function decodeEqState(values: number[]): EqState | null {
   if (values.length !== EQ_ARG_COUNT) {
@@ -72,40 +72,23 @@ export function decodeEqState(values: number[]): EqState | null {
 
   return {
     enabled: values[0],
-    lowShelf: {
+    peak1: {
       enabled: values[1],
       freq: values[2],
       gainDb: values[3],
       rq: values[4],
-      type: "lowshelf",
     },
-    peak1: {
+    peak2: {
       enabled: values[5],
       freq: values[6],
       gainDb: values[7],
       rq: values[8],
-      type: "peak",
     },
-    peak2: {
+    peak3: {
       enabled: values[9],
       freq: values[10],
       gainDb: values[11],
       rq: values[12],
-      type: "peak",
-    },
-    peak3: {
-      enabled: values[13],
-      freq: values[14],
-      gainDb: values[15],
-      rq: values[16],
-      type: "peak",
-    },
-    highShelf: {
-      enabled: values[17],
-      freq: values[18],
-      gainDb: values[19],
-      rq: values[20],
-      type: "highshelf",
     },
   }
 }
@@ -113,10 +96,6 @@ export function decodeEqState(values: number[]): EqState | null {
 export function encodeEqState(eq: EqState): OscArg[] {
   return toOscFloatArgs([
     eq.enabled,
-    eq.lowShelf.enabled,
-    eq.lowShelf.freq,
-    eq.lowShelf.gainDb,
-    eq.lowShelf.rq,
     eq.peak1.enabled,
     eq.peak1.freq,
     eq.peak1.gainDb,
@@ -129,10 +108,6 @@ export function encodeEqState(eq: EqState): OscArg[] {
     eq.peak3.freq,
     eq.peak3.gainDb,
     eq.peak3.rq,
-    eq.highShelf.enabled,
-    eq.highShelf.freq,
-    eq.highShelf.gainDb,
-    eq.highShelf.rq,
   ])
 }
 

@@ -161,7 +161,7 @@
     "subMidEnabled": false
   },
   "telemetry": {
-    "stateBroadcastHz": 30,
+    "stateBroadcastHz": 20,
     "metersHz": 20,
     "perfHz": 3
   },
@@ -170,6 +170,11 @@
   },
   "state": {
     "systemGainDb": -15,
+    "groupGainsDb": {
+      "satellite": 0,
+      "sub_mid": 0.5999996066093445,
+      "sub_lf": -10
+    },
     "speakerGains": {
       "sat_1_1": 0,
       "sat_1_2": 0,
@@ -259,130 +264,79 @@
     "eqByRole": {
       "satellite": {
         "enabled": 1,
-        "lowShelf": {
-          "enabled": 1,
-          "freq": 80,
-          "gainDb": 0,
-          "rq": 1,
-          "type": "lowshelf"
-        },
         "peak1": {
           "enabled": 1,
           "freq": 250,
           "gainDb": 0,
-          "rq": 1,
-          "type": "peak"
+          "rq": 1
         },
         "peak2": {
           "enabled": 1,
           "freq": 978.8699951171875,
           "gainDb": -0.5600000023841858,
-          "rq": 1.5,
-          "type": "peak"
+          "rq": 1.5
         },
         "peak3": {
           "enabled": 1,
           "freq": 3617.6201171875,
           "gainDb": 0.14000000059604645,
-          "rq": 0.8999999761581421,
-          "type": "peak"
-        },
-        "highShelf": {
-          "enabled": 1,
-          "freq": 10044.7802734375,
-          "gainDb": 0.6700000166893005,
-          "rq": 0.699999988079071,
-          "type": "highshelf"
+          "rq": 0.8999999761581421
         }
       },
       "sub_mid": {
         "enabled": 1,
-        "lowShelf": {
-          "enabled": 1,
-          "freq": 80,
-          "gainDb": 0,
-          "rq": 1,
-          "type": "lowshelf"
-        },
         "peak1": {
           "enabled": 1,
           "freq": 250,
-          "gainDb": 0,
-          "rq": 1,
-          "type": "peak"
+          "gainDb": -2.4000000953674316,
+          "rq": 1
         },
         "peak2": {
           "enabled": 1,
           "freq": 1000,
-          "gainDb": 2.5,
-          "rq": 1.399999976158142,
-          "type": "peak"
+          "gainDb": 1.399999976158142,
+          "rq": 1.399999976158142
         },
         "peak3": {
           "enabled": 1,
           "freq": 4000,
           "gainDb": -1.5,
-          "rq": 0.8999999761581421,
-          "type": "peak"
-        },
-        "highShelf": {
-          "enabled": 1,
-          "freq": 10000,
-          "gainDb": 1,
-          "rq": 0.699999988079071,
-          "type": "highshelf"
+          "rq": 0.8999999761581421
         }
       },
       "sub_lf": {
         "enabled": 1,
-        "lowShelf": {
-          "enabled": 1,
-          "freq": 80,
-          "gainDb": 0,
-          "rq": 1,
-          "type": "lowshelf"
-        },
         "peak1": {
           "enabled": 1,
           "freq": 250,
           "gainDb": 0,
-          "rq": 1,
-          "type": "peak"
+          "rq": 1
         },
         "peak2": {
           "enabled": 1,
           "freq": 1000,
           "gainDb": 2.5,
-          "rq": 1.399999976158142,
-          "type": "peak"
+          "rq": 1.399999976158142
         },
         "peak3": {
           "enabled": 1,
           "freq": 4000,
           "gainDb": -1.5,
-          "rq": 0.8999999761581421,
-          "type": "peak"
-        },
-        "highShelf": {
-          "enabled": 1,
-          "freq": 10000,
-          "gainDb": 1,
-          "rq": 0.699999988079071,
-          "type": "highshelf"
+          "rq": 0.8999999761581421
         }
       }
     },
     "filterByRole": {
       "satellite": {
-        "freq": 110,
-        "rq": 0.8999999761581421
+        "freq": 120,
+        "rq": 0.800000011920929
       },
       "sub_mid": {
-        "freq": 199.66000366210938,
+        "freq": 294,
         "rq": 0.800000011920929
       },
       "sub_lf": {
-        "freq": 120.01000213623047,
+        "freq": 150,
         "rq": 0.800000011920929
       }
     },

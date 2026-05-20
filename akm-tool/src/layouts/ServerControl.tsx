@@ -28,20 +28,30 @@ export function ServerControl({ serverState, error, onStart, onStop }: ServerCon
 
   if (confirming) {
     const isStop = confirming === "stop"
-    const startMessage = error
-      ? `Start akm-server? Last error: ${error}`
-      : "Start akm-server? Boots SuperCollider + OSC bridge."
+    // Keep the inline confirm message short; the full error already lives in
+    // the log strip and the server-status pill tooltip.
+    const shortError = error
+      ? error.length > 100
+        ? `${error.slice(0, 100)}…`
+        : error
+      : null
 
     return (
       <div className="server-ctl is-confirm">
-        <span className="server-ctl-msg">
+        <span
+          className="server-ctl-msg"
+          title={isStop ? undefined : error}
+        >
           {isStop ? (
             <>
               <b>Stop akm-server?</b> All audio output will cut.
             </>
           ) : (
             <>
-              <b>{startMessage}</b>
+              <b>Start akm-server?</b>{" "}
+              {shortError
+                ? `Last error: ${shortError}`
+                : "Boots SuperCollider + OSC bridge."}
             </>
           )}
         </span>

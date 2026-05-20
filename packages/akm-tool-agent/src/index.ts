@@ -73,6 +73,40 @@ function numericValue(arg: OscArg): number | null {
 	return typeof arg.value === "number" && Number.isFinite(arg.value) ? arg.value : null;
 }
 
+// Drop pre-v3 EQ keys (lowShelf, highShelf) from a saved-state payload before
+// it lands on disk. The SC loader already ignores them, but rewriting the
+// file cleanly on the next save keeps server.json in sync with the v3 schema.
+function migrateEqStateV3(state: Record<string, unknown>): Record<string, unknown> {
+	const eqByRole = (state.eqByRole as Record<string, unknown> | undefined) ?? null;
+	if (!eqByRole) {
+		return state;
+	}
+
+	const cleanedByRole: Record<string, unknown> = {};
+	for (const [role, value] of Object.entries(eqByRole)) {
+		if (value && typeof value === "object") {
+			// Strip lowShelf, highShelf, and the legacy per-band `type`
+			// discriminator. Keep enabled + peak1/peak2/peak3.
+			const role3 = value as Record<string, unknown>;
+			const cleanedBands: Record<string, unknown> = {
+				enabled: role3.enabled
+			};
+			for (const bandKey of ["peak1", "peak2", "peak3"] as const) {
+				const band = role3[bandKey];
+				if (band && typeof band === "object") {
+					const { freq, gainDb, rq, enabled } = band as Record<string, unknown>;
+					cleanedBands[bandKey] = { enabled, freq, gainDb, rq };
+				}
+			}
+			cleanedByRole[role] = cleanedBands;
+		} else {
+			cleanedByRole[role] = value;
+		}
+	}
+
+	return { ...state, eqByRole: cleanedByRole };
+}
+
 // Atomically merge `state` into server.json so a crash mid-write cannot corrupt
 // the venue config that drives both the SC server and the frontend.
 async function persistServerState(
@@ -81,7 +115,7 @@ async function persistServerState(
 ): Promise<void> {
 	const fileText = await fs.readFile(serverConfigPath, "utf8");
 	const parsed = JSON.parse(fileText) as Record<string, unknown>;
-	const next = { ...parsed, state };
+	const next = { ...parsed, state: migrateEqStateV3(state) };
 	const tmpPath = `${serverConfigPath}.tmp`;
 	await fs.writeFile(tmpPath, `${JSON.stringify(next, null, 2)}\n`, "utf8");
 	await fs.rename(tmpPath, serverConfigPath);
@@ -126,6 +160,17 @@ async function main(): Promise<void> {
 	let uptimeSec = 0;
 	let heartbeatProvidesMetrics = false;
 	let shutdownInProgress = false;
+
+	// v3 snapshot cache. The SC server only emits /state/* messages when its
+	// bus snapshot changes, so newly-opened browser tabs would otherwise see
+	// nothing until the user touches a control. We hold the last system
+	// snapshot and last per-source snapshots here and replay them on every
+	// fresh WebSocket connection.
+	type CachedOsc = { address: string; args: OscArg[] };
+	let cachedSystemState: CachedOsc | null = null;
+	let cachedReadyEvent: CachedOsc | null = null;
+	const cachedSourceStates = new Map<number, number[]>();
+	const SOURCE_STRIDE = 8;
 
 	const wsServer = new WebSocketServer({ host: "127.0.0.1", port: wsPort });
 	const serverManager = new ServerManager({
@@ -216,6 +261,43 @@ async function main(): Promise<void> {
 			}
 			return;
 		}
+
+		// v3 snapshot caching. Keep last-known good copies of every "rare"
+		// channel so a freshly-opened browser tab can hydrate without
+		// waiting for the user to wiggle a control.
+		if (event.address === "/akm/server/state/system") {
+			cachedSystemState = { address: event.address, args: event.args };
+			return;
+		}
+
+		if (event.address === "/akm/server/state/sources") {
+			const numericArgs = event.args
+				.map(numericValue)
+				.filter((value): value is number => value !== null);
+			for (let i = 0; i + SOURCE_STRIDE <= numericArgs.length; i += SOURCE_STRIDE) {
+				const idx = Math.trunc(numericArgs[i]);
+				cachedSourceStates.set(idx, numericArgs.slice(i + 1, i + SOURCE_STRIDE));
+			}
+			return;
+		}
+
+		if (event.address === "/akm/server/event/ready") {
+			cachedReadyEvent = { address: event.address, args: event.args };
+			// The ready event payload is the same shape as a system snapshot,
+			// so use it as the canonical first hydration for late joiners
+			// even if no /state/system has arrived yet.
+			cachedSystemState = { address: "/akm/server/state/system", args: event.args };
+			return;
+		}
+
+		if (event.address === "/akm/server/event/quit") {
+			// Server is going down; drop the now-stale caches so a future
+			// boot starts from scratch.
+			cachedSystemState = null;
+			cachedReadyEvent = null;
+			cachedSourceStates.clear();
+			return;
+		}
 	});
 
 	const unbindOscError = oscBridge.onError((error) => {
@@ -243,6 +325,9 @@ async function main(): Promise<void> {
 			serverStatus.uptimeSec = 0;
 			delete serverStatus.cpu;
 			delete serverStatus.perf;
+			cachedSystemState = null;
+			cachedReadyEvent = null;
+			cachedSourceStates.clear();
 		}
 
 		publishServerStatus();
@@ -269,6 +354,45 @@ async function main(): Promise<void> {
 		clients.add(socket);
 		socket.send(serializeMessage(agentStatus));
 		socket.send(serializeMessage(serverStatus));
+
+		// v3 snapshot replay: send the most recent system snapshot first,
+		// then all known source positions in one packet, so the UI has full
+		// state within ~one frame regardless of when it connected. Skipped
+		// when SC isn't running (caches are null/empty).
+		if (cachedReadyEvent) {
+			socket.send(
+				serializeMessage({
+					type: "osc",
+					address: cachedReadyEvent.address,
+					args: cachedReadyEvent.args
+				})
+			);
+		}
+		if (cachedSystemState) {
+			socket.send(
+				serializeMessage({
+					type: "osc",
+					address: cachedSystemState.address,
+					args: cachedSystemState.args
+				})
+			);
+		}
+		if (cachedSourceStates.size > 0) {
+			const flat: OscArg[] = [];
+			for (const [idx, vals] of cachedSourceStates) {
+				flat.push({ type: "f", value: idx });
+				for (const v of vals) {
+					flat.push({ type: "f", value: v });
+				}
+			}
+			socket.send(
+				serializeMessage({
+					type: "osc",
+					address: "/akm/server/state/sources",
+					args: flat
+				})
+			);
+		}
 
 		socket.on("message", async (data) => {
 			const parsed = parseClientMessage(rawDataToText(data));

@@ -1,12 +1,6 @@
 import type { EqState, FilterState, SpeakerRole } from "./types"
 
-const EQ_BAND_KEYS = [
-  "lowShelf",
-  "peak1",
-  "peak2",
-  "peak3",
-  "highShelf",
-] as const
+const EQ_BAND_KEYS = ["peak1", "peak2", "peak3"] as const
 
 export function filterStatesEqual(a: FilterState, b: FilterState): boolean {
   return a.freq === b.freq && a.rq === b.rq
@@ -23,8 +17,7 @@ export function eqStatesEqual(a: EqState, b: EqState): boolean {
       bandA.enabled === bandB.enabled &&
       bandA.freq === bandB.freq &&
       bandA.gainDb === bandB.gainDb &&
-      bandA.rq === bandB.rq &&
-      bandA.type === bandB.type
+      bandA.rq === bandB.rq
     )
   })
 }

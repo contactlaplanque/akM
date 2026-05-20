@@ -1,8 +1,6 @@
 import { Slider, SectionHead } from "@/components/primitives"
 import type { ReverbState, SubMidReverbState } from "@/state/types"
 
-import { SYSTEM_OSC_KEYS } from "./system-osc-keys"
-
 export type SystemControlsColumnProps = {
   systemGainDb: number
   onSystemGainChange: (db: number) => void
@@ -10,7 +8,6 @@ export type SystemControlsColumnProps = {
   onReverbChange: (next: ReverbState) => void
   subMidReverb: SubMidReverbState
   onSubMidReverbChange: (next: SubMidReverbState) => void
-  oscDrivenKeys?: Set<string>
 }
 
 function formatGainDb(value: number): string {
@@ -24,10 +21,7 @@ export function SystemControlsColumn({
   onReverbChange,
   subMidReverb,
   onSubMidReverbChange,
-  oscDrivenKeys,
 }: SystemControlsColumnProps) {
-  const isOsc = (key: string) => oscDrivenKeys?.has(key) ?? false
-
   return (
     <div className="system-col">
       <div className="system-controls-section">
@@ -41,8 +35,6 @@ export function SystemControlsColumn({
           unit="dB"
           fmt={formatGainDb}
           onChange={onSystemGainChange}
-          oscDriven={isOsc(SYSTEM_OSC_KEYS.gain)}
-          oscSource={SYSTEM_OSC_KEYS.gain}
         />
       </div>
 
@@ -56,8 +48,6 @@ export function SystemControlsColumn({
           value={reverb.decay}
           unit="s"
           onChange={(decay) => onReverbChange({ ...reverb, decay })}
-          oscDriven={isOsc(SYSTEM_OSC_KEYS.reverbDecay)}
-          oscSource={SYSTEM_OSC_KEYS.reverbDecay}
         />
         <Slider
           label="Feedback"
@@ -66,8 +56,6 @@ export function SystemControlsColumn({
           step={0.01}
           value={reverb.feedback}
           onChange={(feedback) => onReverbChange({ ...reverb, feedback })}
-          oscDriven={isOsc(SYSTEM_OSC_KEYS.reverbFeedback)}
-          oscSource={SYSTEM_OSC_KEYS.reverbFeedback}
         />
       </div>
 
@@ -85,7 +73,6 @@ export function SystemControlsColumn({
                     enabled: e.target.checked ? 1 : 0,
                   })
                 }
-                disabled={isOsc(SYSTEM_OSC_KEYS.subMidEnabled)}
               />
               <span>{subMidReverb.enabled ? "on" : "off"}</span>
             </label>
@@ -99,8 +86,6 @@ export function SystemControlsColumn({
             step={0.01}
             value={subMidReverb.mix}
             onChange={(mix) => onSubMidReverbChange({ ...subMidReverb, mix })}
-            oscDriven={isOsc(SYSTEM_OSC_KEYS.subMidMix)}
-            oscSource={SYSTEM_OSC_KEYS.subMidMix}
           />
         ) : null}
       </div>

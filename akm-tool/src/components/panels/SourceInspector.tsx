@@ -13,13 +13,12 @@ type SourceInspectorProps = {
   source: SourceSample | undefined
   sources: SourceSample[]
   selectedIndex: number
-  oscDrivenKeys: Set<string>
   onSelect: (id: string) => void
   onUpdateParams: (id: string, patch: SourceParamPatch) => void
 }
 
 type SpatialParam = keyof Pick<
-  SourceParamPatch,
+  Required<SourceParamPatch>,
   "radius" | "exponentA" | "delayLevel" | "reverbMix"
 >
 
@@ -42,7 +41,6 @@ export function SourceInspector({
   source,
   sources,
   selectedIndex,
-  oscDrivenKeys,
   onSelect,
   onUpdateParams,
 }: SourceInspectorProps) {
@@ -62,9 +60,6 @@ export function SourceInspector({
     const index = (currentIndex + 1) % sources.length
     onSelect(sources[index].id)
   }
-
-  const oscKey = (param: SpatialParam) => `src.${source.id}.${param}`
-  const isOsc = (param: SpatialParam) => oscDrivenKeys.has(oscKey(param))
 
   return (
     <div className="inspector">
@@ -117,8 +112,6 @@ export function SourceInspector({
             fmt={spec.fmt}
             value={source[spec.key]}
             onChange={(value) => onUpdateParams(source.id, { [spec.key]: value })}
-            oscDriven={isOsc(spec.key)}
-            oscSource="ableton"
           />
         ))}
       </div>

@@ -56,11 +56,15 @@ export function resolveServerPill(serverStatus: ServerStatusMessage): ResolvedPi
   }
 
   if (serverStatus.state === "error") {
-    const errorLabel = serverStatus.error?.trim() || "error"
+    // The full error string can be a multi-line CoreAudio dump or a verbose
+    // FATAL line from sclang — neither belongs in the badge itself (it
+    // hijacks the topbar layout). Keep the pill short and stash the full
+    // message in the hover title; the log strip already shows the full text.
+    const fullError = serverStatus.error?.trim() ?? ""
     return {
       tone: "bad",
-      sub: errorLabel,
-      title: `akm-server error: ${errorLabel}`,
+      sub: "error",
+      title: fullError ? `akm-server error: ${fullError}` : "akm-server error",
     }
   }
 

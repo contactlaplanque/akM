@@ -9,7 +9,6 @@ type MixerStripsProps = {
   mutes: Record<string, boolean>
   selectedSpeakerId: string
   meters: number[]
-  oscDrivenKeys?: Set<string>
   onGainChange: (speakerId: string, db: number) => void
   onMuteToggle: (speakerId: string) => void
   onSelectSpeaker: (speakerId: string) => void
@@ -21,7 +20,6 @@ export function MixerStrips({
   mutes,
   selectedSpeakerId,
   meters,
-  oscDrivenKeys,
   onGainChange,
   onMuteToggle,
   onSelectSpeaker,
@@ -38,7 +36,6 @@ export function MixerStrips({
             muted={!!mutes[speaker.id]}
             selected={speaker.id === selectedSpeakerId}
             meter={meters[speaker.outputChannel] ?? 0}
-            oscDriven={oscDrivenKeys?.has(`gain.${speaker.id}`)}
             onChange={(value) => onGainChange(speaker.id, value)}
             onMute={() => onMuteToggle(speaker.id)}
             onSelect={() => onSelectSpeaker(speaker.id)}

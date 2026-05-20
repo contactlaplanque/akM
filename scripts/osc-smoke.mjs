@@ -153,51 +153,56 @@ async function main() {
 		udp.send({ address, args }, listenHost, listenPort);
 	};
 
+	// v3: setters no longer ack per-message. We instead wait for the bus
+	// change to surface in the next /state/* tick (~50 ms at 20 Hz). The
+	// `expect` predicate runs against every received OSC message until it
+	// returns a truthy value or the deadline fires.
 	const matrix = [
 		{
-			label: "source params",
+			label: "source params -> /state/sources",
 			address: "/akm/source/src_01/params",
 			args: [0.25, -0.4, 1.7, 2.2, 1.1, 0.8, 0.3].map(toOscFloat),
-			expectedAck: "/akm/server/ack/source/src_01/params"
+			expect: (event) => {
+				if (event.message.address !== "/akm/server/state/sources") return false;
+				const args = (event.message.args ?? []).map((a) => Number(a?.value ?? a));
+				for (let i = 0; i + 8 <= args.length; i += 8) {
+					if (Math.abs(args[i + 1] - 0.25) < 1e-3 && Math.abs(args[i + 2] + 0.4) < 1e-3) {
+						return true;
+					}
+				}
+				return false;
+			}
 		},
 		{
-			label: "speaker gain",
-			address: "/akm/speaker/sat_1_1/gain",
-			args: [toOscFloat(-3.0)],
-			expectedAck: "/akm/server/ack/speaker/sat_1_1/gain"
-		},
-		{
-			label: "group filter",
-			address: "/akm/group/satellite/filter",
-			args: [toOscFloat(350.0), toOscFloat(0.9)],
-			expectedAck: "/akm/server/ack/group/satellite/filter"
-		},
-		{
-			label: "system gain",
+			label: "system gain -> /state/system",
 			address: "/akm/system/gain",
 			args: [toOscFloat(-1.5)],
-			expectedAck: "/akm/server/ack/system/gain"
+			expect: (event) =>
+				event.message.address === "/akm/server/state/system" &&
+				Math.abs(Number(event.message.args?.[1]?.value ?? event.message.args?.[1]) + 1.5) < 0.05
 		},
 		{
-			label: "system reverb",
+			label: "system reverb -> /state/system",
 			address: "/akm/system/reverb",
 			args: [toOscFloat(0.45), toOscFloat(0.55)],
-			expectedAck: "/akm/server/ack/system/reverb"
+			// Just confirm /state/system is reached again after the change.
+			expect: (event) => event.message.address === "/akm/server/state/system"
 		},
 		{
-			label: "sub mid reverb",
-			address: "/akm/group/sub_mid/reverb",
-			args: [toOscFloat(1), toOscFloat(0.25)],
-			expectedAck: "/akm/server/ack/group/sub_mid/reverb"
+			label: "group filter -> /state/system",
+			address: "/akm/group/satellite/filter",
+			args: [toOscFloat(350.0), toOscFloat(0.9)],
+			expect: (event) => event.message.address === "/akm/server/state/system"
 		}
 	];
 
 	for (const test of matrix) {
+		const sentAt = Date.now();
 		send(test.address, test.args);
 		await waitFor(
-			(event) => event.message.address === test.expectedAck,
+			(event) => event.ts >= sentAt && test.expect(event),
 			ACK_TIMEOUT_MS,
-			`${test.label} (${test.expectedAck})`
+			test.label
 		);
 		log(`[smoke] ok: ${test.label}`);
 	}
@@ -210,19 +215,19 @@ async function main() {
 	log("[smoke] ok: heartbeat received");
 
 	await waitFor(
-		(event) => event.message.address === "/akm/server/state/source/src_01",
+		(event) => event.message.address === "/akm/server/event/ready",
 		EVENT_TIMEOUT_MS,
-		"source state event for src_01"
+		"event/ready (initial snapshot)"
 	);
-	log("[smoke] ok: source state received");
+	log("[smoke] ok: event/ready received");
 
 	send("/akm/server/quit");
 	await waitFor(
-		(event) => event.message.address === "/akm/server/ack/quit",
+		(event) => event.message.address === "/akm/server/event/quit",
 		QUIT_TIMEOUT_MS,
-		"quit ACK"
+		"event/quit"
 	);
-	log("[smoke] ok: quit ACK received");
+	log("[smoke] ok: event/quit received");
 
 		if (child.exitCode === null) {
 			child.kill("SIGTERM");

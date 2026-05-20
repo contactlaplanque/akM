@@ -1,15 +1,6 @@
-import type { GraphFilter } from "dsssp"
-
-import type { FilterState, SpeakerRole } from "@/state/types"
-
-import { RQ_MAX, RQ_MIN } from "./eq-constants"
-
-function rqToQ(rq: number): number {
-  return Math.max(RQ_MIN, Math.min(RQ_MAX, rq))
-}
+import type { SpeakerRole } from "@/state/types"
 
 export type GroupFilterConfig = {
-  dssspType: Extract<GraphFilter["type"], "HIGHPASS2" | "LOWPASS2">
   stageType: string
   stageHint: string
   pointLabel: string
@@ -20,7 +11,6 @@ export type GroupFilterConfig = {
 
 export const GROUP_FILTER_CONFIG: Record<SpeakerRole, GroupFilterConfig> = {
   satellite: {
-    dssspType: "HIGHPASS2",
     stageType: "RHPF",
     stageHint: "Resonant high-pass (matches akm-server RHPF)",
     pointLabel: "HP",
@@ -29,7 +19,6 @@ export const GROUP_FILTER_CONFIG: Record<SpeakerRole, GroupFilterConfig> = {
     freqMax: 500,
   },
   sub_mid: {
-    dssspType: "LOWPASS2",
     stageType: "RLPF",
     stageHint: "Resonant low-pass (matches akm-server RLPF)",
     pointLabel: "LP",
@@ -38,7 +27,6 @@ export const GROUP_FILTER_CONFIG: Record<SpeakerRole, GroupFilterConfig> = {
     freqMax: 2000,
   },
   sub_lf: {
-    dssspType: "LOWPASS2",
     stageType: "RLPF",
     stageHint: "Resonant low-pass (matches akm-server RLPF)",
     pointLabel: "LP",
@@ -59,17 +47,4 @@ export function getGroupFilterConfig(role: SpeakerRole): GroupFilterConfig {
 export function clampGroupFilterFreq(role: SpeakerRole, freq: number): number {
   const { freqMin, freqMax } = GROUP_FILTER_CONFIG[role]
   return clamp(freq, freqMin, freqMax)
-}
-
-export function toGroupFilterGraphFilter(
-  role: SpeakerRole,
-  filter: FilterState,
-): GraphFilter {
-  const config = GROUP_FILTER_CONFIG[role]
-  return {
-    type: config.dssspType,
-    freq: clampGroupFilterFreq(role, filter.freq),
-    gain: 0,
-    q: rqToQ(filter.rq),
-  }
 }

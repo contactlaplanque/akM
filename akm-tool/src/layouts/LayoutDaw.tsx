@@ -258,7 +258,6 @@ export function LayoutDaw() {
                 source={selectedSource}
                 sources={st.sources}
                 selectedIndex={selectedIndex}
-                oscDrivenKeys={st.oscDrivenKeys}
                 onSelect={st.setSelectedSourceId}
                 onUpdateParams={st.updateSourceParams}
               />
@@ -285,7 +284,6 @@ export function LayoutDaw() {
                 selectedSpeakerId={st.selectedSpeakerId}
                 onSelectSpeaker={st.setSelectedSpeakerId}
                 meters={st.meters.speakerOuts}
-                oscDrivenKeys={st.oscDrivenKeys}
               />
             ) : view === "eq" ? (
               <EqPanel
@@ -304,8 +302,6 @@ export function LayoutDaw() {
                 }
                 groupGainsDb={st.groupGainsDb}
                 onGroupGainChange={st.setGroupGainDb}
-                sampleRate={st.serverConfig.audio.sampleRate}
-                oscDrivenKeys={st.oscDrivenKeys}
               />
             ) : view === "system" ? (
               <SystemPanel
@@ -318,7 +314,6 @@ export function LayoutDaw() {
                 onReverbChange={st.setReverb}
                 subMidReverb={st.subMidReverb}
                 onSubMidReverbChange={st.setSubMidReverb}
-                oscDrivenKeys={st.oscDrivenKeys}
                 perf={st.perf}
                 serverReady={st.serverReady}
               />

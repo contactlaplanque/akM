@@ -147,23 +147,22 @@
   "$defs": {
     "eqBand": {
       "type": "object",
+      "description": "Parametric peak band. v3 dropped the lowShelf/highShelf siblings; the per-role group filter (RHPF/RLPF) handles broad shaping.",
       "properties": {
         "enabled": { "type": "number" },
         "freq": { "type": "number" },
         "gainDb": { "type": "number" },
-        "rq": { "type": "number" },
-        "type": { "type": "string" }
+        "rq": { "type": "number" }
       }
     },
     "eqState": {
       "type": "object",
+      "description": "Group EQ. v3 = enabled + three parametric peaks per role.",
       "properties": {
         "enabled": { "type": "number" },
-        "lowShelf": { "$ref": "#/$defs/eqBand" },
         "peak1": { "$ref": "#/$defs/eqBand" },
         "peak2": { "$ref": "#/$defs/eqBand" },
-        "peak3": { "$ref": "#/$defs/eqBand" },
-        "highShelf": { "$ref": "#/$defs/eqBand" }
+        "peak3": { "$ref": "#/$defs/eqBand" }
       }
     },
     "filterState": {

@@ -73,17 +73,40 @@ function resolveStateUpdate<T>(current: T, update: SetStateAction<T>): T {
 function initEq(): EqState {
   return {
     enabled: 1,
-    lowShelf: { freq: 80, gainDb: 0, rq: 1, enabled: 1, type: "lowshelf" },
-    peak1: { freq: 250, gainDb: 0, rq: 1, enabled: 1, type: "peak" },
-    peak2: { freq: 1000, gainDb: 2.5, rq: 1.4, enabled: 1, type: "peak" },
-    peak3: { freq: 4000, gainDb: -1.5, rq: 0.9, enabled: 1, type: "peak" },
-    highShelf: {
-      freq: 10000,
-      gainDb: 1,
-      rq: 0.7,
-      enabled: 1,
-      type: "highshelf",
-    },
+    peak1: { freq: 250, gainDb: 0, rq: 1, enabled: 1 },
+    peak2: { freq: 1000, gainDb: 0, rq: 1, enabled: 1 },
+    peak3: { freq: 4000, gainDb: 0, rq: 1, enabled: 1 },
+  }
+}
+
+// Saved-state from before v3 may still carry lowShelf / highShelf and a
+// per-band `type` field. The SC server now ignores those, but the React
+// state expects the strict v3 shape, so we normalise on hydration.
+function normaliseEqState(raw: unknown): EqState {
+  if (!raw || typeof raw !== "object") {
+    return initEq()
+  }
+  const partial = raw as Partial<EqState> & {
+    enabled?: number
+    peak1?: Partial<EqState["peak1"]>
+    peak2?: Partial<EqState["peak2"]>
+    peak3?: Partial<EqState["peak3"]>
+  }
+  const fallback = initEq()
+  const pickBand = (
+    band: Partial<EqState["peak1"]> | undefined,
+    defaults: EqState["peak1"],
+  ): EqState["peak1"] => ({
+    freq: typeof band?.freq === "number" ? band.freq : defaults.freq,
+    gainDb: typeof band?.gainDb === "number" ? band.gainDb : defaults.gainDb,
+    rq: typeof band?.rq === "number" ? band.rq : defaults.rq,
+    enabled: typeof band?.enabled === "number" ? band.enabled : defaults.enabled,
+  })
+  return {
+    enabled: typeof partial.enabled === "number" ? partial.enabled : fallback.enabled,
+    peak1: pickBand(partial.peak1, fallback.peak1),
+    peak2: pickBand(partial.peak2, fallback.peak2),
+    peak3: pickBand(partial.peak3, fallback.peak3),
   }
 }
 
@@ -119,9 +142,9 @@ function createInitialHydrationState(): OscHydrationState {
     ])
   )
   const eqByRole = {
-    satellite: saved.eqByRole?.satellite ?? initEq(),
-    sub_mid: saved.eqByRole?.sub_mid ?? initEq(),
-    sub_lf: saved.eqByRole?.sub_lf ?? initEq(),
+    satellite: normaliseEqState(saved.eqByRole?.satellite),
+    sub_mid: normaliseEqState(saved.eqByRole?.sub_mid),
+    sub_lf: normaliseEqState(saved.eqByRole?.sub_lf),
   }
   const filterByRole = {
     satellite: saved.filterByRole?.satellite ?? { freq: 110, rq: 1.0 },
@@ -151,6 +174,10 @@ function createInitialHydrationState(): OscHydrationState {
       enabled: 0,
       mix: 0.25,
     },
+    // Speaker indices in the /state/system snapshot mirror the layout's
+    // speakers array order (SC's `~allSpeakers` is built from the same JSON
+    // in the same order), so this list is the inverse of that mapping.
+    speakerIdByIndex: layout.speakers.map((speaker) => speaker.id),
   }
 }
 
@@ -197,7 +224,6 @@ function useAkmStateValue(): AkmState {
   const [logs, setLogs] = useState<LogEntry[]>([])
   const previousConnectionState = useRef(connectionState)
   const previousServerState = useRef(serverStatus.state)
-  const [oscDrivenKeys] = useState(() => new Set<string>())
 
   useEffect(() => {
     const didConnectToAgent =
@@ -489,45 +515,14 @@ function useAkmStateValue(): AkmState {
     [sendIfLive]
   )
 
+  // Holds the latest hydration in a ref so `saveState` can build a payload
+  // without re-creating its useCallback on every state mutation. The on-live
+  // "push everything out" effect that previously lived here is dropped: the
+  // agent now caches the SC server's last broadcast and replays it on every
+  // WS connect, so the UI always hydrates from SC instead of clobbering SC
+  // with the UI's stale local copy.
   const hydrationRef = useRef(hydration)
   hydrationRef.current = hydration
-
-  // When the SC server becomes ready, push our locally-held state out so SC
-  // matches the saved configuration even if SC restarted without reading the
-  // file (or if we hold pending unsaved tweaks).
-  const previousLiveRef = useRef(isLive)
-  useEffect(() => {
-    if (!isLive || previousLiveRef.current) {
-      previousLiveRef.current = isLive
-      return
-    }
-    previousLiveRef.current = isLive
-
-    const current = hydrationRef.current
-    sendOsc("/akm/system/gain", encodeSystemGain(current.systemGainDb))
-    sendOsc("/akm/system/reverb", encodeSystemReverb(current.reverb))
-    sendOsc(
-      "/akm/group/sub_mid/reverb",
-      encodeSubMidReverb(current.subMidReverb)
-    )
-    for (const role of SPEAKER_ROLES) {
-      sendOsc(`/akm/group/${role}/eq`, encodeEqState(current.eqByRole[role]))
-      sendOsc(
-        `/akm/group/${role}/filter`,
-        encodeFilterState(current.filterByRole[role])
-      )
-      sendOsc(
-        `/akm/group/${role}/gain`,
-        encodeSystemGain(current.groupGainsDb[role])
-      )
-    }
-    for (const [speakerId, gainDb] of Object.entries(current.gains)) {
-      sendOsc(`/akm/speaker/${speakerId}/gain`, encodeSpeakerGain(gainDb))
-    }
-    for (const [speakerId, muted] of Object.entries(current.mutes)) {
-      sendOsc(`/akm/speaker/${speakerId}/mute`, encodeSpeakerMute(muted))
-    }
-  }, [isLive, sendOsc])
 
   useEffect(() => {
     return onStateSaved((message) => {
@@ -572,52 +567,98 @@ function useAkmStateValue(): AkmState {
     [hydration.meters.sourceIns.length, hydration.meters.speakerOuts.length]
   )
 
-  return {
-    layout,
-    serverConfig,
-    isLive,
-    sources: hydration.sources,
-    selectedSourceId,
-    setSelectedSourceId,
-    hoveredSpeakerId,
-    setHoveredSpeakerId,
-    selectedSpeakerId,
-    setSelectedSpeakerId,
-    sourceVisibility,
-    setSourceVisibility,
-    roleVisibility,
-    setRoleVisibility,
-    cameraPreset,
-    setCameraPreset,
-    selectedRole,
-    setSelectedRole,
-    gains: hydration.gains,
-    setGains,
-    mutes: hydration.mutes,
-    setMutes,
-    eqByRole: hydration.eqByRole,
-    setEqByRole,
-    filterByRole: hydration.filterByRole,
-    setFilterByRole,
-    groupGainsDb: hydration.groupGainsDb,
-    setGroupGainDb,
-    perf: serverStatus.perf ?? null,
-    serverReady: serverStatus.state === "ready",
-    systemGainDb: hydration.systemGainDb,
-    setSystemGainDb,
-    reverb: hydration.reverb,
-    setReverb,
-    subMidReverb: hydration.subMidReverb,
-    setSubMidReverb,
-    logs,
-    meters: isLive ? hydration.meters : frozenMeters,
-    oscDrivenKeys,
-    updateSourceParams,
-    showSpeakerLabels,
-    setShowSpeakerLabels,
-    saveState,
-    saveStatus,
-  }
+  const meters = isLive ? hydration.meters : frozenMeters
+  const perf = serverStatus.perf ?? null
+  const serverReady = serverStatus.state === "ready"
+
+  // Memoise the entire context value so React Context consumers (everywhere
+  // via `useAkmState`) only re-render when one of the underlying state
+  // primitives actually changes. Without this, returning a fresh object on
+  // every render forced a top-to-bottom re-render at every meter tick
+  // (~20 Hz). All callers of useAkmState are downstream of the same Provider,
+  // so this is a pure perf win — no behavioural change.
+  return useMemo<AkmState>(
+    () => ({
+      layout,
+      serverConfig,
+      isLive,
+      sources: hydration.sources,
+      selectedSourceId,
+      setSelectedSourceId,
+      hoveredSpeakerId,
+      setHoveredSpeakerId,
+      selectedSpeakerId,
+      setSelectedSpeakerId,
+      sourceVisibility,
+      setSourceVisibility,
+      roleVisibility,
+      setRoleVisibility,
+      cameraPreset,
+      setCameraPreset,
+      selectedRole,
+      setSelectedRole,
+      gains: hydration.gains,
+      setGains,
+      mutes: hydration.mutes,
+      setMutes,
+      eqByRole: hydration.eqByRole,
+      setEqByRole,
+      filterByRole: hydration.filterByRole,
+      setFilterByRole,
+      groupGainsDb: hydration.groupGainsDb,
+      setGroupGainDb,
+      perf,
+      serverReady,
+      systemGainDb: hydration.systemGainDb,
+      setSystemGainDb,
+      reverb: hydration.reverb,
+      setReverb,
+      subMidReverb: hydration.subMidReverb,
+      setSubMidReverb,
+      logs,
+      meters,
+      updateSourceParams,
+      showSpeakerLabels,
+      setShowSpeakerLabels,
+      saveState,
+      saveStatus,
+    }),
+    [
+      isLive,
+      hydration.sources,
+      selectedSourceId,
+      hoveredSpeakerId,
+      selectedSpeakerId,
+      sourceVisibility,
+      roleVisibility,
+      cameraPreset,
+      selectedRole,
+      hydration.gains,
+      setGains,
+      hydration.mutes,
+      setMutes,
+      hydration.eqByRole,
+      setEqByRole,
+      hydration.filterByRole,
+      setFilterByRole,
+      hydration.groupGainsDb,
+      setGroupGainDb,
+      perf,
+      serverReady,
+      hydration.systemGainDb,
+      setSystemGainDb,
+      hydration.reverb,
+      setReverb,
+      hydration.subMidReverb,
+      setSubMidReverb,
+      logs,
+      meters,
+      updateSourceParams,
+      showSpeakerLabels,
+      saveState,
+      saveStatus,
+    ],
+  )
 }
 
 export function AkmStateProvider({ children }: { children: ReactNode }) {
