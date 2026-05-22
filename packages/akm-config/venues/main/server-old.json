@@ -1,10 +1,12 @@
 {
   "schemaVersion": "1.0.0",
   "audio": {
-    "device": "akM",
+    "device": "16A-1",
+    "inDevice": "BlackHole 64ch",
+    "outDevice": "16A-1",
     "sampleRate": 48000,
-    "numInputBusChannels": 192,
-    "numOutputBusChannels": 192,
+    "numInputBusChannels": 32,
+    "numOutputBusChannels": 41,
     "safetyClipThreshold": 1
   },
   "scServer": {
@@ -26,131 +28,131 @@
   "sources": [
     {
       "id": "src_01",
-      "inputChannel": 128
+      "inputChannel": 0
     },
     {
       "id": "src_02",
-      "inputChannel": 129
+      "inputChannel": 1
     },
     {
       "id": "src_03",
-      "inputChannel": 130
+      "inputChannel": 2
     },
     {
       "id": "src_04",
-      "inputChannel": 131
+      "inputChannel": 3
     },
     {
       "id": "src_05",
-      "inputChannel": 132
+      "inputChannel": 4
     },
     {
       "id": "src_06",
-      "inputChannel": 133
+      "inputChannel": 5
     },
     {
       "id": "src_07",
-      "inputChannel": 134
+      "inputChannel": 6
     },
     {
       "id": "src_08",
-      "inputChannel": 135
+      "inputChannel": 7
     },
     {
       "id": "src_09",
-      "inputChannel": 136
+      "inputChannel": 8
     },
     {
       "id": "src_10",
-      "inputChannel": 137
+      "inputChannel": 9
     },
     {
       "id": "src_11",
-      "inputChannel": 138
+      "inputChannel": 10
     },
     {
       "id": "src_12",
-      "inputChannel": 139
+      "inputChannel": 11
     },
     {
       "id": "src_13",
-      "inputChannel": 140
+      "inputChannel": 12
     },
     {
       "id": "src_14",
-      "inputChannel": 141
+      "inputChannel": 13
     },
     {
       "id": "src_15",
-      "inputChannel": 142
+      "inputChannel": 14
     },
     {
       "id": "src_16",
-      "inputChannel": 143
+      "inputChannel": 15
     },
     {
       "id": "src_17",
-      "inputChannel": 144
+      "inputChannel": 16
     },
     {
       "id": "src_18",
-      "inputChannel": 145
+      "inputChannel": 17
     },
     {
       "id": "src_19",
-      "inputChannel": 146
+      "inputChannel": 18
     },
     {
       "id": "src_20",
-      "inputChannel": 147
+      "inputChannel": 19
     },
     {
       "id": "src_21",
-      "inputChannel": 148
+      "inputChannel": 20
     },
     {
       "id": "src_22",
-      "inputChannel": 149
+      "inputChannel": 21
     },
     {
       "id": "src_23",
-      "inputChannel": 150
+      "inputChannel": 22
     },
     {
       "id": "src_24",
-      "inputChannel": 151
+      "inputChannel": 23
     },
     {
       "id": "src_25",
-      "inputChannel": 152
+      "inputChannel": 24
     },
     {
       "id": "src_26",
-      "inputChannel": 153
+      "inputChannel": 25
     },
     {
       "id": "src_27",
-      "inputChannel": 154
+      "inputChannel": 26
     },
     {
       "id": "src_28",
-      "inputChannel": 155
+      "inputChannel": 27
     },
     {
       "id": "src_29",
-      "inputChannel": 156
+      "inputChannel": 28
     },
     {
       "id": "src_30",
-      "inputChannel": 157
+      "inputChannel": 29
     },
     {
       "id": "src_31",
-      "inputChannel": 158
+      "inputChannel": 30
     },
     {
       "id": "src_32",
-      "inputChannel": 159
+      "inputChannel": 31
     }
   ],
   "reverb": {
@@ -167,10 +169,10 @@
     "pannerUpdateHz": 0
   },
   "state": {
-    "systemGainDb": -7.099999904632568,
+    "systemGainDb": -15,
     "groupGainsDb": {
       "satellite": 0,
-      "sub_mid": 1.7999995946884155,
+      "sub_mid": 0.5999996066093445,
       "sub_lf": -10
     },
     "speakerGains": {
